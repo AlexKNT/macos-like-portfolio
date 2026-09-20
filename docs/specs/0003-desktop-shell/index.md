@@ -1,7 +1,7 @@
 # 0003. Adopt a desktop shell of menu bar, desktop surface and dock
 
 **Date**: 2026-09-20
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 

@@ -6,54 +6,54 @@ Rows 8 to 15 are still to come, so the window bodies behind the dock are placeho
 
 ## Commands
 
-- [ ] `npx tsc -b` → clean, with no `any` in the shell's modules → AC-1, AC-3, AC-11
-- [ ] `npm run lint` → clean → AC-1
-- [ ] `npm run format:check` → clean → AC-1
-- [ ] `npm test` → the content suite, the contrast suite and the shell's component tests all pass → AC-2, AC-3, AC-6, AC-9
-- [ ] `npm run build` → succeeds → AC-1
-- [ ] search `src/**` for `windowPosition` → only `DESKTOP_ITEMS` and its schema mention a desktop spot; no hit remains in `locations.ts` or in `projectFolderSchema` → AC-3
-- [ ] search `src/components/**` and `src/store/**` for a window list, a `position` or a `z` field outside the store → no hit, the shell reads the manager and writes nothing → AC-11
-- [ ] list `src/content/desktop.ts` and open it → four items, each with a label, an icon, a spot and a target, and one of them names the Resume window → AC-3
+- [x] `npx tsc -b` → clean, with no `any` in the shell's modules → AC-1, AC-3, AC-11
+- [x] `npm run lint` → clean → AC-1
+- [x] `npm run format:check` → clean → AC-1
+- [x] `npm test` → the content suite, the contrast suite and the shell's component tests all pass → AC-2, AC-3, AC-6, AC-9
+- [x] `npm run build` → succeeds → AC-1
+- [x] search `src/**` for `windowPosition` → only `DESKTOP_ITEMS` and its schema mention a desktop spot; no hit remains in `locations.ts` or in `projectFolderSchema` → AC-3
+- [x] search `src/components/**` and `src/store/**` for a window list, a `position` or a `z` field outside the store → no hit, the shell reads the manager and writes nothing → AC-11
+- [x] list `src/content/desktop.ts` and open it → four items, each with a label, an icon, a spot and a target, and one of them names the Resume window → AC-3
 
 ## UI / manual
 
-- [ ] `npm run dev` and click a dock button → a window opens with its three lights working → AC-8
-- [ ] click the same dock button again → focus moves to that window, no second window appears, and the dock shows one indicator for it → AC-6, AC-8
-- [ ] move the window so its bottom edge would pass under the dock → it stops short of the dock band, and the dock stays on top → AC-1
-- [ ] click a desktop project icon → a window opens for that project through the same action the dock uses → AC-3, AC-8
-- [ ] click the Resume desktop icon → the Resume window opens, not a download → AC-3
-- [ ] click each of the three menu bar links → each opens its window, and the About icon opens the About location → AC-4
-- [ ] click the wifi and search icons → nothing happens and neither is reachable by Tab, because they render no control → AC-4
-- [ ] press the appearance icon → the desktop switches mode for the session; reload → the desktop follows the system again, because nothing was stored → AC-5
-- [ ] hover a dock button → the tooltip shows the same name the button announces, and the icon lifts → AC-6
-- [ ] move the pointer across the dock → the icons nearest the pointer grow and their neighbours grow less, the panel itself does not move, and nothing on the page reflows → AC-7
-- [ ] move the pointer off the dock → every icon returns to its resting scale → AC-7
-- [ ] Tab from the top of the page → the bar controls, the desktop icons and the dock buttons are all reached in that order, each with the two layer ring → AC-9
-- [ ] focus a dock button and press Enter → the window opens, exactly as a click does → AC-6, AC-9
-- [ ] with a window open, minimise it from its yellow light → the dock button shows the quieter indicator → AC-6
-- [ ] narrow the window to 360px → the dock is gone, the greeting and the desktop icons stay, and nothing scrolls sideways → AC-10
-- [ ] narrow to 360px and activate a desktop icon → the window opens and fills the work area → AC-10
-- [ ] widen back to desktop width → the dock returns and its indicators match what is actually open → AC-6
-- [ ] set the OS to reduce motion, reload and move the pointer across the dock → no magnify at all, and the dock still opens windows → AC-7
-- [ ] turn on forced colours → the bar, the desktop icons and the dock buttons stay visible, and the focus ring is still drawn → AC-9
-- [ ] compare the dev server against `designs/lightHomePage.png` and `designs/darkHomePage.png` → the greeting, the desktop icons, the dock and the bar all sit where the reference puts them → AC-1, AC-2, AC-3, AC-6
-- [ ] switch to dark mode and look at the greeting → the script line stays legible over the dark wallpaper → AC-2
+- [x] `npm run dev` and click a dock button → a window opens with its three lights working → AC-8
+- [x] click the same dock button again → focus moves to that window, no second window appears, and the dock shows one indicator for it → AC-6, AC-8
+- [x] move the window so its bottom edge would pass under the dock → it stops short of the dock band, and the dock stays on top → AC-1
+- [x] click a desktop project icon → a window opens for that project through the same action the dock uses → AC-3, AC-8
+- [x] click the Resume desktop icon → the Resume window opens, not a download → AC-3
+- [x] click each of the three menu bar links → each opens its window, and the About icon opens the About location → AC-4
+- [x] click the wifi and search icons → nothing happens and neither is reachable by Tab, because they render no control → AC-4
+- [x] press the appearance icon → the desktop switches mode for the session; reload → the desktop follows the system again, because nothing was stored → AC-5
+- [x] hover a dock button → the tooltip shows the same name the button announces, and the icon lifts → AC-6
+- [x] move the pointer across the dock → the icons nearest the pointer grow and their neighbours grow less, the panel itself does not move, and nothing on the page reflows → AC-7
+- [x] move the pointer off the dock → every icon returns to its resting scale → AC-7
+- [x] Tab from the top of the page → the bar controls, the desktop icons and the dock buttons are all reached in that order, each with the two layer ring → AC-9
+- [x] focus a dock button and press Enter → the window opens, exactly as a click does → AC-6, AC-9
+- [x] with a window open, minimise it from its yellow light → the dock button shows the quieter indicator → AC-6
+- [x] narrow the window to 360px → the dock is gone, the greeting and the desktop icons stay, and nothing scrolls sideways → AC-10
+- [x] narrow to 360px and activate a desktop icon → the window opens and fills the work area → AC-10
+- [x] widen back to desktop width → the dock returns and its indicators match what is actually open → AC-6
+- [x] set the OS to reduce motion, reload and move the pointer across the dock → no magnify at all, and the dock still opens windows → AC-7
+- [x] turn on forced colours → the bar, the desktop icons and the dock buttons stay visible, and the focus ring is still drawn → AC-9
+- [x] compare the dev server against `designs/lightHomePage.png` and `designs/darkHomePage.png` → the greeting, the desktop icons, the dock and the bar all sit where the reference puts them → AC-1, AC-2, AC-3, AC-6
+- [x] switch to dark mode and look at the greeting → the script line stays legible over the dark wallpaper → AC-2
 
 ## Values that could be invented
 
 Every row of the spec's Value sourcing table, checked rather than assumed.
 
-- [ ] the greeting copy → in the console, `(await import('/src/content/profile.ts')).PROFILE.greeting` matches the two lines on the desktop → AC-2
-- [ ] a desktop icon's label, image and spot → the rendered button matches its `DESKTOP_ITEMS` entry, and the console list has four items → AC-3
-- [ ] a dock button's name and image → the accessible name matches `DOCK_APPS[i].name` and the image matches `WINDOWS[windowId].icon` → AC-6
-- [ ] a dock indicator's meaning → open a second window and minimise one; the two buttons show the different indicators → AC-6
-- [ ] the mode the appearance press applies → read `document.documentElement.dataset.theme` before and after the press, and confirm the press read the attribute rather than resolving a preference → AC-5
-- [ ] the clock → the minute boundary step used for spec 0002 still passes → AC-4
-- [ ] the wallpaper → the spec 0002 wallpaper steps still pass, at 320px and at 2560px wide → AC-1
-- [ ] the work area → drag a window to each edge; it stops exactly at the container's content box, not at the viewport edge → AC-1
-- [ ] the magnify settings → open the token layer and confirm `--dock-magnify-scale` and `--dock-hover-lift` exist and are the values in use, not literals in the component, and read the falloff function to confirm it is linear over the two nearest neighbours rather than a number per icon → AC-7
-- [ ] the four desktop spots → open `src/content/desktop.ts` and confirm each item's spot is a top and left pair, with nothing anchored to a right edge → AC-3
-- [ ] the placeholder copy → each of the nine windows states what will live there, and none of them claims to be finished → AC-8
+- [x] the greeting copy → in the console, `(await import('/src/content/profile.ts')).PROFILE.greeting` matches the two lines on the desktop → AC-2
+- [x] a desktop icon's label, image and spot → the rendered button matches its `DESKTOP_ITEMS` entry, and the console list has four items → AC-3
+- [x] a dock button's name and image → the accessible name matches `DOCK_APPS[i].name` and the image matches `WINDOWS[windowId].icon` → AC-6
+- [x] a dock indicator's meaning → open a second window and minimise one; the two buttons show the different indicators → AC-6
+- [x] the mode the appearance press applies → read `document.documentElement.dataset.theme` before and after the press, and confirm the press read the attribute rather than resolving a preference → AC-5
+- [x] the clock → the minute boundary step used for spec 0002 still passes → AC-4
+- [x] the wallpaper → the spec 0002 wallpaper steps still pass, at 320px and at 2560px wide → AC-1
+- [x] the work area → drag a window to each edge; it stops exactly at the container's content box, not at the viewport edge → AC-1
+- [x] the magnify settings → open the token layer and confirm `--dock-magnify-scale` and `--dock-hover-lift` exist and are the values in use, not literals in the component, and read the falloff function to confirm it is linear over the two nearest neighbours rather than a number per icon → AC-7
+- [x] the four desktop spots → open `src/content/desktop.ts` and confirm each item's spot is a top and left pair, with nothing anchored to a right edge → AC-3
+- [x] the placeholder copy → each of the nine windows states what will live there, and none of them claims to be finished → AC-8
 
 ## Acceptance-criteria coverage
 
@@ -71,8 +71,8 @@ Every row of the spec's Value sourcing table, checked rather than assumed.
 
 ## Two rows to read rather than trust
 
-- [ ] open the shell's modules and confirm no module holds window state; the search command above only finds a field if it is written down, so read for a list that is rebuilt on every render → AC-11
-- [ ] open the contrast suite and confirm the dock button pair is composited over the translucent panel rather than checked against the page background, which is the judgement spec 0002 could not make → AC-9
+- [x] open the shell's modules and confirm no module holds window state; the search command above only finds a field if it is written down, so read for a list that is rebuilt on every render → AC-11
+- [x] open the contrast suite and confirm the dock button pair is composited over the translucent panel rather than checked against the page background, which is the judgement spec 0002 could not make → AC-9
 
 ## Added by `/develop` (2026-09-20)
 
@@ -84,29 +84,29 @@ Exercise these, then tick them. This run already ran the ones marked **ran green
 
 ### UI / manual
 
-- [ ] sweep the pointer across the dock → the icon under the pointer is the largest, the two on each side fall away in a straight line, every icon past them keeps its resting size, and the panel itself does not move → AC-7
-- [ ] open a window, then hover its dock button → the tooltip and the dot both show, and the dot is the quiet one while the window is minimised → AC-6
-- [ ] with a window open, Tab from the top of the page → 3 bar links, 2 acting icons, 4 desktop items, the window's lights, then the six dock buttons, each with the two layer ring → AC-9
-- [ ] set the OS to reduce motion, reload, and sweep the dock → no magnify at all, and the dock still opens and focuses windows → AC-7
-- [ ] at 360px wide, activate a desktop icon → the window opens, the page still does not scroll sideways, and the bar keeps only its logo → AC-3, AC-10
-- [ ] turn on forced colours → the bar, the desktop icons and the dock buttons stay visible and the ring is still drawn → AC-9
+- [x] sweep the pointer across the dock → the icon under the pointer is the largest, the two on each side fall away in a straight line, every icon past them keeps its resting size, and the panel itself does not move → AC-7
+- [x] open a window, then hover its dock button → the tooltip and the dot both show, and the dot is the quiet one while the window is minimised → AC-6
+- [x] with a window open, Tab from the top of the page → 3 bar links, 2 acting icons, 4 desktop items, the window's lights, then the six dock buttons, each with the two layer ring → AC-9
+- [x] set the OS to reduce motion, reload, and sweep the dock → no magnify at all, and the dock still opens and focuses windows → AC-7
+- [x] at 360px wide, activate a desktop icon → the window opens, the page still does not scroll sideways, and the bar keeps only its logo → AC-3, AC-10
+- [x] turn on forced colours → the bar, the desktop icons and the dock buttons stay visible and the ring is still drawn → AC-9
 
 ### Commands
 
-- [ ] `npm test` → the contrast suite names a failing pair if the dock panel's glass is weakened, and the reducer suite fails if one key ever opens two windows → AC-2, AC-8, AC-9
-- [ ] `npm run test:e2e` → the nine shell specs pass → AC-3, AC-4, AC-5, AC-7, AC-8, AC-10
-- [ ] change a desktop item's target to name a window that does not exist → `npx tsc -b` fails with the `WindowId` union printed, and the development check throws `Invalid content in desktop items` before the desktop paints → AC-3, AC-8
-- [ ] set `--dock-magnify-scale` to `2` in `src/index.css` → the icon under the pointer grows further and still nothing reflows → AC-7
+- [x] `npm test` → the contrast suite names a failing pair if the dock panel's glass is weakened, and the reducer suite fails if one key ever opens two windows → AC-2, AC-8, AC-9
+- [x] `npm run test:e2e` → the nine shell specs pass → AC-3, AC-4, AC-5, AC-7, AC-8, AC-10
+- [x] change a desktop item's target to name a window that does not exist → `npx tsc -b` fails with the `WindowId` union printed, and the development check throws `Invalid content in desktop items` before the desktop paints → AC-3, AC-8
+- [x] set `--dock-magnify-scale` to `2` in `src/index.css` → the icon under the pointer grows further and still nothing reflows → AC-7
 
 ### Values that could be invented
 
-- [ ] the greeting copy → `(await import('/src/content/profile.ts')).PROFILE.greeting` matches the two lines on the screen, and editing it changes the desktop without a code change → AC-2
-- [ ] a desktop icon's label, image and spot → the rendered button matches its `DESKTOP_ITEMS` entry, and the label's full text is the button's accessible name while the pill shows two lines → AC-3
-- [ ] the placeholder line → each of the nine windows shows its own line from the `WindowId` keyed map, and no line claims the window is finished → AC-8
-- [ ] the dock's names and images → the accessible name matches `DOCK_APPS[i].name` while the image matches `WINDOWS[windowId].icon`, so the panel says "Portfolio" for a window titled "Projects" → AC-6
-- [ ] the dock's open indicator → it comes from the manager's instances rather than from a flag in the shell, so closing the window clears it → AC-6
-- [ ] the magnify's reach and falloff → read `src/components/Dock.tsx`: the scale comes from `--dock-magnify-scale` through `readMeasureToken`, the falloff from `gsap.utils.mapRange` and `gsap.utils.clamp`, and the timing from `readMotionToken` rather than from a literal → AC-7
-- [ ] two project icons → one Projects window re-targeted rather than two windows, since a project target resolves to the same key → AC-3, AC-8
+- [x] the greeting copy → `(await import('/src/content/profile.ts')).PROFILE.greeting` matches the two lines on the screen, and editing it changes the desktop without a code change → AC-2
+- [x] a desktop icon's label, image and spot → the rendered button matches its `DESKTOP_ITEMS` entry, and the label's full text is the button's accessible name while the pill shows two lines → AC-3
+- [x] the placeholder line → each of the nine windows shows its own line from the `WindowId` keyed map, and no line claims the window is finished → AC-8
+- [x] the dock's names and images → the accessible name matches `DOCK_APPS[i].name` while the image matches `WINDOWS[windowId].icon`, so the panel says "Portfolio" for a window titled "Projects" → AC-6
+- [x] the dock's open indicator → it comes from the manager's instances rather than from a flag in the shell, so closing the window clears it → AC-6
+- [x] the magnify's reach and falloff → read `src/components/Dock.tsx`: the scale comes from `--dock-magnify-scale` through `readMeasureToken`, the falloff from `gsap.utils.mapRange` and `gsap.utils.clamp`, and the timing from `readMotionToken` rather than from a literal → AC-7
+- [x] two project icons → one Projects window re-targeted rather than two windows, since a project target resolves to the same key → AC-3, AC-8
 
 ### Acceptance-criteria coverage added here
 
@@ -117,3 +117,48 @@ Exercise these, then tick them. This run already ran the ones marked **ran green
 - AC-8 → the duplicate window rows and the placeholder line row
 - AC-9 → the Tab order step, the forced colours step and the dock panel pair
 - AC-10 → the 360px icon step
+
+## /check verify run, 2026-09-20 (PASS)
+
+Every row above is ticked against the running app, through a throwaway Playwright probe in real
+Chromium (its own dev server on 4174) plus the commands on this page. Nothing was left open.
+
+**Commands.** `npx tsc -b --force`, `npm run lint`, `npm run format:check`, `npm test` (166 tests in
+17 files) and `npm run build` are all clean. `npm run test:e2e` passes 29 tests, the nine desktop
+shell specs among them.
+
+**What the probe measured rather than looked at.** One dock press opens one window whose three
+lights are enabled and painted (`rgb(255, 97, 87)`, `rgb(255, 192, 48)`, `rgb(42, 203, 66)`); a
+second press focuses instead of opening; the indicator goes `0` → `1` → `0.4` → `0` as the window
+opens, minimises, restores and closes. The tooltip is the button's own accessible name and lifts by
+8px. A window dragged to each of the four edges lands on the container's box exactly (left 0, top
+40, right 1280, bottom 704) and 704 is above the viewport's 800, so the clamp is the desktop's box
+and not the viewport. With the window's `z-index` forced to 9999 the dock still wins the hit test,
+which is the `isolate` doing its job. The magnify's largest icon is `56 × 1.5 = 84` and the falloff
+is `0.5, 0.25, 0` above rest over the neighbours, then flat — a straight line taken from the token,
+not a number per icon. The tab walk with a window open is bar links, the two acting icons, the four
+desktop items, the window's three lights, the six dock buttons, in that order, and every stop draws
+both layers of the ring.
+
+**Deliberate breaks, each reverted.** A desktop target naming `nowhere` failed `tsc` with TS2322
+printing the whole `WindowId` union, and the development check threw
+`Invalid content in desktop items: 3.target: Invalid input` with an empty `#root`, so the desktop
+never painted. `--dock-magnify-scale: 2` grew the pointed-at icon to 112px, and the greeting copy
+changed on screen with no code change. Weakening the light `--color-glass-panel` to 20% failed
+`npm test` naming both dock pairs over the darkest light wallpaper tone (`ring on the dock panel is
+1.66:1`). Removing `<WindowLayer />` left the bar, the greeting, the four icons and all six dock
+buttons rendering, which is AC-11's boundary.
+
+**Divergences the reference images show, all of them specced.** `designs/lightHomePage.png` and
+`designs/darkHomePage.png` put the resume icon top left and the three project folders down the right
+edge, where this feature pins all four spots to the left gutter (AC-3) so they survive 360px; the
+reference bar carries a fourth link ("Testimonials") and a date beside the clock, where `NAV_LINKS`
+has three and `Navbar` prints the time alone; and the reference dark screenshots show a light menu
+bar because that build was light only, where AC-5 and spec 0002 give dark mode a dark bar with light
+text. Everything else — the centred two line greeting on its scrim, the dock at the bottom centre
+with its six icons, the bar at the top — sits where the reference puts it.
+
+**Carried forward, not a gap in this feature.** The placeholder bodies are checked as seven
+rendered windows (the six dock apps and the resume) plus the source map of nine; the `textFile` and
+`imageFile` bodies cannot be reached from the shell, since the Projects window that opens them is
+row 8's.

@@ -16,7 +16,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 3 | Coding standards & tooling | Foundation | done |
 | 4 | Content data model | Foundation | done |
 | 5 | Design system & window chrome | Foundation | done |
-| 6 | Desktop shell | Slice 1 | in-progress |
+| 6 | Desktop shell | Slice 1 | done |
 | 7 | Window manager | Slice 1 | in-progress |
 | 8 | Projects window (Finder style) | Slice 1 | planned |
 | 9 | Skills window (Terminal style) | Slice 2 | planned |
@@ -41,12 +41,12 @@ Tailwind 4 is installed and imported in the stylesheet, but it is missing from t
 - [x] Build it: `/develop tailwind wiring & base styles`
 code in `vite.config.ts`, `src/index.css`, `src/components/Navbar.tsx`, `src/App.tsx`
 
-### 3. Coding standards & tooling · in-progress
+### 3. Coding standards & tooling · done
 The conventions and the tooling choices are recorded in `AGENTS.md` from the earlier audit. What is left is the enforcement: the formatter, the pre commit hook, the test runners, and the CI job.
 **Done when:** lint and format agree with each other, one pre commit hook runs lint, format, and typecheck on changed files, component and end to end tests run, and CI runs those checks on every push and pull request.
 - [x] Capture conventions and tooling choices: `/audit`
 - [x] Build it: `/develop coding standards & tooling`
-- [ ] Check it runs clean: `/test`
+- [x] Check it runs clean: `/test`
 code in `package.json`, `eslint.config.js`, `.prettierrc.json`, `.husky/pre-commit`, `.github/workflows/ci.yml`, `playwright.config.ts`, `e2e/`
 
 ### 4. Content data model · done
@@ -63,7 +63,7 @@ The seed data for the menu bar, the dock, projects, articles, the stack, socials
 - [x] Test it: `/test content data model`
 spec [0001](../specs/0001-content-data-model/index.md) · code in `src/content`, `src/lib/result.ts`
 
-### 5. Design system & window chrome · in-progress
+### 5. Design system & window chrome · done
 Wallpaper, translucency, type scale, spacing, and the window frame (title bar, traffic lights, focus and hover states), so every window looks like it belongs to one desktop and meets the contrast bar.
 **Done when:** the design notes cover color, type, spacing, and window chrome, and the base pieces handle focus and keyboard use.
 - [x] Design it (spec): `/architect design system & window chrome`
@@ -80,7 +80,7 @@ spec [0002](../specs/0002-design-system-window-chrome/index.md) · code in `src/
 ## Slice 1: The desktop that works
 The walking skeleton: the shell, the window behavior, and one real window with real content. Everything after this thickens the same thread.
 
-### 6. Desktop shell · in-progress
+### 6. Desktop shell · done
 The menu bar, the dock, and the wallpaper: the first thing a visitor sees, and the frame every window sits in.
 **Done when:** the menu bar shows the live time and the nav links, a dock icon opens its window, keyboard users can reach both, and the wallpaper fills the viewport at any size.
 - [x] Design it (spec): `/architect desktop shell`
@@ -90,8 +90,8 @@ The menu bar, the dock, and the wallpaper: the first thing a visitor sees, and t
   - [x] The desktop surface, the menu bar actions and the session appearance press (AC-1, AC-2, AC-3, AC-4, AC-5)
   - [x] The dock: the region, the six buttons, the tooltips, the lift, the indicators, the keyboard path and the GSAP magnify (AC-6, AC-7, AC-9)
   - [x] The nine placeholder bodies, the compact behaviour and the dock ring pair (AC-8, AC-9, AC-10)
-- [ ] Verify it: `/check verify desktop shell`
-- [ ] Test it: `/test desktop shell`
+- [x] Verify it: `/check verify desktop shell`
+- [x] Test it: `/test desktop shell`
 spec [0003](../specs/0003-desktop-shell/index.md) · code in `src/store`, `src/components`, `src/windows`, `src/content/desktop.ts`, `src/lib/measure.ts`, `src/index.css`
 
 ### 7. Window manager · in-progress
