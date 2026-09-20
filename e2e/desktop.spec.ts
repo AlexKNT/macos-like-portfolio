@@ -50,12 +50,14 @@ test('opens a window from the dock, and focuses it instead of opening a second',
   await expect(dock).toBeVisible()
   await portfolio.click()
 
-  const projects = page.getByRole('region', { name: 'Projects' })
+  // A bare Projects open lands on the work location (spec 0005, AC-2), and a second press on
+  // the same button focuses that window rather than adding one.
+  const projects = page.getByRole('region', { name: 'Work' })
 
   await expect(projects).toBeVisible()
 
   await portfolio.click()
-  await expect(page.getByRole('region', { name: 'Projects' })).toHaveCount(1)
+  await expect(page.getByRole('region', { name: 'Work' })).toHaveCount(1)
 })
 
 /** The desktop items are the way in at a narrow width, where the dock is not shown. */
@@ -66,7 +68,9 @@ test('opens the Projects window from a desktop item', async ({ page }) => {
 
   await expect(items).toBeVisible()
   await items.getByRole('button', { name: 'Nike Ecommerce Website Application' }).click()
-  await expect(page.getByRole('region', { name: 'Projects' })).toBeVisible()
+  await expect(
+    page.getByRole('region', { name: 'Nike Ecommerce Website Application' }),
+  ).toBeVisible()
 })
 
 /** The dock magnify is the one movement on the page, so it is measured as painted size. */
@@ -130,7 +134,7 @@ test.describe('the dock under reduced motion', () => {
     expect(await widthOf()).toBe(resting)
 
     await portfolio.click()
-    await expect(page.getByRole('region', { name: 'Projects' })).toBeVisible()
+    await expect(page.getByRole('region', { name: 'Work' })).toBeVisible()
   })
 })
 
@@ -184,7 +188,7 @@ test('reaches the dock by keyboard and opens its window with Enter', async ({ pa
   expect(Number.parseFloat(outline.width)).toBeGreaterThanOrEqual(2)
 
   await page.keyboard.press('Enter')
-  await expect(page.getByRole('region', { name: 'Projects' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Work' })).toBeVisible()
 })
 
 /** Below the compact breakpoint the dock is not shown and nothing scrolls sideways. */
@@ -222,7 +226,7 @@ test('keeps the menu bar and the dock above a window, however that window is sta
   await expect(dock).toBeVisible()
   await portfolio.click()
 
-  const projects = page.getByRole('region', { name: 'Projects' })
+  const projects = page.getByRole('region', { name: 'Work' })
 
   await expect(projects).toBeVisible()
 

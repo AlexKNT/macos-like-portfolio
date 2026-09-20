@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { placeName } from '#content/reads'
 import { WINDOWS } from '#content/windows'
 import {
   EMPTY_WINDOW_MANAGER,
@@ -12,7 +13,7 @@ import {
   resolveOpenTarget,
   windowGeometry,
 } from '#store/windowManager'
-import type { FileId, OpenTarget, WindowId } from '#content/types'
+import type { FileId, OpenTarget, Place, WindowId } from '#content/types'
 import type {
   WindowKey,
   WindowManagerAction,
@@ -74,7 +75,9 @@ describe('the window manager', () => {
     expect(after.instances[0]).toMatchObject({
       key: 'projects',
       windowId: 'projects',
-      title: 'Projects',
+      // A bare Projects open lands on the work location (spec 0005, AC-2), so the title bar
+      // reads the place the window shows rather than the name of the app that shows it.
+      title: 'Work',
       size: WINDOW_LAYOUT.projects.defaultSize,
       status: 'normal',
       filled: false,
@@ -273,8 +276,8 @@ describe('the target resolver', () => {
     })
   })
 
-  it('sends a location and a project to the Projects window', () => {
-    const targets: readonly OpenTarget[] = [
+  it('sends a location and a project to the Projects window, titled by the place', () => {
+    const targets: readonly Place[] = [
       { kind: 'location', locationId: 'about' },
       { kind: 'project', projectId: 'ai-resume-analyzer' },
     ]
@@ -282,8 +285,23 @@ describe('the target resolver', () => {
     for (const target of targets) {
       const resolved = resolveOpenTarget(target)
 
-      expect(resolved.ok && resolved.value).toMatchObject({ windowId: 'projects', key: 'projects' })
+      expect(resolved.ok && resolved.value).toMatchObject({
+        windowId: 'projects',
+        key: 'projects',
+        title: placeName(target),
+      })
     }
+  })
+
+  it('answers a bare Projects open with the work location, so its title is never the app name', () => {
+    const resolved = resolveOpenTarget({ kind: 'window', windowId: 'projects' })
+
+    expect(resolved.ok && resolved.value).toMatchObject({
+      windowId: 'projects',
+      key: 'projects',
+      title: 'Work',
+      target: { kind: 'location', locationId: 'work' },
+    })
   })
 
   it('sends a text file to the text window, keyed by the item, and titles it after the file', () => {

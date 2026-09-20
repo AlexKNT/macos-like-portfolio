@@ -78,7 +78,8 @@ function openFirstItem(desktop: HTMLElement): HTMLElement {
 
   fireEvent.click(within(desktop).getByRole('button', { name: item.label }))
 
-  return within(desktop).getByRole('region', { name: 'Projects' })
+  // The frame is named for the place the item opens, and that item is a project folder.
+  return within(desktop).getByRole('region', { name: item.label })
 }
 
 beforeEach(() => {

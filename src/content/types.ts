@@ -63,12 +63,15 @@ export type ProjectId = z.infer<typeof projectIdSchema>
 export const fileIdSchema = z.enum([
   'nike-about',
   'nike-live',
+  'nike-source',
   'nike-screenshot',
   'ai-resume-about',
   'ai-resume-live',
+  'ai-resume-source',
   'ai-resume-screenshot',
   'food-delivery-about',
   'food-delivery-live',
+  'food-delivery-source',
   'food-delivery-screenshot',
   'about-photo',
   'about-photo-casual',
@@ -247,16 +250,31 @@ export type DockApp = z.infer<typeof dockAppSchema>
 /* ----------------------------------------------------------------- open target */
 
 /**
+ * Where a Finder style window is showing: one location, or one project folder. The kind
+ * chooses the id, so a place that names a location cannot hold a project and the other way
+ * round, which is what makes an impossible place unwritable. A place is never stored: it is
+ * read back out of the target a window already carries. Spec 0005, AC-2.
+ */
+export const placeSchema = z.union([
+  z.strictObject({ kind: z.literal('location'), locationId: locationIdSchema }).readonly(),
+  z.strictObject({ kind: z.literal('project'), projectId: projectIdSchema }).readonly(),
+])
+/** A place a Finder style window shows. */
+export type Place = z.infer<typeof placeSchema>
+
+/**
  * Where opening an item goes: a Finder location, one project, one file, a window named
  * outright, or a link out of the page. Naming the item rather than a window keeps window
  * state in the window manager, so this model stays free of any view state. Spec 0001, AC-6.
  *
  * The `window` kind is what the resume icon on the desktop needs, since the resume is a
  * window rather than a file in the tree. Spec 0003, AC-3.
+ *
+ * A location and a project target are the two members of `placeSchema`, so a place is a
+ * target already and the two can never drift apart. Spec 0005, AC-2.
  */
 export const openTargetSchema = z.union([
-  z.strictObject({ kind: z.literal('location'), locationId: locationIdSchema }).readonly(),
-  z.strictObject({ kind: z.literal('project'), projectId: projectIdSchema }).readonly(),
+  placeSchema,
   z.strictObject({ kind: z.literal('file'), fileId: fileIdSchema }).readonly(),
   z.strictObject({ kind: z.literal('window'), windowId: windowIdSchema }).readonly(),
   z.strictObject({ kind: z.literal('external'), href: outboundLinkSchema }).readonly(),
@@ -286,6 +304,13 @@ export type DesktopItem = z.infer<typeof desktopItemSchema>
 
 /* ------------------------------------------------------------------------ tree */
 
+/*
+ * No tree entry carries a spot any more: the Finder lays its items out in a flowing
+ * grid, so a position would be a second, unused truth about where a file sits. The
+ * desktop keeps its own spots in `DESKTOP_ITEMS`, which is a different surface.
+ * Spec 0005, AC-15.
+ */
+
 /** A text file, with the paragraphs it shows and an optional subtitle above them. */
 export const textFileSchema = z
   .strictObject({
@@ -293,7 +318,6 @@ export const textFileSchema = z
     kind: z.literal('text'),
     name: z.string().min(1),
     icon: z.string().min(1),
-    position: z.string().min(1).optional(),
     subtitle: z.string().min(1).optional(),
     description: z.array(z.string().min(1)).readonly(),
   })
@@ -308,7 +332,6 @@ export const imageFileSchema = z
     kind: z.literal('image'),
     name: z.string().min(1),
     icon: z.string().min(1),
-    position: z.string().min(1).optional(),
     imageUrl: z.string().min(1),
     alt: z.string().min(1),
   })
@@ -323,7 +346,6 @@ export const linkFileSchema = z
     kind: z.literal('link'),
     name: z.string().min(1),
     icon: z.string().min(1),
-    position: z.string().min(1).optional(),
     href: outboundLinkSchema,
   })
   .readonly()
@@ -337,7 +359,6 @@ export const pdfFileSchema = z
     kind: z.literal('pdf'),
     name: z.string().min(1),
     icon: z.string().min(1),
-    position: z.string().min(1).optional(),
     href: localFilePathSchema,
   })
   .readonly()
@@ -365,7 +386,6 @@ export const projectFolderSchema = z
     kind: z.literal('folder'),
     name: z.string().min(1),
     icon: z.string().min(1),
-    position: z.string().min(1),
     children: z.array(fileEntrySchema).readonly(),
   })
   .readonly()

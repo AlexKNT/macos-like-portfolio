@@ -1,9 +1,9 @@
-import { findFile } from '#content/reads'
+import { findFile, placeName, targetForPlace } from '#content/reads'
 import { DOCK_APPS } from '#content/shell'
 import { WINDOWS } from '#content/windows'
 import { err, ok } from '#lib/result'
 import type { Result } from '#lib/result'
-import type { LookupFailure, OpenTarget, WindowId } from '#content/types'
+import type { LookupFailure, OpenTarget, Place, WindowId } from '#content/types'
 
 /*
  * The window manager's model: what is open, what it shows, where it sits and which one has
@@ -318,19 +318,34 @@ function windowFor(windowId: WindowId, title: string, target: OpenTarget): Resol
 }
 
 /**
+ * The place a bare Projects open lands on. It is the same place `DEFAULT_PLACE` seeds the
+ * projects window's history with, and the two are pinned together by that window's own test.
+ * Spec 0005, AC-2.
+ */
+const PROJECTS_HOME: Place = { kind: 'location', locationId: 'work' }
+
+/**
  * Maps an `OpenTarget` to the window it opens: the one place a target becomes a window.
  * A dock button, a menu bar link, the About icon and a desktop icon all arrive here, so an
  * entry point whose window is already open resolves to the same key and is focused rather
  * than opened twice. A target naming something absent comes back as a failure rather than
  * as an empty window. Pure. Spec 0004, AC-1.
+ *
+ * A `location` or a `project` target is titled with the entry's own `name`, so the window a
+ * place shows is named by the place rather than by the app that shows it. A bare `window`
+ * target for Projects is answered with the work location instead: the instance's target then
+ * stays a place for as long as the window is open, and re-opening from the dock or the menu
+ * bar lands on Work rather than resetting the title. Spec 0005, AC-1, AC-2.
  */
 export function resolveOpenTarget(target: OpenTarget): Result<ResolvedWindow, TargetFailure> {
   switch (target.kind) {
     case 'window':
-      return ok(windowFor(target.windowId, WINDOWS[target.windowId].title, target))
+      return target.windowId === 'projects'
+        ? ok(windowFor('projects', placeName(PROJECTS_HOME), targetForPlace(PROJECTS_HOME)))
+        : ok(windowFor(target.windowId, WINDOWS[target.windowId].title, target))
     case 'location':
     case 'project':
-      return ok(windowFor('projects', WINDOWS.projects.title, target))
+      return ok(windowFor('projects', placeName(target), target))
     case 'external':
       return err({ kind: 'leavesApp', href: target.href })
     case 'file': {

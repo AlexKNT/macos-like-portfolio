@@ -5,8 +5,8 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { Dock } from '#components/Dock'
 import { WindowLayer } from '#components/WindowLayer'
 import { DOCK_APPS } from '#content/shell'
-import { WINDOWS } from '#content/windows'
 import { WindowManagerProvider } from '#store/WindowManagerProvider'
+import { resolveOpenTarget } from '#store/windowManager'
 import type { DockApp } from '#content/types'
 
 /**
@@ -49,6 +49,16 @@ function panelOf(dock: HTMLElement): HTMLElement {
   return within(dock).getByRole('list')
 }
 
+/**
+ * The title the window an app opens ends up carrying. It is read from the resolver rather than
+ * from the window list, because a bare Projects open lands on a place and is titled after it.
+ */
+function titleFor(app: DockApp): string {
+  const resolved = resolveOpenTarget({ kind: 'window', windowId: app.windowId })
+
+  return resolved.ok ? resolved.value.title : ''
+}
+
 /** The icon images of the panel, in the order the dock renders them. */
 function iconsOf(dock: HTMLElement): readonly HTMLImageElement[] {
   return [...dock.querySelectorAll('img')]
@@ -86,9 +96,9 @@ describe('the dock', () => {
 
     await user.click(dockButtonFor(dock, app))
 
-    // The dock says Portfolio while the window it opened titles itself Projects: the two names
-    // come from their own content, and the dock's is the one a visitor reads on the panel.
-    expect(screen.getByRole('region', { name: WINDOWS[app.windowId].title })).toBeInTheDocument()
+    // The dock says Portfolio while the window it opened titles itself after the place it shows:
+    // the two names come from their own content, and the dock's is the one on the panel.
+    expect(screen.getByRole('region', { name: titleFor(app) })).toBeInTheDocument()
     expect(dockButtonFor(dock, app)).toHaveAccessibleName(app.name)
   })
 
@@ -96,7 +106,7 @@ describe('the dock', () => {
   it('brings a window back from the dock instead of focusing it or opening a second', async () => {
     const user = userEvent.setup()
     const app = appAt(3)
-    const title = WINDOWS[app.windowId].title
+    const title = titleFor(app)
     const dock = setup()
 
     await user.click(dockButtonFor(dock, app))
@@ -135,7 +145,7 @@ describe('the dock', () => {
     expect(dockButtonFor(dock, app)).toHaveFocus()
 
     await user.keyboard('{Enter}')
-    expect(screen.getByRole('region', { name: WINDOWS[app.windowId].title })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: titleFor(app) })).toBeInTheDocument()
   })
 
   /*
@@ -188,6 +198,6 @@ describe('the dock', () => {
 
     // The actions are untouched by the missing movement: the panel still opens its window.
     await user.click(dockButtonFor(dock, app))
-    expect(screen.getByRole('region', { name: WINDOWS[app.windowId].title })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: titleFor(app) })).toBeInTheDocument()
   })
 })

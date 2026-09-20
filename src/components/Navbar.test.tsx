@@ -5,9 +5,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Navbar } from '#components/Navbar'
 import { WindowLayer } from '#components/WindowLayer'
 import { NAV_ICONS, NAV_LINKS } from '#content/shell'
-import { WINDOWS } from '#content/windows'
 import { APPEARANCE_STORAGE_KEY } from '#lib/appearance'
 import { WindowManagerProvider } from '#store/WindowManagerProvider'
+import { resolveOpenTarget } from '#store/windowManager'
 
 /** A fixed moment, so the clock assertion never depends on when the suite runs. */
 const NOW = new Date('2026-09-20T09:41:00.000Z')
@@ -95,7 +95,8 @@ describe('Navbar', () => {
 
     for (const { label, windowId } of NAV_LINKS) {
       const link = within(bar).getByRole('button', { name: label })
-      const title = WINDOWS[windowId].title
+      const resolved = resolveOpenTarget({ kind: 'window', windowId })
+      const title = resolved.ok ? resolved.value.title : ''
 
       await user.click(link)
       expect(screen.getAllByRole('region', { name: title }), label).toHaveLength(1)

@@ -7,6 +7,13 @@ import { ALBUMS } from '#content/gallery'
 import { LOCATIONS } from '#content/locations'
 import { PROFILE, SOCIALS } from '#content/profile'
 import { findById, openTargetFor } from '#content/reads'
+import {
+  PROJECT_FOLDERS,
+  findPlace,
+  placeName,
+  placeOfTarget,
+  targetForPlace,
+} from '#content/reads'
 import { DOCK_APPS, NAV_ICONS, NAV_LINKS } from '#content/shell'
 import { TECH_GROUPS } from '#content/techStack'
 import {
@@ -23,12 +30,14 @@ import {
   navIconIdSchema,
   navLinkIdSchema,
   photoIdSchema,
+  projectFolderSchema,
+  projectIdSchema,
   socialIdSchema,
   techGroupIdSchema,
   textFileSchema,
   windowIdSchema,
 } from '#content/types'
-import type { FileEntry } from '#content/types'
+import type { FileEntry, Place } from '#content/types'
 import { assertCollectionIsValid, assertContentIsValid } from '#content/validate'
 import { WINDOWS } from '#content/windows'
 
@@ -81,6 +90,13 @@ describe('content model', () => {
   it('has an entry for every window and every location', () => {
     expect(Object.keys(WINDOWS).sort()).toEqual([...windowIdSchema.options].sort())
     expect(Object.keys(LOCATIONS).sort()).toEqual([...locationIdSchema.options].sort())
+  })
+
+  // covers: AC-1, AC-15
+  it('declares the locations in the order the id union declares them, which is the sidebar order', () => {
+    // The sidebar reads this order to lay its rows out, so the two have to agree in sequence and
+    // not merely contain the same names: a drifted order would reorder the sidebar silently.
+    expect(Object.keys(LOCATIONS)).toEqual([...locationIdSchema.options])
   })
 
   it('names a real window from every dock app and menu bar link', () => {
@@ -222,6 +238,47 @@ describe('content model', () => {
     expect(resume?.kind === 'pdf' ? resume.href : '').toMatch(/^\/files\/\S+$/)
   })
 
+  it('gives every project exactly one text, one image, one live link and one source link', () => {
+    const projects = LOCATIONS.work.children.filter((child) => child.kind === 'folder')
+
+    expect(projects.length).toBeGreaterThan(0)
+
+    for (const project of projects) {
+      const ofKind = (kind: FileEntry['kind']) =>
+        project.children.filter((file) => file.kind === kind)
+      const links = ofKind('link')
+
+      expect(ofKind('text'), project.name).toHaveLength(1)
+      expect(ofKind('image'), project.name).toHaveLength(1)
+      expect(
+        links.filter((link) => link.id.endsWith('-source')),
+        project.name,
+      ).toHaveLength(1)
+      expect(
+        links.filter((link) => !link.id.endsWith('-source')),
+        project.name,
+      ).toHaveLength(1)
+    }
+  })
+
+  it('carries no spot on a tree entry, since the Finder lays its own items out', () => {
+    const folder = LOCATIONS.work.children.find((child) => child.kind === 'folder')
+    const textFileWithSpot = {
+      id: 'nike-about',
+      kind: 'text',
+      name: 'Nike Project.txt',
+      icon: '/images/txt.png',
+      position: 'top-5 left-10',
+      description: ['One paragraph.'],
+    }
+
+    expect(folder).toBeDefined()
+    expect(textFileSchema.safeParse(textFileWithSpot).success).toBe(false)
+    expect(projectFolderSchema.safeParse({ ...folder, position: 'top-5 left-10' }).success).toBe(
+      false,
+    )
+  })
+
   it('gives every desktop item a spot in the left gutter, with nothing anchored right', () => {
     for (const item of DESKTOP_ITEMS) {
       expect(item.position, item.id).toMatch(/\btop-\S+/)
@@ -280,5 +337,59 @@ describe('content model', () => {
   it('carries both lines of the desktop greeting', () => {
     expect(PROFILE.greeting.lead.trim().length).toBeGreaterThan(0)
     expect(PROFILE.greeting.display.trim().length).toBeGreaterThan(0)
+  })
+})
+
+/** Every place the content can show, taken from the two id unions. */
+const PLACES: readonly Place[] = [
+  ...locationIdSchema.options.map((locationId): Place => ({ kind: 'location', locationId })),
+  ...projectIdSchema.options.map((projectId): Place => ({ kind: 'project', projectId })),
+]
+
+describe('the place model', () => {
+  // covers: AC-2
+  it('keys every project folder by its own id, so a project place always resolves', () => {
+    expect(Object.keys(PROJECT_FOLDERS).sort()).toEqual([...projectIdSchema.options].sort())
+
+    for (const projectId of projectIdSchema.options) {
+      expect(PROJECT_FOLDERS[projectId].id, projectId).toBe(projectId)
+    }
+  })
+
+  // covers: AC-2
+  it('reads a place back out of the target that names one, and nothing out of the rest', () => {
+    expect(placeOfTarget({ kind: 'location', locationId: 'about' })).toEqual({
+      kind: 'location',
+      locationId: 'about',
+    })
+    expect(placeOfTarget({ kind: 'project', projectId: 'nike-ecommerce' })).toEqual({
+      kind: 'project',
+      projectId: 'nike-ecommerce',
+    })
+    expect(placeOfTarget({ kind: 'window', windowId: 'projects' })).toBeNull()
+    expect(placeOfTarget({ kind: 'file', fileId: 'nike-about' })).toBeNull()
+    expect(placeOfTarget({ kind: 'external', href: 'https://example.com' })).toBeNull()
+  })
+
+  // covers: AC-2
+  it('shows a location its own children, and a project its files with its pitch', () => {
+    const work = findPlace({ kind: 'location', locationId: 'work' })
+    const project = findPlace({ kind: 'project', projectId: 'nike-ecommerce' })
+
+    expect(work.name).toBe(LOCATIONS.work.name)
+    expect(work.items).toBe(LOCATIONS.work.children)
+    expect(work.pitch).toBeNull()
+
+    expect(project.name).toBe(PROJECT_FOLDERS['nike-ecommerce'].name)
+    expect(project.items).toBe(PROJECT_FOLDERS['nike-ecommerce'].children)
+    expect(project.pitch?.kind).toBe('text')
+  })
+
+  // covers: AC-2
+  it('names every place, and hands back the target that shows it', () => {
+    for (const place of PLACES) {
+      expect(placeName(place)).toBe(findPlace(place).name)
+      expect(targetForPlace(place)).toEqual(place)
+    }
   })
 })

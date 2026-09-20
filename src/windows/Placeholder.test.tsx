@@ -21,10 +21,10 @@ describe('the window body registry', () => {
     expect(Object.keys(WINDOW_BODIES).sort()).toEqual([...WINDOW_IDS].sort())
   })
 
-  // covers: AC-8
+  // covers: AC-13
   it('hands every entry something the window layer can render', () => {
     for (const windowId of WINDOW_IDS) {
-      expect(typeof WINDOW_BODIES[windowId], windowId).toBe('function')
+      expect(typeof WINDOW_BODIES[windowId].Body, windowId).toBe('function')
     }
   })
 })

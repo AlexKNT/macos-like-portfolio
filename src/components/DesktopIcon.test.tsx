@@ -85,7 +85,7 @@ describe('a desktop item', () => {
 
     await user.click(within(items).getByRole('button', { name: folder.label }))
 
-    expect(screen.getByRole('region', { name: 'Projects' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: folder.label })).toBeInTheDocument()
   })
 
   // covers: AC-3, AC-8
@@ -113,6 +113,6 @@ describe('a desktop item', () => {
 
     await user.keyboard('{Enter}')
 
-    expect(screen.getByRole('region', { name: 'Projects' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: item.label })).toBeInTheDocument()
   })
 })

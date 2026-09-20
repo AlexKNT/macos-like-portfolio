@@ -1,7 +1,15 @@
 import { LOCATIONS } from '#content/locations'
 import { err, ok } from '#lib/result'
 import type { Result } from '#lib/result'
-import type { FileEntry, LookupFailure, OpenTarget } from '#content/types'
+import type {
+  FileEntry,
+  LookupFailure,
+  OpenTarget,
+  Place,
+  ProjectFolder,
+  ProjectId,
+  TextFile,
+} from '#content/types'
 
 /**
  * Finds one entry by id in a collection of entries.
@@ -60,4 +68,86 @@ export const TREE_FILES: readonly FileEntry[] = Object.values(LOCATIONS).flatMap
  */
 export function findFile(fileId: string): Result<FileEntry, LookupFailure> {
   return findById(TREE_FILES, fileId, 'files')
+}
+
+/* ------------------------------------------------------------------- the places */
+
+/** Anything a place can hold: the locations hold project folders and files, a project holds files. */
+export type TreeEntry = ProjectFolder | FileEntry
+
+/** The project folders the work location holds, in the order the tree lists them. */
+const PROJECT_FOLDER_LIST: readonly ProjectFolder[] = LOCATIONS.work.children.filter(
+  (child): child is ProjectFolder => child.kind === 'folder',
+)
+
+/**
+ * Every project folder, keyed by its own id, so a project place always resolves and no
+ * caller has to walk the tree for one. `Object.fromEntries` cannot carry the key union, so
+ * the assertion here is doing the work the `Record` annotation does elsewhere; what makes
+ * it safe is that a folder keys its own id and the content suite checks that against the
+ * union. Spec 0005, AC-2.
+ */
+export const PROJECT_FOLDERS: Record<ProjectId, ProjectFolder> = Object.fromEntries(
+  PROJECT_FOLDER_LIST.map((folder): [ProjectId, ProjectFolder] => [folder.id, folder]),
+) as Record<ProjectId, ProjectFolder>
+
+/**
+ * What a place shows: its own name, the items inside it in the order the tree lists them
+ * (which is the reading order the window walks), and the pitch text file a project carries.
+ * A location has no pitch, so that field is `null` there.
+ */
+export type PlaceView = {
+  readonly name: string
+  readonly items: readonly TreeEntry[]
+  readonly pitch: TextFile | null
+}
+
+/**
+ * Reads what a place shows. Both registries are annotated records, so an id the union allows
+ * always resolves and there is no failure branch a caller has to handle. Spec 0005, AC-2.
+ */
+export function findPlace(place: Place): PlaceView {
+  if (place.kind === 'project') {
+    const project = PROJECT_FOLDERS[place.projectId]
+
+    return {
+      name: project.name,
+      items: project.children,
+      pitch: project.children.find((file): file is TextFile => file.kind === 'text') ?? null,
+    }
+  }
+
+  const location = LOCATIONS[place.locationId]
+
+  return { name: location.name, items: location.children, pitch: null }
+}
+
+/** The name of a place, which is both its window title and the name its region reads. AC-2. */
+export function placeName(place: Place): string {
+  return findPlace(place).name
+}
+
+/**
+ * The place a target shows, or `null` for a target that names no place. A location and a
+ * project target are places already, since `openTargetSchema` is built from `placeSchema`,
+ * so this only narrows. Spec 0005, AC-2.
+ */
+export function placeOfTarget(target: OpenTarget): Place | null {
+  switch (target.kind) {
+    case 'location':
+    case 'project':
+      return target
+    case 'file':
+    case 'window':
+    case 'external':
+      return null
+  }
+}
+
+/**
+ * The target that shows a place, so a caller can ask for a place without naming its window,
+ * and so going back to one writes the same target shape the entry points write. Spec 0005, AC-5.
+ */
+export function targetForPlace(place: Place): OpenTarget {
+  return place
 }

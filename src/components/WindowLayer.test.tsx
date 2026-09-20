@@ -54,7 +54,8 @@ describe('the window layer', () => {
     const frames = screen.getAllByRole('region')
 
     expect(frames).toHaveLength(2)
-    expect(frames[0]).toHaveAccessibleName('Projects')
+    // A bare Projects open lands on the work location, so that frame is named for the place.
+    expect(frames[0]).toHaveAccessibleName('Work')
     expect(frames[1]).toHaveAccessibleName('Contact')
   })
 })

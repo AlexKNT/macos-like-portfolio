@@ -6,14 +6,17 @@ import type { Locator, Page } from '@playwright/test'
  * work area, and the same clamp after the container changes size. Spec 0004, AC-4, AC-5, AC-9.
  */
 
-/** Opens the Projects window from the dock, which is the way in a visitor uses. */
+/**
+ * Opens the Projects window from the dock, which is the way in a visitor uses. A bare Projects
+ * open lands on the work location (spec 0005, AC-2), so that is the title its frame carries.
+ */
 async function openProjects(page: Page): Promise<Locator> {
   const dock = page.getByRole('region', { name: 'Dock' })
 
   await expect(dock).toBeVisible()
   await dock.getByRole('button', { name: 'Portfolio' }).click()
 
-  const projects = page.getByRole('region', { name: 'Projects' })
+  const projects = page.getByRole('region', { name: 'Work' })
 
   await expect(projects).toBeVisible()
 
@@ -153,7 +156,7 @@ test('keeps a window still when the press lands on its body, not on its title ba
 
   // And the lights in the title bar are controls, not a second drag handle. The pointer is
   // carried away from the light before it is released, so the press never becomes a click.
-  const light = await centreOf(projects.getByRole('button', { name: 'Minimise Projects' }))
+  const light = await centreOf(projects.getByRole('button', { name: 'Minimise Work' }))
 
   await drag(page, light, { x: light.x + 160, y: light.y + 120 })
 
@@ -248,7 +251,7 @@ test('hands the keyboard to the dock button when the last window leaves the desk
 
   const projects = await openProjects(page)
 
-  await projects.getByRole('button', { name: 'Minimise Projects' }).click()
+  await projects.getByRole('button', { name: 'Minimise Work' }).click()
 
   const portfolio = page
     .getByRole('region', { name: 'Dock' })
@@ -271,13 +274,13 @@ test('fills a window from the green light, and puts it back at its layout size',
   const area = await boxOf(page.getByRole('region', { name: 'Desktop' }))
   const start = await boxOf(projects)
 
-  await projects.getByRole('button', { name: 'Zoom Projects' }).click()
+  await projects.getByRole('button', { name: 'Zoom Work' }).click()
 
   const filled = await boxOf(projects)
 
   expect(filled).toEqual(area)
 
-  await projects.getByRole('button', { name: 'Zoom Projects' }).click()
+  await projects.getByRole('button', { name: 'Zoom Work' }).click()
 
   const restored = await boxOf(projects)
 
@@ -296,7 +299,7 @@ test('closes a focused window on Escape', async ({ page }) => {
   await projects.click({ position: { x: 40, y: 80 } })
   await page.keyboard.press('Escape')
 
-  await expect(page.getByRole('region', { name: 'Projects' })).toHaveCount(0)
+  await expect(page.getByRole('region', { name: 'Work' })).toHaveCount(0)
 })
 
 test('reaches every end state with motion reduced', async ({ page }) => {
@@ -305,7 +308,7 @@ test('reaches every end state with motion reduced', async ({ page }) => {
 
   const projects = await openProjects(page)
 
-  await projects.getByRole('button', { name: 'Minimise Projects' }).click()
+  await projects.getByRole('button', { name: 'Minimise Work' }).click()
 
   await expect(projects).toBeHidden()
 
@@ -316,9 +319,9 @@ test('reaches every end state with motion reduced', async ({ page }) => {
 
   await expect(projects).toBeVisible()
 
-  await projects.getByRole('button', { name: 'Close Projects' }).click()
+  await projects.getByRole('button', { name: 'Close Work' }).click()
 
-  await expect(page.getByRole('region', { name: 'Projects' })).toHaveCount(0)
+  await expect(page.getByRole('region', { name: 'Work' })).toHaveCount(0)
 })
 
 test('fills the focused window on a compact screen, and offers no drag', async ({ page }) => {
@@ -331,7 +334,8 @@ test('fills the focused window on a compact screen, and offers no drag', async (
   await expect(item).toBeVisible()
   await item.click()
 
-  const projects = page.getByRole('region', { name: 'Projects' })
+  // The first desktop item is a project folder, so the frame is named after that project.
+  const projects = page.getByRole('region', { name: 'Nike Ecommerce Website Application' })
 
   await expect(projects).toBeVisible()
   expect(await boxOf(projects)).toEqual(await boxOf(desktop))

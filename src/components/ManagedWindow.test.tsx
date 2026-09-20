@@ -63,7 +63,9 @@ function setup(windowId: WindowId = 'projects', fileId?: FileId, also?: WindowId
     </WindowManagerProvider>,
   )
 
-  const frame = screen.getByRole('region', { name: 'Projects' })
+  // A bare Projects open lands on the work location (spec 0005, AC-2), so the frame is named
+  // after the place it shows and its lights take their names from the same title.
+  const frame = screen.getByRole('region', { name: 'Work' })
 
   return {
     frame,
@@ -140,7 +142,7 @@ describe('a window the manager holds', () => {
   it('steps along the arrows from a control inside it', () => {
     const { frame } = setup()
 
-    screen.getByRole('button', { name: 'Close Projects' }).focus()
+    screen.getByRole('button', { name: 'Close Work' }).focus()
     fireEvent.keyDown(document.activeElement as HTMLElement, { key: 'ArrowRight' })
 
     expect(frame.style.left).toBe(`${STEP / 2 + 16}px`)
@@ -165,9 +167,9 @@ describe('a window the manager holds', () => {
     const user = userEvent.setup()
 
     setup()
-    await user.click(screen.getByRole('button', { name: 'Close Projects' }))
+    await user.click(screen.getByRole('button', { name: 'Close Work' }))
 
-    expect(screen.queryByRole('region', { name: 'Projects' })).toBeNull()
+    expect(screen.queryByRole('region', { name: 'Work' })).toBeNull()
   })
 
   // covers: AC-5
@@ -175,10 +177,10 @@ describe('a window the manager holds', () => {
     const user = userEvent.setup()
 
     setup()
-    screen.getByRole('button', { name: 'Close Projects' }).focus()
+    screen.getByRole('button', { name: 'Close Work' }).focus()
     await user.keyboard('{Escape}')
 
-    expect(screen.queryByRole('region', { name: 'Projects' })).toBeNull()
+    expect(screen.queryByRole('region', { name: 'Work' })).toBeNull()
   })
 })
 
@@ -188,7 +190,7 @@ describe('the quiet treatment', () => {
     setup('projects', undefined, 'contact')
 
     const focused = screen.getByRole('region', { name: 'Contact' })
-    const quiet = screen.getByRole('region', { name: 'Projects' })
+    const quiet = screen.getByRole('region', { name: 'Work' })
 
     expect(focused.className).toContain('shadow-window')
     expect(focused.className).not.toContain('shadow-window-quiet')
@@ -199,9 +201,9 @@ describe('the quiet treatment', () => {
   it('mutes the title and dims the lights of the window without the keyboard', () => {
     setup('projects', undefined, 'contact')
 
-    const quiet = screen.getByRole('region', { name: 'Projects' })
+    const quiet = screen.getByRole('region', { name: 'Work' })
     const focused = screen.getByRole('region', { name: 'Contact' })
-    const close = within(quiet).getByRole('button', { name: 'Close Projects' })
+    const close = within(quiet).getByRole('button', { name: 'Close Work' })
 
     expect(titleOf(quiet).className).toContain('text-text-muted')
     expect(close.parentElement?.className).toContain('window-quiet')
@@ -212,12 +214,12 @@ describe('the quiet treatment', () => {
   it('swaps the treatment when the keyboard moves to the other window', () => {
     setup('projects', undefined, 'contact')
 
-    fireEvent.pointerDown(screen.getByRole('region', { name: 'Projects' }), {
+    fireEvent.pointerDown(screen.getByRole('region', { name: 'Work' }), {
       pointerId: 1,
       button: 0,
     })
 
-    expect(screen.getByRole('region', { name: 'Projects' }).className).not.toContain(
+    expect(screen.getByRole('region', { name: 'Work' }).className).not.toContain(
       'shadow-window-quiet',
     )
     expect(screen.getByRole('region', { name: 'Contact' }).className).toContain(
@@ -229,13 +231,13 @@ describe('the quiet treatment', () => {
   it('takes the keyboard from a Tab into the window controls', () => {
     setup('projects', undefined, 'contact')
 
-    const light = within(screen.getByRole('region', { name: 'Projects' })).getByRole('button', {
-      name: 'Close Projects',
+    const light = within(screen.getByRole('region', { name: 'Work' })).getByRole('button', {
+      name: 'Close Work',
     })
 
     act(() => light.focus())
 
-    expect(screen.getByRole('region', { name: 'Projects' }).className).not.toContain(
+    expect(screen.getByRole('region', { name: 'Work' }).className).not.toContain(
       'shadow-window-quiet',
     )
   })
@@ -247,14 +249,14 @@ describe('the lights', () => {
     const user = userEvent.setup()
     const { frame } = setup()
 
-    await user.click(screen.getByRole('button', { name: 'Zoom Projects' }))
+    await user.click(screen.getByRole('button', { name: 'Zoom Work' }))
 
     expect(frame.style.width).toBe(`${AREA.width}px`)
     expect(frame.style.height).toBe(`${AREA.height}px`)
     expect(frame.style.left).toBe('0px')
     expect(frame.style.top).toBe('0px')
 
-    await user.click(screen.getByRole('button', { name: 'Zoom Projects' }))
+    await user.click(screen.getByRole('button', { name: 'Zoom Work' }))
 
     expect(frame.style.width).toBe(`${WINDOW_LAYOUT.projects.defaultSize.width}px`)
     expect(frame.style.height).toBe(`${WINDOW_LAYOUT.projects.defaultSize.height}px`)
@@ -265,7 +267,7 @@ describe('the lights', () => {
     const user = userEvent.setup()
     const { frame } = setup()
 
-    await user.click(screen.getByRole('button', { name: 'Minimise Projects' }))
+    await user.click(screen.getByRole('button', { name: 'Minimise Work' }))
 
     expect(frame.classList.contains('hidden')).toBe(true)
   })
@@ -275,8 +277,8 @@ describe('the lights', () => {
     const user = userEvent.setup()
 
     setup()
-    screen.getByRole('button', { name: 'Close Projects' }).focus()
-    await user.click(screen.getByRole('button', { name: 'Minimise Projects' }))
+    screen.getByRole('button', { name: 'Close Work' }).focus()
+    await user.click(screen.getByRole('button', { name: 'Minimise Work' }))
 
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Portfolio' }))
   })
@@ -286,11 +288,11 @@ describe('the lights', () => {
     const user = userEvent.setup()
     const { frame } = setup()
 
-    await user.click(screen.getByRole('button', { name: 'Minimise Projects' }))
+    await user.click(screen.getByRole('button', { name: 'Minimise Work' }))
     await user.click(screen.getByRole('button', { name: 'Portfolio' }))
 
     expect(frame.classList.contains('hidden')).toBe(false)
-    expect(screen.getByRole('region', { name: 'Projects' }).className).not.toContain(
+    expect(screen.getByRole('region', { name: 'Work' }).className).not.toContain(
       'shadow-window-quiet',
     )
   })
@@ -352,15 +354,15 @@ describe('the movements a frame plays', () => {
     const timelines = recordTimelines()
     const { frame } = setup()
 
-    await user.click(screen.getByRole('button', { name: 'Minimise Projects' }))
+    await user.click(screen.getByRole('button', { name: 'Minimise Work' }))
 
     expect(frame.classList.contains('hidden')).toBe(true)
     expect(timelines).toHaveLength(0)
 
     await user.click(screen.getByRole('button', { name: 'Portfolio' }))
-    await user.click(screen.getByRole('button', { name: 'Close Projects' }))
+    await user.click(screen.getByRole('button', { name: 'Close Work' }))
 
-    expect(screen.queryByRole('region', { name: 'Projects' })).toBeNull()
+    expect(screen.queryByRole('region', { name: 'Work' })).toBeNull()
     expect(timelines).toHaveLength(0)
   })
 
@@ -374,7 +376,7 @@ describe('the movements a frame plays', () => {
 
     const { frame } = setup()
 
-    await user.click(screen.getByRole('button', { name: 'Minimise Projects' }))
+    await user.click(screen.getByRole('button', { name: 'Minimise Work' }))
 
     // The window is still on the desk: the manager hears about the minimise when it lands.
     expect(frame.classList.contains('hidden')).toBe(false)
@@ -385,7 +387,7 @@ describe('the movements a frame plays', () => {
 
     act(() => timelines[0]?.finish())
 
-    expect(screen.getByRole('region', { name: 'Projects' }).classList.contains('hidden')).toBe(true)
+    expect(screen.getByRole('region', { name: 'Work' }).classList.contains('hidden')).toBe(true)
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Portfolio' }))
   })
 
@@ -398,10 +400,10 @@ describe('the movements a frame plays', () => {
 
     const { frame } = setup()
 
-    screen.getByRole('button', { name: 'Close Projects' }).focus()
+    screen.getByRole('button', { name: 'Close Work' }).focus()
     await user.keyboard('{Escape}')
 
-    expect(screen.getByRole('region', { name: 'Projects' })).toBe(frame)
+    expect(screen.getByRole('region', { name: 'Work' })).toBe(frame)
     expect(timelines).toHaveLength(1)
     expect(timelines[0]?.element).toBe(frame)
     expect(timelines[0]?.vars?.scale).toBeCloseTo(0.96)
@@ -409,7 +411,7 @@ describe('the movements a frame plays', () => {
 
     act(() => timelines[0]?.finish())
 
-    expect(screen.queryByRole('region', { name: 'Projects' })).toBeNull()
+    expect(screen.queryByRole('region', { name: 'Work' })).toBeNull()
   })
 
   // covers: AC-10
@@ -421,7 +423,7 @@ describe('the movements a frame plays', () => {
 
     const { view } = setup()
 
-    screen.getByRole('button', { name: 'Close Projects' }).focus()
+    screen.getByRole('button', { name: 'Close Work' }).focus()
     await user.keyboard('{Escape}')
     view.unmount()
 
@@ -440,7 +442,7 @@ describe('the movements a frame plays', () => {
 
     const { frame } = setup()
 
-    await user.click(screen.getByRole('button', { name: 'Minimise Projects' }))
+    await user.click(screen.getByRole('button', { name: 'Minimise Work' }))
     await user.click(screen.getByRole('button', { name: 'Portfolio' }))
 
     expect(frame.classList.contains('hidden')).toBe(false)
@@ -457,7 +459,7 @@ describe('the movements a frame plays', () => {
 
     const { frame } = setup()
 
-    await user.click(screen.getByRole('button', { name: 'Minimise Projects' }))
+    await user.click(screen.getByRole('button', { name: 'Minimise Work' }))
 
     // The way back reads the token when the status changes, so the duration is set now.
     document.documentElement.style.setProperty('--duration-slow', '400')

@@ -49,11 +49,13 @@ describe('the desktop shell', () => {
     const dock = screen.getByRole('region', { name: 'Dock' })
     const portfolio = within(dock).getByRole('button', { name: 'Portfolio' })
 
+    // The Portfolio button asks for the Projects window, which opens on the work location, so
+    // the frame is named for the place it shows and a second press focuses that one window.
     await user.click(portfolio)
-    expect(windowsNamed('Projects')).toHaveLength(1)
+    expect(windowsNamed('Work')).toHaveLength(1)
 
     await user.click(portfolio)
-    expect(windowsNamed('Projects')).toHaveLength(1)
+    expect(windowsNamed('Work')).toHaveLength(1)
   })
 
   it('opens from a menu bar link, and from the About icon, through the same open action', async () => {
@@ -68,7 +70,7 @@ describe('the desktop shell', () => {
     // The About icon asks for the About location, which arrives at the Projects window, so a
     // second entry point naming the same window focuses it instead of adding one.
     await user.click(within(bar).getByRole('button', { name: 'About me' }))
-    expect(windowsNamed('Projects')).toHaveLength(1)
+    expect(windowsNamed('About me')).toHaveLength(1)
   })
 
   it('opens the Projects window from both project folders and the Resume window from the resume', async () => {
@@ -78,14 +80,14 @@ describe('the desktop shell', () => {
     const items = screen.getByRole('list', { name: 'Desktop items' })
     const [nike, aiResume, foodDelivery, resume] = DESKTOP_ITEMS
 
-    await user.click(within(items).getByRole('button', { name: nike?.label ?? '' }))
-    expect(windowsNamed('Projects')).toHaveLength(1)
+    // A project folder opens the Projects window on that project, so the frame reads the
+    // project's own name, and the next folder re-targets the one window rather than adding one.
+    for (const folder of [nike, aiResume, foodDelivery]) {
+      const label = folder?.label ?? ''
 
-    await user.click(within(items).getByRole('button', { name: aiResume?.label ?? '' }))
-    expect(windowsNamed('Projects')).toHaveLength(1)
-
-    await user.click(within(items).getByRole('button', { name: foodDelivery?.label ?? '' }))
-    expect(windowsNamed('Projects')).toHaveLength(1)
+      await user.click(within(items).getByRole('button', { name: label }))
+      expect(windowsNamed(label), label).toHaveLength(1)
+    }
 
     await user.click(within(items).getByRole('button', { name: resume?.label ?? '' }))
     expect(windowsNamed('Resume')).toHaveLength(1)
