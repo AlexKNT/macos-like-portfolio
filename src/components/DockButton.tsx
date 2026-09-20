@@ -1,4 +1,7 @@
+import { useCallback } from 'react'
+
 import { WINDOWS } from '#content/windows'
+import { useWindowElements } from '#store/useWindowElements'
 import type { DockApp } from '#content/types'
 
 /** What one dock button needs: its app, whether its window is open, and what activating it does. */
@@ -19,11 +22,25 @@ export type DockButtonProps = {
  * dot quieter, so the panel says what is waiting without a second mark. The lift is a
  * transform on the button, which is why it never changes the panel's layout, and the magnify
  * writes to the image, so the two never fight over one transform. Spec 0003, AC-6, AC-9.
+ *
+ * The button registers itself under its window id, which is how a window finds the button it
+ * minimises toward and hands focus back to, and how the frame stays free of the DOM.
+ * Spec 0004, AC-6.
  */
 export function DockButton({ app, isOpen, isMinimised, onActivate }: DockButtonProps) {
+  const { registerDockButton } = useWindowElements()
+
+  const attach = useCallback(
+    (element: HTMLButtonElement | null) => {
+      registerDockButton(app.windowId, element)
+    },
+    [app.windowId, registerDockButton],
+  )
+
   return (
     <li className="group relative flex items-end">
       <button
+        ref={attach}
         type="button"
         aria-label={app.name}
         onClick={onActivate}

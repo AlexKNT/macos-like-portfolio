@@ -1,4 +1,5 @@
 import { findFile } from '#content/reads'
+import { DOCK_APPS } from '#content/shell'
 import { WINDOWS } from '#content/windows'
 import { err, ok } from '#lib/result'
 import type { Result } from '#lib/result'
@@ -123,6 +124,18 @@ export const WINDOW_LAYOUT: Record<WindowId, WindowLayout> = {
 /** How many steps the cascade walks before it starts again, so it never walks off the surface. */
 const CASCADE_STEPS = 4
 
+/** The work area's top left corner: where a filled window sits, and where an unfilled one is anchored. */
+const WORK_AREA_CORNER: WindowPosition = { x: 0, y: 0 }
+
+/**
+ * Whether a window id has a button on the dock panel. A window without one cannot be
+ * minimised, since there would be no way back to it, and it is the last hop the focus
+ * handoff can offer. Spec 0004, AC-6.
+ */
+export function hasDockButton(windowId: WindowId): boolean {
+  return DOCK_APPS.some((app) => app.windowId === windowId)
+}
+
 /** The stacking number a new arrival takes: one above everything already open. */
 function nextStackingNumber(instances: readonly WindowInstance[]): number {
   return instances.reduce((highest, instance) => Math.max(highest, instance.z), 0) + 1
@@ -161,13 +174,112 @@ export function clampPosition(
  * pointing at something that has gone. Returns null while nothing is open.
  */
 export function focusedKeyOf(instances: readonly WindowInstance[]): WindowKey | null {
-  const onDesktop = instances.filter((instance) => instance.status !== 'minimised')
-  const top = onDesktop.reduce<WindowInstance | null>(
-    (highest, instance) => (highest === null || instance.z > highest.z ? instance : highest),
+  return topOnDesktop(instances)?.key ?? null
+}
+
+/**
+ * The window that sits on top of the desk: the largest stacking number among the ones that are
+ * not minimised, or null while nothing is on the desk. The one reading of stacking order, so
+ * focus and the handoff chain can never disagree. Spec 0004, AC-3, AC-8.
+ */
+function topOnDesktop(instances: readonly WindowInstance[]): WindowInstance | null {
+  return instances.reduce<WindowInstance | null>(
+    (highest, instance) =>
+      instance.status === 'minimised' || (highest !== null && highest.z >= instance.z)
+        ? highest
+        : instance,
     null,
   )
+}
 
-  return top === null ? null : top.key
+/**
+ * A size raised to a layout's floor: the work area as it is, unless it is smaller than
+ * `minSize`, which then wins and lets the window overflow its container rather than collapse.
+ * Spec 0004, AC-9.
+ */
+function floorAtMinSize(size: WindowSize, minSize: WindowSize): WindowSize {
+  return {
+    width: Math.max(size.width, minSize.width),
+    height: Math.max(size.height, minSize.height),
+  }
+}
+
+/**
+ * The size a window takes so it fits a work area that shrank: down to the work area, never
+ * below its layout `minSize`. The one rule the compact fill is allowed to ignore. Spec 0004, AC-9.
+ */
+function shrinkToFit(size: WindowSize, minSize: WindowSize, workArea: WindowSize): WindowSize {
+  const largest = floorAtMinSize(workArea, minSize)
+
+  return {
+    width: clampBetween(size.width, minSize.width, largest.width),
+    height: clampBetween(size.height, minSize.height, largest.height),
+  }
+}
+
+/** The size a filled window takes: the whole work area, still floored by its layout `minSize`. */
+function filledSize(layout: WindowLayout, workArea: WorkArea): WindowSize {
+  return workArea === null ? layout.defaultSize : floorAtMinSize(workArea, layout.minSize)
+}
+
+/**
+ * Where a window sits and how big it is on screen: its own geometry, except below the compact
+ * breakpoint, where the focused window fills the work area and every other one keeps its box.
+ * The stored geometry is left alone, so leaving the compact layout puts the desktop back as
+ * the visitor arranged it. Spec 0004, AC-9.
+ */
+export function windowGeometry(
+  instance: WindowInstance,
+  workArea: WorkArea,
+  compact: boolean,
+  isFocused: boolean,
+): { readonly position: WindowPosition; readonly size: WindowSize } {
+  if (compact && isFocused && workArea !== null) {
+    return { position: WORK_AREA_CORNER, size: workArea }
+  }
+
+  return { position: instance.position, size: instance.size }
+}
+
+/**
+ * Where the keyboard goes when a window leaves the desk: back to whatever opened it, else to
+ * the window underneath, else to its own dock button, else to the desktop. A hop that has gone
+ * or is minimised is skipped rather than followed, so focus never rests on something that is
+ * not there. Pure, so the chain is tested without a DOM; the caller turns the hop into an
+ * element. Spec 0004, AC-8.
+ */
+export type FocusHop =
+  | { readonly kind: 'window'; readonly key: WindowKey }
+  | { readonly kind: 'dock'; readonly windowId: WindowId }
+  | { readonly kind: 'desktop' }
+
+/** Reads the hop the keyboard takes when `key` leaves the desk. */
+export function focusHopAfter(instances: readonly WindowInstance[], key: WindowKey): FocusHop {
+  const leaving = instances.find((instance) => instance.key === key)
+  const staying = instances.filter(
+    (instance) => instance.key !== key && instance.status !== 'minimised',
+  )
+  const opener = leaving?.opener
+
+  if (opener !== undefined && opener.kind === 'window') {
+    const found = staying.find((instance) => instance.key === opener.key)
+
+    if (found !== undefined) {
+      return { kind: 'window', key: found.key }
+    }
+  }
+
+  const underneath = topOnDesktop(staying)
+
+  if (underneath !== null) {
+    return { kind: 'window', key: underneath.key }
+  }
+
+  if (leaving !== undefined && hasDockButton(leaving.windowId)) {
+    return { kind: 'dock', windowId: leaving.windowId }
+  }
+
+  return { kind: 'desktop' }
 }
 
 /**
@@ -244,14 +356,20 @@ export function resolveOpenTarget(target: OpenTarget): Result<ResolvedWindow, Ta
 
 /* ------------------------------------------------------------------- the reducer */
 
-/** Everything the manager holds: the open windows, and the box they are placed inside. */
+/** Everything the manager holds: the open windows, the box they are placed inside, and whether
+ *  the desktop is in its compact layout. */
 export type WindowManagerState = {
   readonly instances: readonly WindowInstance[]
   readonly workArea: WorkArea
+  readonly compact: boolean
 }
 
 /** The manager before the first window opens and before the container is measured. */
-export const EMPTY_WINDOW_MANAGER: WindowManagerState = { instances: [], workArea: null }
+export const EMPTY_WINDOW_MANAGER: WindowManagerState = {
+  instances: [],
+  workArea: null,
+  compact: false,
+}
 
 /** Every action the manager answers. Spec 0004 extends this union as its strands land. */
 export type WindowManagerAction =
@@ -264,7 +382,11 @@ export type WindowManagerAction =
   | { readonly type: 'focus'; readonly key: WindowKey }
   | { readonly type: 'close'; readonly key: WindowKey }
   | { readonly type: 'move'; readonly key: WindowKey; readonly position: WindowPosition }
+  | { readonly type: 'minimise'; readonly key: WindowKey }
+  | { readonly type: 'restore'; readonly key: WindowKey }
+  | { readonly type: 'zoom'; readonly key: WindowKey }
   | { readonly type: 'setWorkArea'; readonly size: WindowSize }
+  | { readonly type: 'setCompact'; readonly compact: boolean }
 
 /**
  * Opens a target, or focuses the window that key already has. A key that is already open
@@ -336,10 +458,10 @@ function focusWindow(state: WindowManagerState, key: WindowKey): WindowManagerSt
 }
 
 /**
- * Removes a window. The focus needs no handoff here: it is derived as the highest stacking
- * number that is left, so removing the top window hands the keyboard to the next one down by
- * itself. The handoff to a control outside the window (its opener, its dock button, the
- * desktop) belongs to the caller and to spec 0004. An unknown key is a no-op.
+ * Removes a window. The state's own focus needs no handoff here: it is derived as the highest
+ * stacking number that is left, so removing the top window hands the keyboard to the next one
+ * down by itself. Where the keyboard goes in the document is the caller's business, and
+ * `focusHopAfter` answers it. An unknown key is a no-op. Spec 0004, AC-8.
  */
 function closeWindow(state: WindowManagerState, key: WindowKey): WindowManagerState {
   if (!state.instances.some((instance) => instance.key === key)) {
@@ -381,9 +503,12 @@ function moveWindow(
 }
 
 /**
- * Takes the container's measured size as the work area and pulls every window back inside it.
- * A measurement of zero is ignored, so the first unmeasured render, and a container that is
- * momentarily hidden, change nothing. Spec 0004, AC-9.
+ * Takes the container's measured size as the work area and pulls every window back inside it:
+ * each one shrinks to fit if it no longer fits, never below its layout `minSize`, and its spot
+ * is clamped against the box it now has. A filled window takes the whole work area again, so it
+ * follows the container instead of floating over the edge. A measurement of zero is ignored, so
+ * the first unmeasured render, and a container that is momentarily hidden, change nothing.
+ * Spec 0004, AC-7, AC-9.
  */
 function setWorkArea(state: WindowManagerState, size: WindowSize): WindowManagerState {
   if (size.width <= 0 || size.height <= 0) {
@@ -400,11 +525,97 @@ function setWorkArea(state: WindowManagerState, size: WindowSize): WindowManager
   }
 
   return {
+    ...state,
     workArea: size,
-    instances: state.instances.map((instance): WindowInstance => ({
-      ...instance,
-      position: clampPosition(instance.position, instance.size, size),
-    })),
+    instances: state.instances.map((instance) => fitInto(instance, size)),
+  }
+}
+
+/** One window fitted to a work area that changed: the size rule, then the clamp against it. */
+function fitInto(instance: WindowInstance, workArea: WindowSize): WindowInstance {
+  const layout = WINDOW_LAYOUT[instance.windowId]
+  const size = instance.filled
+    ? filledSize(layout, workArea)
+    : shrinkToFit(instance.size, layout.minSize, workArea)
+
+  return { ...instance, size, position: clampPosition(instance.position, size, workArea) }
+}
+
+/**
+ * Records whether the desktop is below the compact breakpoint, where the focused window fills
+ * the work area and no window is dragged. Kept as state rather than read by each frame, so every
+ * window answers the same question in the same render. Spec 0004, AC-9.
+ */
+function setCompact(state: WindowManagerState, compact: boolean): WindowManagerState {
+  return state.compact === compact ? state : { ...state, compact }
+}
+
+/**
+ * Puts a window away in the dock: its status changes, and nothing else does. Its geometry and
+ * its `filled` flag stay, so restoring it brings back what left, and its stacking number stays
+ * too, since a window in the dock is out of the stacking order rather than at the bottom of it.
+ * An unknown key, and one that is already minimised, both leave the state as it was.
+ * Spec 0004, AC-6.
+ */
+function minimiseWindow(state: WindowManagerState, key: WindowKey): WindowManagerState {
+  const instance = state.instances.find((open) => open.key === key)
+
+  if (instance === undefined || instance.status === 'minimised') {
+    return state
+  }
+
+  return {
+    ...state,
+    instances: state.instances.map((open): WindowInstance =>
+      open.key === key ? { ...open, status: 'minimised' } : open,
+    ),
+  }
+}
+
+/**
+ * Brings a window back from the dock at the geometry it left with, with a fresh stacking number
+ * so it comes back on top of the desk. A window that is not minimised, and an unknown key, both
+ * leave the state as it was. Spec 0004, AC-6.
+ */
+function restoreWindow(state: WindowManagerState, key: WindowKey): WindowManagerState {
+  const instance = state.instances.find((open) => open.key === key)
+
+  if (instance === undefined || instance.status !== 'minimised') {
+    return state
+  }
+
+  const z = nextStackingNumber(state.instances)
+
+  return {
+    ...state,
+    instances: state.instances.map((open): WindowInstance =>
+      open.key === key ? { ...open, status: 'normal', z } : open,
+    ),
+  }
+}
+
+/**
+ * The green light: a window toggles between the whole work area and the layout size its app
+ * opens at, anchored at the work area's top left corner both ways. Nothing about the spot it
+ * had before is remembered, which is the one place the desktop this imitates differs, and it
+ * keeps `filled` through a minimise so a restored window comes back as it left.
+ * Spec 0004, AC-7.
+ */
+function zoomWindow(state: WindowManagerState, key: WindowKey): WindowManagerState {
+  const instance = state.instances.find((open) => open.key === key)
+
+  if (instance === undefined) {
+    return state
+  }
+
+  const layout = WINDOW_LAYOUT[instance.windowId]
+  const size = instance.filled ? layout.defaultSize : filledSize(layout, state.workArea)
+
+  return {
+    ...state,
+    instances: state.instances.map((open): WindowInstance =>
+      open.key === key ? { ...open, filled: !open.filled, size, position: WORK_AREA_CORNER } : open,
+    ),
   }
 }
 
@@ -425,7 +636,15 @@ export function reduceWindowManager(
       return closeWindow(state, action.key)
     case 'move':
       return moveWindow(state, action.key, action.position)
+    case 'minimise':
+      return minimiseWindow(state, action.key)
+    case 'restore':
+      return restoreWindow(state, action.key)
+    case 'zoom':
+      return zoomWindow(state, action.key)
     case 'setWorkArea':
       return setWorkArea(state, action.size)
+    case 'setCompact':
+      return setCompact(state, action.compact)
   }
 }

@@ -20,6 +20,17 @@ async function openProjects(page: Page): Promise<Locator> {
   return projects
 }
 
+/** Opens one more window from the dock, on top of whatever is already open. */
+async function openWindow(page: Page, name: string): Promise<Locator> {
+  await page.getByRole('region', { name: 'Dock' }).getByRole('button', { name }).click()
+
+  const window = page.getByRole('region', { name })
+
+  await expect(window).toBeVisible()
+
+  return window
+}
+
 /** The frame's box on screen, rounded, since a box reports fractional pixels. */
 async function boxOf(element: Locator) {
   const box = await element.boundingBox()
@@ -160,14 +171,176 @@ test('pulls a window back inside the work area when the container shrinks', asyn
 
   await drag(page, from, { x: area.x + area.width, y: area.y + area.height })
 
+  const parked = await boxOf(projects)
+
   await page.setViewportSize({ width: 1100, height: 700 })
 
   const shrunk = await boxOf(page.getByRole('region', { name: 'Desktop' }))
-  const parked = await boxOf(projects)
 
   expect(shrunk.width).toBeLessThan(area.width)
-  expect(parked.x + parked.width).toBeLessThanOrEqual(shrunk.x + shrunk.width)
-  expect(parked.y + parked.height).toBeLessThanOrEqual(shrunk.y + shrunk.height)
-  expect(parked.x).toBeGreaterThanOrEqual(shrunk.x)
-  expect(parked.y).toBeGreaterThanOrEqual(shrunk.y)
+
+  // The container reports its new box asynchronously, so the clamp is waited for rather than
+  // read once: the window ends up against the bottom right of the work area it now has.
+  await expect
+    .poll(async () => boxOf(projects))
+    .toEqual({
+      x: shrunk.x + shrunk.width - parked.width,
+      y: shrunk.y + shrunk.height - parked.height,
+      width: parked.width,
+      height: parked.height,
+    })
+})
+
+test('quiets the windows that do not hold the keyboard', async ({ page }) => {
+  await page.goto('/')
+
+  const projects = await openProjects(page)
+  const contact = await openWindow(page, 'Contact')
+  const shadowOf = (window: Locator) =>
+    window.evaluate((element) => getComputedStyle(element).boxShadow)
+  const titleColourOf = (window: Locator) =>
+    window.locator('header > span').evaluate((element) => getComputedStyle(element).color)
+
+  expect(await shadowOf(projects)).not.toBe(await shadowOf(contact))
+  expect(await titleColourOf(projects)).not.toBe(await titleColourOf(contact))
+
+  // The dimmed lights are the same buttons: quieter, not disabled.
+  const lights = projects.locator('header button').first().locator('..')
+
+  expect(
+    Number(await lights.evaluate((element) => getComputedStyle(element).opacity)),
+  ).toBeLessThan(1)
+
+  // A press anywhere in the quiet window brings it the keyboard, and the two swap over. The
+  // press lands on the strip of its title bar the window above it does not cover.
+  await projects.click({ position: { x: 8, y: 8 } })
+
+  expect(await shadowOf(projects)).not.toBe(await shadowOf(contact))
+})
+
+test('puts a window away in the dock, hands the keyboard on, and brings it back on top', async ({
+  page,
+}) => {
+  await page.goto('/')
+
+  const projects = await openProjects(page)
+  const contact = await openWindow(page, 'Contact')
+
+  await contact.getByRole('button', { name: 'Minimise Contact' }).click()
+
+  await expect(contact).toBeHidden()
+  await expect(projects).toBeFocused()
+
+  await page.getByRole('region', { name: 'Dock' }).getByRole('button', { name: 'Contact' }).click()
+
+  await expect(contact).toBeVisible()
+  await expect(contact).toBeFocused()
+
+  const zOf = (window: Locator) => window.evaluate((element) => element.style.zIndex)
+
+  expect(Number(await zOf(contact))).toBeGreaterThan(Number(await zOf(projects)))
+})
+
+test('hands the keyboard to the dock button when the last window leaves the desk', async ({
+  page,
+}) => {
+  await page.goto('/')
+
+  const projects = await openProjects(page)
+
+  await projects.getByRole('button', { name: 'Minimise Projects' }).click()
+
+  const portfolio = page
+    .getByRole('region', { name: 'Dock' })
+    .getByRole('button', { name: 'Portfolio' })
+
+  await expect(portfolio).toBeFocused()
+
+  await portfolio.click()
+
+  await expect(projects).toBeVisible()
+  await expect(projects).toBeFocused()
+})
+
+test('fills a window from the green light, and puts it back at its layout size', async ({
+  page,
+}) => {
+  await page.goto('/')
+
+  const projects = await openProjects(page)
+  const area = await boxOf(page.getByRole('region', { name: 'Desktop' }))
+  const start = await boxOf(projects)
+
+  await projects.getByRole('button', { name: 'Zoom Projects' }).click()
+
+  const filled = await boxOf(projects)
+
+  expect(filled).toEqual(area)
+
+  await projects.getByRole('button', { name: 'Zoom Projects' }).click()
+
+  const restored = await boxOf(projects)
+
+  expect(restored.width).toBe(start.width)
+  expect(restored.height).toBe(start.height)
+  // Unfilling anchors the window at the work area's corner rather than where it was.
+  expect(restored.x).toBe(area.x)
+  expect(restored.y).toBe(area.y)
+})
+
+test('closes a focused window on Escape', async ({ page }) => {
+  await page.goto('/')
+
+  const projects = await openProjects(page)
+
+  await projects.click({ position: { x: 40, y: 80 } })
+  await page.keyboard.press('Escape')
+
+  await expect(page.getByRole('region', { name: 'Projects' })).toHaveCount(0)
+})
+
+test('reaches every end state with motion reduced', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+
+  const projects = await openProjects(page)
+
+  await projects.getByRole('button', { name: 'Minimise Projects' }).click()
+
+  await expect(projects).toBeHidden()
+
+  await page
+    .getByRole('region', { name: 'Dock' })
+    .getByRole('button', { name: 'Portfolio' })
+    .click()
+
+  await expect(projects).toBeVisible()
+
+  await projects.getByRole('button', { name: 'Close Projects' }).click()
+
+  await expect(page.getByRole('region', { name: 'Projects' })).toHaveCount(0)
+})
+
+test('fills the focused window on a compact screen, and offers no drag', async ({ page }) => {
+  await page.setViewportSize({ width: 420, height: 800 })
+  await page.goto('/')
+
+  const desktop = page.getByRole('region', { name: 'Desktop' })
+  const item = page.getByRole('list', { name: 'Desktop items' }).getByRole('button').first()
+
+  await expect(item).toBeVisible()
+  await item.click()
+
+  const projects = page.getByRole('region', { name: 'Projects' })
+
+  await expect(projects).toBeVisible()
+  expect(await boxOf(projects)).toEqual(await boxOf(desktop))
+
+  // A press on the title bar focuses the window and moves nothing: there is no room on a
+  // compact screen to put a window down.
+  const from = await centreOf(projects.locator('header'))
+
+  await drag(page, from, { x: from.x + 120, y: from.y + 60 })
+
+  expect(await boxOf(projects)).toEqual(await boxOf(desktop))
 })

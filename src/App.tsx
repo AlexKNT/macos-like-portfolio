@@ -7,8 +7,9 @@ import { WindowManagerProvider } from '#store/WindowManagerProvider'
  * The desktop, top to bottom: the menu bar, the desktop surface, and the dock band. Every
  * open window lives inside the desktop surface, which isolates its own stacking, so neither
  * the bar nor the dock can be painted over however many windows are open. The window manager
- * wraps all three, so the bar, the desktop icons and the dock all call one set of actions.
- * Spec 0003, AC-1, AC-8, AC-11.
+ * wraps all three, so the bar, the desktop icons and the dock all call one set of actions, and
+ * it mounts the element registry with it, so a window can find the dock button it minimises to.
+ * Spec 0003, AC-1, AC-8, AC-11; spec 0004, AC-6.
  */
 export function App() {
   return (

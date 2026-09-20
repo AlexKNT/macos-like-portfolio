@@ -42,7 +42,7 @@ function centreOf(element: HTMLImageElement): number {
  * Spec 0003, AC-6, AC-7, AC-9, AC-10.
  */
 export function Dock() {
-  const { instances, open } = useWindowManager()
+  const { instances, open, restore } = useWindowManager()
   const panelRef = useRef<HTMLUListElement | null>(null)
   const centres = useRef<readonly number[]>([])
   const pitch = useRef(0)
@@ -155,16 +155,24 @@ export function Dock() {
       >
         {DOCK_APPS.map((app) => {
           const matching = instances.filter((instance) => instance.windowId === app.windowId)
+          const waiting = matching.find((instance) => instance.status === 'minimised')
 
           return (
             <DockButton
               key={app.id}
               app={app}
               isOpen={matching.length > 0}
-              isMinimised={
-                matching.length > 0 && matching.every((one) => one.status === 'minimised')
-              }
-              onActivate={() => open({ kind: 'window', windowId: app.windowId }, { kind: 'dock' })}
+              isMinimised={waiting !== undefined}
+              onActivate={() => {
+                // A window waiting in the dock comes back to where it left; one that is
+                // already on the desk is focused rather than opened a second time.
+                if (waiting !== undefined) {
+                  restore(waiting.key)
+                  return
+                }
+
+                open({ kind: 'window', windowId: app.windowId }, { kind: 'dock' })
+              }}
             />
           )
         })}

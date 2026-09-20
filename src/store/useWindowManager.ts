@@ -9,11 +9,17 @@ export type WindowManager = {
   readonly instances: readonly WindowInstance[]
   readonly focusedKey: WindowKey | null
   readonly workArea: WorkArea
+  /** Whether the desktop is below the compact breakpoint, where the focused window fills it. */
+  readonly compact: boolean
   readonly open: (target: OpenTarget, opener: WindowOpener) => void
   readonly focus: (key: WindowKey) => void
   readonly close: (key: WindowKey) => void
   readonly move: (key: WindowKey, position: WindowPosition) => void
+  readonly minimise: (key: WindowKey) => void
+  readonly restore: (key: WindowKey) => void
+  readonly zoom: (key: WindowKey) => void
   readonly setWorkArea: (size: WindowSize) => void
+  readonly setCompact: (compact: boolean) => void
 }
 
 /** Holds the manager for the tree below `WindowManagerProvider`, or null outside one. */

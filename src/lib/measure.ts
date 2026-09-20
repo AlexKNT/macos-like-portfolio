@@ -1,6 +1,10 @@
 /** The measures script reads off the document element, as the stylesheet names them. */
 export type MeasureToken =
-  'dock-magnify-scale' | 'window-cascade-step' | 'window-nudge-step' | 'window-nudge-step-large'
+  | 'dock-magnify-scale'
+  | 'window-cascade-step'
+  | 'window-nudge-step'
+  | 'window-nudge-step-large'
+  | 'window-dock-shrink'
 
 /** The computed value of one custom property on the document element, trimmed. */
 function readToken(name: string): string {

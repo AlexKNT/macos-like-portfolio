@@ -78,6 +78,55 @@ Every row of the spec's Value sourcing table, checked rather than assumed.
 - AC-9 → the browser resize step and the compact step
 - AC-10 → the reduce motion steps and the build command
 
+## Added by /develop, 2026-09-20
+
+The strands these steps cover were missing when `/check verify` ran earlier that day, which is why
+it ticked nothing above. Every step here is one the build now passes.
+
+### Commands
+
+- [ ] `npm test` → 166 tests pass, with `src/store/windowManager.test.ts` covering the dock, the
+      green light, the handoff chain, the shrink to fit and the compact fill; `ManagedWindow.test.tsx`
+      covering the quiet treatment, the three lights and Escape; and `tokens.test.ts` holding both
+      window shadows → AC-3, AC-6, AC-7, AC-8, AC-9
+- [ ] `npx playwright test e2e/window-manager.spec.ts` → 12 checks pass in Chromium, including the
+      quiet treatment, minimise and restore, the handoff to the dock button, the green light, Escape,
+      reduced motion and the compact fill → AC-3, AC-6, AC-7, AC-8, AC-9, AC-10
+- [ ] `npm run build` → succeeds, and `dist/assets/*.css` holds `--shadow-window-quiet`,
+      `--window-dock-shrink` and `window-quiet`, so the quiet treatment is in the shipped stylesheet
+      and not only in the dev server → AC-3, AC-6
+
+### UI / manual
+
+- [ ] open two windows and compare their title bars → the lower one has a softer shadow and a muted
+      title, its three lights are dimmed rather than recoloured, and a press on it swaps the two over → AC-3
+- [ ] Tab into the controls of the quiet window → that window takes the keyboard and the treatment
+      swaps → AC-3
+- [ ] press the yellow light of a window with a dock button → it shrinks toward its own dock button,
+      and the keyboard lands on the window underneath, or on that dock button when nothing is left → AC-6
+- [ ] press that dock button → the window grows back from the button, at the geometry it left with,
+      holding the keyboard and on top → AC-6
+- [ ] press the yellow light of a text file, the resume or an image window → its yellow light is
+      disabled, because there is no dock button to come back from → AC-6
+- [ ] start a drag, then press Escape without releasing → the window keeps the spot the pointer had
+      reached and then leaves → AC-4, AC-8
+- [ ] press Escape, then press Escape on a key that is already leaving → one window is removed and
+      the keyboard lands somewhere reachable, never on nothing → AC-8
+- [ ] narrow the browser below 40rem, open a window, then drag its title bar → the focused window
+      fills the work area and the drag moves nothing → AC-9
+- [ ] resize the browser until the work area is narrower than a window's `minSize` → the window keeps
+      its smallest legal size, overflowing from the work area's top left corner → AC-9
+- [ ] set the OS to reduce motion and repeat open, fill, minimise, restore and close → each reaches
+      its end state at once, with no window left half animated → AC-10
+
+### Acceptance-criteria coverage
+
+- AC-3 → the quiet treatment steps and both window shadows in `tokens.test.ts` · AC-4 → the mid drag
+  close step, on top of the drag steps above · AC-6 → the minimise, restore and disabled yellow light
+  steps · AC-7 → the green light steps above · AC-8 → the Escape and handoff steps · AC-9 → the
+  compact and `minSize` steps, plus the resize clamp e2e check · AC-10 → the reduce motion steps and
+  the built stylesheet command
+
 ## Two rows to read rather than trust
 
 - [ ] read the reducer for a path that changes `position` without the clamp. The edge drag steps only exercise the paths they call, and a future action could write a position directly → AC-4, AC-9

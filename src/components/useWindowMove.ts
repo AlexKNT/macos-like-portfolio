@@ -22,8 +22,9 @@ const ARROW_DIRECTIONS = {
 /** The four keys that move a window, and nothing else. */
 type ArrowKey = keyof typeof ARROW_DIRECTIONS
 
-/** A pointer press the window is following: where it started, and where the window has reached. */
+/** A pointer press the window is following: the element it is moving, where it started, and where the window has reached. */
 type Drag = {
+  readonly element: HTMLElement
   readonly pointerId: number
   readonly from: WindowPosition
   readonly origin: WindowPosition
@@ -36,8 +37,17 @@ type WindowMoveInput = {
   readonly position: WindowPosition
   readonly size: WindowSize
   readonly workArea: WorkArea
+  /** False below the compact breakpoint, where a window fills the work area and is not dragged. */
+  readonly draggable: boolean
   readonly move: (key: WindowKey, position: WindowPosition) => void
   readonly focus: (key: WindowKey) => void
+}
+
+/** What a frame spreads onto its own element, and the one call it makes on the way out. */
+export type WindowMove = {
+  readonly frameProps: WindowFrameProps
+  /** Commits a drag that is still under the pointer, so a close during one keeps the last valid spot. */
+  readonly commitDrag: () => void
 }
 
 /** Reads an event's key as the direction it steps a window, so anything else falls through. */
@@ -146,16 +156,18 @@ function capturePointer(element: HTMLElement, pointerId: number): void {
  * The drag follows the pointer as a transform written straight to the element, so a pointer
  * event never costs a React render, and only the release commits a position. Clamping happens
  * on the way through, against the newest work area, so a container that changes size mid drag
- * re-clamps on the next move. Spec 0004, AC-4, AC-5.
+ * re-clamps on the next move. A window in the compact layout is not draggable at all: the
+ * pointer still focuses it, and nothing follows. Spec 0004, AC-4, AC-5, AC-9.
  */
 export function useWindowMove({
   windowKey,
   position,
   size,
   workArea,
+  draggable,
   move,
   focus,
-}: WindowMoveInput): WindowFrameProps {
+}: WindowMoveInput): WindowMove {
   const drag = useRef<Drag | null>(null)
 
   const handlePointerDown = useCallback(
@@ -176,12 +188,14 @@ export function useWindowMove({
         event.currentTarget.focus()
       }
 
-      // Only the title bar is a drag handle, and the lights in it are controls.
-      if (onControl || !hasHandle(event.target, event.currentTarget)) {
+      // Only the title bar is a drag handle, and the lights in it are controls. Below the
+      // compact breakpoint the window fills the work area, so no drag starts at all.
+      if (!draggable || onControl || !hasHandle(event.target, event.currentTarget)) {
         return
       }
 
       drag.current = {
+        element: event.currentTarget,
         pointerId: event.pointerId,
         from: { x: event.clientX, y: event.clientY },
         origin: position,
@@ -192,7 +206,7 @@ export function useWindowMove({
       // delivering here, which is what lets the release commit the last valid spot.
       capturePointer(event.currentTarget, event.pointerId)
     },
-    [focus, position, windowKey],
+    [draggable, focus, position, windowKey],
   )
 
   const handlePointerMove = useCallback(
@@ -218,7 +232,24 @@ export function useWindowMove({
     [size, workArea],
   )
 
-  const commitDrag = useCallback(
+  /**
+   * Writes the spot the pointer reached: the one commit of a drag, whether it ends with a
+   * release, a cancellation, or a close arriving mid drag. The spot goes onto the element
+   * before the store hears about it, so the window is never seen jumping back to where the
+   * drag began while React catches up.
+   */
+  const endDrag = useCallback(
+    (current: Drag) => {
+      drag.current = null
+      current.element.style.left = `${current.live.x}px`
+      current.element.style.top = `${current.live.y}px`
+      current.element.style.transform = ''
+      move(windowKey, current.live)
+    },
+    [move, windowKey],
+  )
+
+  const handlePointerUp = useCallback(
     (event: PointerEvent<HTMLElement>) => {
       const current = drag.current
 
@@ -226,17 +257,18 @@ export function useWindowMove({
         return
       }
 
-      drag.current = null
-
-      // The committed spot goes onto the element before the store hears about it, so the
-      // window is never seen jumping back to where the drag began while React catches up.
-      event.currentTarget.style.left = `${current.live.x}px`
-      event.currentTarget.style.top = `${current.live.y}px`
-      event.currentTarget.style.transform = ''
-      move(windowKey, current.live)
+      endDrag(current)
     },
-    [move, windowKey],
+    [endDrag],
   )
+
+  const commitDrag = useCallback(() => {
+    const current = drag.current
+
+    if (current !== null) {
+      endDrag(current)
+    }
+  }, [endDrag])
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLElement>) => {
@@ -276,11 +308,14 @@ export function useWindowMove({
   }, [focus, windowKey])
 
   return {
-    onPointerDown: handlePointerDown,
-    onPointerMove: handlePointerMove,
-    onPointerUp: commitDrag,
-    onPointerCancel: commitDrag,
-    onKeyDown: handleKeyDown,
-    onFocus: handleFocus,
+    frameProps: {
+      onPointerDown: handlePointerDown,
+      onPointerMove: handlePointerMove,
+      onPointerUp: handlePointerUp,
+      onPointerCancel: handlePointerUp,
+      onKeyDown: handleKeyDown,
+      onFocus: handleFocus,
+    },
+    commitDrag,
   }
 }

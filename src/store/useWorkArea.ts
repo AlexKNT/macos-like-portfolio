@@ -4,16 +4,28 @@ import type { RefObject } from 'react'
 import { useWindowManager } from '#store/useWindowManager'
 
 /**
+ * The breakpoint below which the desktop is compact: Tailwind's `sm`, written as the stylesheet
+ * writes it, so the dock band leaving and the focused window filling the work area are one
+ * moment rather than two.
+ */
+const COMPACT_QUERY = '(width < 40rem)'
+
+/**
  * Watches the element that defines the work area and reports its content box to the manager:
  * once on the first measurement, then on every change, which is a viewport resize, a rotation,
  * or the dock band leaving at the compact breakpoint.
  *
+ * It also reports whether the desktop is below the compact breakpoint, since that is the other
+ * half of the same box: below it the dock is not shown, no window is dragged, and the focused
+ * window fills the work area. An environment with no media query support at all, which is what
+ * a test runner with no stylesheet looks like, simply stays in the wide layout.
+ *
  * A measurement of zero is passed on and dropped inside the reducer, so a container that is
- * briefly unmeasured changes nothing. The observer is disconnected on unmount, so the store's
- * development double invoke never leaves two of them behind. Spec 0004, AC-9.
+ * briefly unmeasured changes nothing. Both observers are disconnected on unmount, so the store's
+ * development double invoke never leaves two of them behind. Spec 0004, AC-9, AC-10.
  */
 export function useWorkArea(elementRef: RefObject<HTMLElement | null>): void {
-  const { setWorkArea } = useWindowManager()
+  const { setWorkArea, setCompact } = useWindowManager()
 
   useEffect(() => {
     const element = elementRef.current
@@ -38,4 +50,20 @@ export function useWorkArea(elementRef: RefObject<HTMLElement | null>): void {
       observer.disconnect()
     }
   }, [elementRef, setWorkArea])
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') {
+      return
+    }
+
+    const query = window.matchMedia(COMPACT_QUERY)
+    const report = () => setCompact(query.matches)
+
+    report()
+    query.addEventListener('change', report)
+
+    return () => {
+      query.removeEventListener('change', report)
+    }
+  }, [setCompact])
 }

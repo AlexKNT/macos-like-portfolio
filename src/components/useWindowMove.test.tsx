@@ -24,15 +24,23 @@ type HostProps = {
   readonly focus: (key: WindowKey) => void
   readonly position?: WindowPosition
   readonly workArea?: WindowSize
+  readonly draggable?: boolean
 }
 
 /** A stand in frame with the handlers under test spread onto it. */
-function Host({ move, focus, position = { x: 0, y: 0 }, workArea = AREA }: HostProps) {
-  const frameProps = useWindowMove({
+function Host({
+  move,
+  focus,
+  position = { x: 0, y: 0 },
+  workArea = AREA,
+  draggable = true,
+}: HostProps) {
+  const { frameProps, commitDrag } = useWindowMove({
     windowKey: 'projects',
     position,
     size: SIZE,
     workArea,
+    draggable,
     move,
     focus,
   })
@@ -40,7 +48,10 @@ function Host({ move, focus, position = { x: 0, y: 0 }, workArea = AREA }: HostP
   return (
     <section {...frameProps} data-testid="frame" tabIndex={-1}>
       <header data-window-handle="">
-        <button type="button">Close Projects</button>
+        {/* The close path commits a drag that is still under the pointer before it leaves. */}
+        <button type="button" onClick={commitDrag}>
+          Close Projects
+        </button>
       </header>
       <div data-testid="body" style={{ overflowY: 'auto' }}>
         <input aria-label="Search" />
@@ -51,11 +62,11 @@ function Host({ move, focus, position = { x: 0, y: 0 }, workArea = AREA }: HostP
 }
 
 /** Renders the host and returns the parts the checks reach for. */
-function setup(position?: WindowPosition) {
+function setup(position?: WindowPosition, draggable = true) {
   const move = vi.fn()
   const focus = vi.fn()
 
-  const view = render(<Host move={move} focus={focus} position={position} />)
+  const view = render(<Host move={move} focus={focus} position={position} draggable={draggable} />)
 
   return {
     move,
@@ -64,7 +75,9 @@ function setup(position?: WindowPosition) {
     handle: screen.getByTestId('frame').querySelector('header') as HTMLElement,
     /** The same window, after the desktop box it sits in has been measured again. */
     resizeTo: (box: WindowSize) =>
-      view.rerender(<Host move={move} focus={focus} position={position} workArea={box} />),
+      view.rerender(
+        <Host move={move} focus={focus} position={position} workArea={box} draggable={draggable} />,
+      ),
   }
 }
 
@@ -222,6 +235,36 @@ describe('dragging a window', () => {
     fireEvent.pointerUp(frame, { pointerId: 1, clientX: 180, clientY: 140 })
 
     expect(move).toHaveBeenCalledWith('projects', { x: 40, y: 40 })
+  })
+
+  // covers: AC-4
+  it('commits the last valid spot when the window is closed mid drag, and only once', () => {
+    const { move, frame, handle } = setup({ x: 100, y: 100 })
+
+    fireEvent.pointerDown(handle, { pointerId: 1, button: 0, clientX: 0, clientY: 0 })
+    fireEvent.pointerMove(frame, { pointerId: 1, clientX: 60, clientY: 20 })
+    fireEvent.click(screen.getByRole('button', { name: 'Close Projects' }))
+
+    expect(move).toHaveBeenCalledWith('projects', { x: 160, y: 120 })
+    expect(frame.style.transform).toBe('')
+
+    // The drag is over, so the release that follows finds nothing left to commit.
+    fireEvent.pointerUp(frame, { pointerId: 1, clientX: 60, clientY: 20 })
+
+    expect(move).toHaveBeenCalledOnce()
+  })
+
+  // covers: AC-9
+  it('starts no drag below the compact breakpoint, and still focuses the window', () => {
+    const { focus, frame, handle, move } = setup(undefined, false)
+
+    fireEvent.pointerDown(handle, { pointerId: 1, button: 0, clientX: 100, clientY: 100 })
+    fireEvent.pointerMove(frame, { pointerId: 1, clientX: 240, clientY: 240 })
+    fireEvent.pointerUp(frame, { pointerId: 1, clientX: 240, clientY: 240 })
+
+    expect(focus).toHaveBeenCalledWith('projects')
+    expect(frame.style.transform).toBe('')
+    expect(move).not.toHaveBeenCalled()
   })
 })
 

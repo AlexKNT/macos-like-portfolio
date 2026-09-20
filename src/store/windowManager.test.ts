@@ -5,13 +5,16 @@ import {
   EMPTY_WINDOW_MANAGER,
   WINDOW_LAYOUT,
   clampPosition,
+  focusHopAfter,
   focusedKeyOf,
+  hasDockButton,
   reduceWindowManager,
   resolveOpenTarget,
+  windowGeometry,
 } from '#store/windowManager'
 import type { FileId, OpenTarget, WindowId } from '#content/types'
 import type {
-  WindowInstance,
+  WindowKey,
   WindowManagerAction,
   WindowManagerState,
   WindowOpener,
@@ -40,17 +43,11 @@ function open(
 }
 
 /**
- * The same state with one window put away in the dock. The minimise action that will do this
- * belongs to a later strand, so the check builds the state the model already describes, out of
- * an instance the reducer really produced.
+ * The same state with one window put away in the dock, through the action the frame calls when
+ * its yellow light is pressed.
  */
-function withMinimised(state: WindowManagerState, key: string): WindowManagerState {
-  return {
-    ...state,
-    instances: state.instances.map((instance): WindowInstance =>
-      instance.key === key ? { ...instance, status: 'minimised' } : instance,
-    ),
-  }
+function withMinimised(state: WindowManagerState, key: WindowKey): WindowManagerState {
+  return dispatch(state, { type: 'minimise', key })
 }
 
 /** Opens one plain window, which is the state most of the movement checks start from. */
@@ -58,12 +55,12 @@ function openProjects(): WindowManagerState {
   return open(EMPTY_WINDOW_MANAGER, { kind: 'window', windowId: 'projects' })
 }
 
-/** The single instance of a state, for the checks that only ever open one window. */
-function only(state: WindowManagerState) {
-  const instance = state.instances[0]
+/** One open window, by default the only one, for the checks with a known set of them. */
+function only(state: WindowManagerState, key: WindowKey = 'projects') {
+  const instance = state.instances.find((open) => open.key === key)
 
   if (instance === undefined) {
-    throw new Error('expected one open window')
+    throw new Error(`expected an open window under ${key}`)
   }
 
   return instance
@@ -242,7 +239,7 @@ describe('the window manager', () => {
       { kind: 'window', key: 'projects' },
     )
 
-    expect(only(opened).opener).toEqual({ kind: 'window', key: 'projects' })
+    expect(only(opened, 'articles').opener).toEqual({ kind: 'window', key: 'projects' })
   })
 })
 
@@ -431,5 +428,226 @@ describe('the work area', () => {
     expect(dispatch(measured, { type: 'move', key: 'gallery', position: { x: 10, y: 10 } })).toBe(
       measured,
     )
+  })
+
+  it('shrinks a window to fit a smaller work area, never below its layout floor', () => {
+    const measured = dispatch(openProjects(), { type: 'setWorkArea', size: AREA })
+    const shrunk = dispatch(measured, { type: 'setWorkArea', size: { width: 600, height: 400 } })
+
+    expect(only(shrunk).size).toEqual({ width: 600, height: 400 })
+    expect(only(shrunk).position).toEqual({ x: 0, y: 0 })
+  })
+
+  it('lets the layout floor win when the work area is smaller than the window may become', () => {
+    const floor = WINDOW_LAYOUT.projects.minSize
+    const measured = dispatch(openProjects(), { type: 'setWorkArea', size: AREA })
+    const crushed = dispatch(measured, { type: 'setWorkArea', size: { width: 200, height: 120 } })
+
+    // The window overflows a container that cannot hold it, pinned to the corner so its title
+    // bar stays reachable.
+    expect(only(crushed).size).toEqual(floor)
+    expect(only(crushed).position).toEqual({ x: 0, y: 0 })
+  })
+})
+
+describe('the green light', () => {
+  const AREA = { width: 1600, height: 900 }
+
+  it('fills a window to the whole work area, at its top left corner', () => {
+    const measured = dispatch(openProjects(), { type: 'setWorkArea', size: AREA })
+    const filled = dispatch(measured, { type: 'zoom', key: 'projects' })
+
+    expect(only(filled)).toMatchObject({ filled: true, size: AREA, position: { x: 0, y: 0 } })
+  })
+
+  it('unfills it to the layout size, anchored at that same corner', () => {
+    const measured = dispatch(openProjects(), { type: 'setWorkArea', size: AREA })
+    const filled = dispatch(measured, { type: 'zoom', key: 'projects' })
+    const unfilled = dispatch(filled, { type: 'zoom', key: 'projects' })
+
+    expect(only(unfilled)).toMatchObject({
+      filled: false,
+      size: WINDOW_LAYOUT.projects.defaultSize,
+      position: { x: 0, y: 0 },
+    })
+  })
+
+  it('keeps a filled window at the whole work area when the container changes', () => {
+    const measured = dispatch(openProjects(), { type: 'setWorkArea', size: AREA })
+    const filled = dispatch(measured, { type: 'zoom', key: 'projects' })
+    const resized = dispatch(filled, { type: 'setWorkArea', size: { width: 900, height: 700 } })
+
+    expect(only(resized).size).toEqual({ width: 900, height: 700 })
+  })
+
+  it('ignores the green light for a key that is not open', () => {
+    const measured = dispatch(openProjects(), { type: 'setWorkArea', size: AREA })
+
+    expect(dispatch(measured, { type: 'zoom', key: 'gallery' })).toBe(measured)
+  })
+})
+
+describe('the dock', () => {
+  const AREA = { width: 1600, height: 900 }
+
+  it('puts a window away with its geometry, its filled flag and its stacking number kept', () => {
+    const measured = dispatch(openProjects(), { type: 'setWorkArea', size: AREA })
+    const filled = dispatch(measured, { type: 'zoom', key: 'projects' })
+    const away = withMinimised(filled, 'projects')
+
+    expect(only(away)).toMatchObject({
+      status: 'minimised',
+      size: only(filled).size,
+      position: only(filled).position,
+      filled: true,
+      z: only(filled).z,
+    })
+  })
+
+  it('brings a window back at the size it left with, on top of the desk', () => {
+    const two = open(openProjects(), { kind: 'window', windowId: 'contact' })
+    const away = withMinimised(two, 'projects')
+    const back = dispatch(away, { type: 'restore', key: 'projects' })
+
+    expect(only(back, 'projects')).toMatchObject({
+      status: 'normal',
+      size: only(two, 'projects').size,
+    })
+    expect(only(back, 'projects').z).toBeGreaterThan(only(back, 'contact').z)
+    expect(focusedKeyOf(back.instances)).toBe('projects')
+  })
+
+  it('leaves a minimised window out of the stacking order while it waits', () => {
+    const two = open(openProjects(), { kind: 'window', windowId: 'contact' })
+    const away = withMinimised(two, 'contact')
+
+    expect(focusedKeyOf(away.instances)).toBe('projects')
+  })
+
+  it('ignores a minimise of a key that is not open, or is already put away', () => {
+    const away = withMinimised(openProjects(), 'projects')
+
+    expect(dispatch(away, { type: 'minimise', key: 'projects' })).toBe(away)
+    expect(dispatch(away, { type: 'minimise', key: 'gallery' })).toBe(away)
+  })
+
+  it('ignores a restore of a window that is not waiting in the dock', () => {
+    const measured = dispatch(openProjects(), { type: 'setWorkArea', size: AREA })
+
+    expect(dispatch(measured, { type: 'restore', key: 'projects' })).toBe(measured)
+    expect(dispatch(measured, { type: 'restore', key: 'gallery' })).toBe(measured)
+  })
+
+  it('knows which windows have a button to come back from', () => {
+    expect(hasDockButton('projects')).toBe(true)
+    expect(hasDockButton('resume')).toBe(false)
+    expect(hasDockButton('textFile')).toBe(false)
+    expect(hasDockButton('imageFile')).toBe(false)
+  })
+})
+
+describe('the focus handoff', () => {
+  /** Two windows, where the second one was opened by the first. */
+  function stacked(): WindowManagerState {
+    const first = open(EMPTY_WINDOW_MANAGER, { kind: 'window', windowId: 'projects' })
+    const second = open(
+      first,
+      { kind: 'window', windowId: 'contact' },
+      {
+        kind: 'window',
+        key: 'projects',
+      },
+    )
+
+    return second
+  }
+
+  it('hands the keyboard back to the window that opened it', () => {
+    expect(focusHopAfter(stacked().instances, 'contact')).toEqual({
+      kind: 'window',
+      key: 'projects',
+    })
+  })
+
+  it('hands it to the window underneath when the opener was not a window', () => {
+    const two = open(openProjects(), { kind: 'window', windowId: 'contact' })
+
+    expect(focusHopAfter(two.instances, 'contact')).toEqual({ kind: 'window', key: 'projects' })
+  })
+
+  it('skips an opener that is waiting in the dock', () => {
+    const away = withMinimised(stacked(), 'projects')
+
+    expect(focusHopAfter(away.instances, 'contact')).toEqual({
+      kind: 'dock',
+      windowId: 'contact',
+    })
+  })
+
+  it('skips an opener that has gone', () => {
+    const closed = dispatch(stacked(), { type: 'close', key: 'projects' })
+
+    expect(focusHopAfter(closed.instances, 'contact')).toEqual({
+      kind: 'dock',
+      windowId: 'contact',
+    })
+  })
+
+  it('falls to the dock button the window itself owns when nothing else is left', () => {
+    expect(focusHopAfter(openProjects().instances, 'projects')).toEqual({
+      kind: 'dock',
+      windowId: 'projects',
+    })
+  })
+
+  it('falls to the desktop for a window that has no dock button', () => {
+    const note = open(EMPTY_WINDOW_MANAGER, { kind: 'file', fileId: 'nike-about' })
+
+    expect(focusHopAfter(note.instances, 'textFile:nike-about')).toEqual({ kind: 'desktop' })
+  })
+})
+
+describe('the compact layout', () => {
+  const AREA = { width: 420, height: 700 }
+
+  it('fills the focused window to the work area, and leaves the others where they are', () => {
+    const two = open(openProjects(), { kind: 'window', windowId: 'contact' })
+    const [projects, contact] = two.instances
+
+    expect(windowGeometry(projects!, AREA, true, false)).toEqual({
+      position: projects!.position,
+      size: projects!.size,
+    })
+    expect(windowGeometry(contact!, AREA, true, true)).toEqual({
+      position: { x: 0, y: 0 },
+      size: AREA,
+    })
+  })
+
+  it('fills nothing until the container has been measured', () => {
+    const opened = openProjects()
+
+    expect(windowGeometry(only(opened), null, true, true)).toEqual({
+      position: only(opened).position,
+      size: only(opened).size,
+    })
+  })
+
+  it('leaves every window at its own geometry in the wide layout', () => {
+    const opened = openProjects()
+
+    expect(windowGeometry(only(opened), AREA, false, true)).toEqual({
+      position: only(opened).position,
+      size: only(opened).size,
+    })
+  })
+
+  it('records the compact flag, and leaves the state alone when it has not changed', () => {
+    const wide = openProjects()
+    const compact = dispatch(wide, { type: 'setCompact', compact: true })
+
+    expect(compact.compact).toBe(true)
+    expect(compact.instances).toBe(wide.instances)
+    expect(dispatch(compact, { type: 'setCompact', compact: true })).toBe(compact)
   })
 })

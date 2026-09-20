@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 
 import { readMeasureToken } from '#lib/measure'
 import { EMPTY_WINDOW_MANAGER, focusedKeyOf, reduceWindowManager } from '#store/windowManager'
+import { WindowElementsProvider } from '#store/WindowElementsProvider'
 import { WindowManagerContext } from '#store/useWindowManager'
 import type { WindowManager } from '#store/useWindowManager'
 import type { WindowKey, WindowOpener, WindowPosition, WindowSize } from '#store/windowManager'
@@ -17,7 +18,12 @@ import type { OpenTarget } from '#content/types'
  * The actions are stable across renders, so a control that takes one as a prop does not
  * re-render when a window moves. The one value a window's geometry needs from outside is the
  * cascade step, read from the token layer here rather than held in the reducer, so the
- * reducer stays pure and storable. Spec 0003, AC-8, AC-11.
+ * reducer stays pure and storable.
+ *
+ * The element registry is mounted with it, below this context, because a tree that can open a
+ * window is a tree that has a frame looking for its dock button. The two contexts stay
+ * separate: the registry holds elements, and the manager's rules never touch the DOM.
+ * Spec 0003, AC-8, AC-11; spec 0004, AC-6.
  */
 export function WindowManagerProvider({ children }: { readonly children: ReactNode }) {
   const [state, dispatch] = useReducer(reduceWindowManager, EMPTY_WINDOW_MANAGER)
@@ -38,16 +44,56 @@ export function WindowManagerProvider({ children }: { readonly children: ReactNo
     (key: WindowKey, position: WindowPosition) => dispatch({ type: 'move', key, position }),
     [],
   )
+  const minimise = useCallback((key: WindowKey) => dispatch({ type: 'minimise', key }), [])
+  const restore = useCallback((key: WindowKey) => dispatch({ type: 'restore', key }), [])
+  const zoom = useCallback((key: WindowKey) => dispatch({ type: 'zoom', key }), [])
   const setWorkArea = useCallback((size: WindowSize) => dispatch({ type: 'setWorkArea', size }), [])
+  const setCompact = useCallback(
+    (compact: boolean) => dispatch({ type: 'setCompact', compact }),
+    [],
+  )
 
   const instances = state.instances
   const workArea = state.workArea
+  const compact = state.compact
   const focusedKey = useMemo(() => focusedKeyOf(instances), [instances])
 
   const manager = useMemo<WindowManager>(
-    () => ({ instances, focusedKey, workArea, open, focus, close, move, setWorkArea }),
-    [instances, focusedKey, workArea, open, focus, close, move, setWorkArea],
+    () => ({
+      instances,
+      focusedKey,
+      workArea,
+      compact,
+      open,
+      focus,
+      close,
+      move,
+      minimise,
+      restore,
+      zoom,
+      setWorkArea,
+      setCompact,
+    }),
+    [
+      instances,
+      focusedKey,
+      workArea,
+      compact,
+      open,
+      focus,
+      close,
+      move,
+      minimise,
+      restore,
+      zoom,
+      setWorkArea,
+      setCompact,
+    ],
   )
 
-  return <WindowManagerContext value={manager}>{children}</WindowManagerContext>
+  return (
+    <WindowManagerContext value={manager}>
+      <WindowElementsProvider>{children}</WindowElementsProvider>
+    </WindowManagerContext>
+  )
 }

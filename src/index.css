@@ -76,7 +76,14 @@
   --radius-panel: 0.5rem;
   --radius-window: 0.75rem;
   --radius-dock: 1rem;
-  --shadow-window: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  /* The window shadow, written as a colour token plus a shape so the contrast suite can
+     read the ink of it: a shadow cannot be a ratio on its own, but the colour it casts can
+     be held to a floor and to a ceiling against the surface it falls on. The quiet one is
+     what a window paints when it does not have the keyboard. Spec 0004, AC-3. */
+  --color-shadow-window: rgb(0 0 0 / 0.25);
+  --color-shadow-window-quiet: rgb(0 0 0 / 0.14);
+  --shadow-window: 0 25px 50px -12px var(--color-shadow-window);
+  --shadow-window-quiet: 0 12px 28px -10px var(--color-shadow-window-quiet);
   --shadow-control: 0 1px 2px 0 rgb(0 0 0 / 0.08);
   --blur-chrome: 64px;
   --blur-panel: 24px;
@@ -96,6 +103,9 @@
   --window-cascade-step: 32;
   --window-nudge-step: 16;
   --window-nudge-step-large: 64;
+  /* The scale a window shrinks to while it flies toward its dock button, and the scale it
+     comes back from. Unitless for the same reason the steps are. Spec 0004, AC-6. */
+  --window-dock-shrink: 0.2;
   --font-georama: 'Georama Variable', Georama, system-ui, sans-serif;
   --font-roboto: 'Roboto Mono Variable', Roboto Mono, ui-monospace, monospace;
   --font-display: 'Great Vibes', Great Vibes, cursive;
@@ -143,6 +153,10 @@
   --color-text-muted: #a1a1aa;
   --color-text-subtle: #9a9aa5;
   --color-text-on-accent: #10131a;
+
+  /* A shadow has to be stronger on a dark surface to read at all, in both its weights. */
+  --color-shadow-window: rgb(0 0 0 / 0.55);
+  --color-shadow-window-quiet: rgb(0 0 0 / 0.3);
 
   --color-border: #3a3a41;
   --color-border-strong: #808089;
@@ -237,6 +251,17 @@
     opacity: 0.5;
     cursor: not-allowed;
   }
+}
+
+/*
+ * The quiet treatment: what a window that does not have the keyboard shows. Its three
+ * lights keep their literal colours and are dimmed instead, so a light still pictures a
+ * window while saying it is not the one you are working in. The value lives here rather
+ * than in two components, and it is the one thing the design system has no token for yet:
+ * an opacity scale is an open item, a colour name would not be honest here. Spec 0004, AC-3.
+ */
+@utility window-quiet {
+  opacity: 0.6;
 }
 
 @layer base {
