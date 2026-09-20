@@ -99,14 +99,14 @@ The shared behavior for every window: focus and stacking order, dragging, minimi
 **Done when:** opening from the dock focuses the window, dragging moves it, the focused window sits above the rest, minimize and close animate, and each of those actions has a keyboard path.
 - [x] Design it (spec): `/architect window manager`
 - [ ] Build it: `/develop window manager`
-  - [ ] The model, the layout config, the resolver and the reducer, tested without a DOM (AC-1, AC-2)
+  - [x] The model, the layout config, the resolver and the reducer, tested without a DOM (AC-1, AC-2)
   - [ ] The focus and stacking thread with the quiet treatment (AC-3)
   - [ ] The drag, the keyboard paths and the exit timeline with the focus handoff (AC-4, AC-5, AC-8)
   - [ ] Minimise, restore, the dock link and zoom (AC-6, AC-7)
   - [ ] The work area observer, the resize clamp, reduced motion and StrictMode hygiene (AC-9, AC-10)
 - [ ] Verify it: `/check verify window manager`
 - [ ] Test it: `/test window manager`
-spec [0004](../specs/0004-window-manager/index.md)
+spec [0004](../specs/0004-window-manager/index.md) · code in `src/store/windowManager.ts`, `src/components/useWindowMove.ts`
 
 ### 8. Projects window (Finder style) · planned · needs a decision
 The centrepiece for recruiters: browse project folders, then open one to read what it is, what it does, and where to find it.

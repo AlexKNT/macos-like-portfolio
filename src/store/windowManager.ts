@@ -35,6 +35,13 @@ export type WindowPosition = { readonly x: number; readonly y: number }
 export type WindowSize = { readonly width: number; readonly height: number }
 
 /**
+ * The box windows are placed inside: the desktop container's measured content box, with the
+ * dock band already taken out by the container. `null` until the first observation arrives,
+ * which is why a window is never clamped before the container has been measured.
+ */
+export type WorkArea = WindowSize | null
+
+/**
  * One open window. `filled` is kept while a window is minimised, so restoring it brings
  * back what left, and `opener` is the small union recorded at open time rather than a link
  * to another window, so a closed or minimised opener cannot break the focus handoff.
@@ -113,15 +120,39 @@ export const WINDOW_LAYOUT: Record<WindowId, WindowLayout> = {
   },
 }
 
-/** How far each newly opened window steps down and right from the one before, in pixels. */
-const CASCADE_STEP = 32
-
 /** How many steps the cascade walks before it starts again, so it never walks off the surface. */
 const CASCADE_STEPS = 4
 
 /** The stacking number a new arrival takes: one above everything already open. */
 function nextStackingNumber(instances: readonly WindowInstance[]): number {
   return instances.reduce((highest, instance) => Math.max(highest, instance.z), 0) + 1
+}
+
+/** A number kept between a floor and a ceiling. */
+function clampBetween(value: number, smallest: number, largest: number): number {
+  return Math.min(Math.max(value, smallest), largest)
+}
+
+/**
+ * The spot a window is allowed to take: the whole window inside the work area, so no window
+ * can be dragged out of sight. A work area that is still `null` clamps nothing, and a window
+ * larger than the work area is pinned to the work area's top left corner so its title bar
+ * stays reachable. The one place geometry is bounded, so a drag and an arrow key cannot
+ * disagree. Spec 0004, AC-4, AC-9.
+ */
+export function clampPosition(
+  position: WindowPosition,
+  size: WindowSize,
+  workArea: WorkArea,
+): WindowPosition {
+  if (workArea === null) {
+    return position
+  }
+
+  return {
+    x: clampBetween(position.x, 0, Math.max(0, workArea.width - size.width)),
+    y: clampBetween(position.y, 0, Math.max(0, workArea.height - size.height)),
+  }
 }
 
 /**
@@ -143,13 +174,13 @@ export function focusedKeyOf(instances: readonly WindowInstance[]): WindowKey | 
  * Where a newly opened window lands: half a step in from the work area's top left corner
  * for the first window, then one step each for the ones after it, wrapping after four
  * steps. Only the windows on the desktop count, so a window waiting in the dock never
- * pushes the next one along. Spec 0004, AC-2.
+ * pushes the next one along. The step itself comes from the token layer, read at the edge
+ * and passed in, so no geometry value is written here as a literal. Spec 0004, AC-2.
  */
-function cascadeSpot(openCount: number): WindowPosition {
-  const step =
-    openCount === 0 ? CASCADE_STEP / 2 : CASCADE_STEP * (1 + ((openCount - 1) % CASCADE_STEPS))
+function cascadeSpot(openCount: number, step: number): WindowPosition {
+  const distance = openCount === 0 ? step / 2 : step * (1 + ((openCount - 1) % CASCADE_STEPS))
 
-  return { x: step, y: step }
+  return { x: distance, y: distance }
 }
 
 /* ------------------------------------------------------------------ the resolver */
@@ -213,17 +244,27 @@ export function resolveOpenTarget(target: OpenTarget): Result<ResolvedWindow, Ta
 
 /* ------------------------------------------------------------------- the reducer */
 
-/** Everything the manager holds. One field, since the focus is derived from it. */
-export type WindowManagerState = { readonly instances: readonly WindowInstance[] }
+/** Everything the manager holds: the open windows, and the box they are placed inside. */
+export type WindowManagerState = {
+  readonly instances: readonly WindowInstance[]
+  readonly workArea: WorkArea
+}
 
-/** The manager before the first window opens. */
-export const EMPTY_WINDOW_MANAGER: WindowManagerState = { instances: [] }
+/** The manager before the first window opens and before the container is measured. */
+export const EMPTY_WINDOW_MANAGER: WindowManagerState = { instances: [], workArea: null }
 
-/** Every action the manager answers. Spec 0004 extends this union with the rest. */
+/** Every action the manager answers. Spec 0004 extends this union as its strands land. */
 export type WindowManagerAction =
-  | { readonly type: 'open'; readonly target: OpenTarget; readonly opener: WindowOpener }
+  | {
+      readonly type: 'open'
+      readonly target: OpenTarget
+      readonly opener: WindowOpener
+      readonly cascadeStep: number
+    }
   | { readonly type: 'focus'; readonly key: WindowKey }
   | { readonly type: 'close'; readonly key: WindowKey }
+  | { readonly type: 'move'; readonly key: WindowKey; readonly position: WindowPosition }
+  | { readonly type: 'setWorkArea'; readonly size: WindowSize }
 
 /**
  * Opens a target, or focuses the window that key already has. A key that is already open
@@ -236,6 +277,7 @@ function openWindow(
   state: WindowManagerState,
   target: OpenTarget,
   opener: WindowOpener,
+  cascadeStep: number,
 ): WindowManagerState {
   const resolved = resolveOpenTarget(target)
 
@@ -248,6 +290,7 @@ function openWindow(
 
   if (state.instances.some((instance) => instance.key === key)) {
     return {
+      ...state,
       instances: state.instances.map((instance): WindowInstance =>
         instance.key === key ? { ...instance, title, target, status: 'normal', z } : instance,
       ),
@@ -255,12 +298,16 @@ function openWindow(
   }
 
   const layout = WINDOW_LAYOUT[windowId]
+  const spot = cascadeSpot(
+    state.instances.filter((open) => open.status !== 'minimised').length,
+    cascadeStep,
+  )
   const instance: WindowInstance = {
     key,
     windowId,
     title,
     target,
-    position: cascadeSpot(state.instances.filter((open) => open.status !== 'minimised').length),
+    position: clampPosition(spot, layout.defaultSize, state.workArea),
     size: layout.defaultSize,
     status: 'normal',
     filled: false,
@@ -268,7 +315,7 @@ function openWindow(
     opener,
   }
 
-  return { instances: [...state.instances, instance] }
+  return { ...state, instances: [...state.instances, instance] }
 }
 
 /**
@@ -285,7 +332,7 @@ function focusWindow(state: WindowManagerState, key: WindowKey): WindowManagerSt
     instance.key === key ? { ...instance, z } : instance,
   )
 
-  return instances.some((instance) => instance.key === key) ? { instances } : state
+  return instances.some((instance) => instance.key === key) ? { ...state, instances } : state
 }
 
 /**
@@ -299,7 +346,66 @@ function closeWindow(state: WindowManagerState, key: WindowKey): WindowManagerSt
     return state
   }
 
-  return { instances: state.instances.filter((instance) => instance.key !== key) }
+  return { ...state, instances: state.instances.filter((instance) => instance.key !== key) }
+}
+
+/**
+ * Puts a window at a spot, clamped into the work area. This is the one writer for a window's
+ * position, so a drag and an arrow key both end up here and cannot disagree. An unknown key,
+ * and a spot the window already sits at, both leave the state as it was, which is what keeps
+ * a drag that ends where it started from re-rendering anything. Spec 0004, AC-4, AC-5.
+ */
+function moveWindow(
+  state: WindowManagerState,
+  key: WindowKey,
+  position: WindowPosition,
+): WindowManagerState {
+  const instance = state.instances.find((open) => open.key === key)
+
+  if (instance === undefined) {
+    return state
+  }
+
+  const clamped = clampPosition(position, instance.size, state.workArea)
+
+  if (clamped.x === instance.position.x && clamped.y === instance.position.y) {
+    return state
+  }
+
+  return {
+    ...state,
+    instances: state.instances.map((open): WindowInstance =>
+      open.key === key ? { ...open, position: clamped } : open,
+    ),
+  }
+}
+
+/**
+ * Takes the container's measured size as the work area and pulls every window back inside it.
+ * A measurement of zero is ignored, so the first unmeasured render, and a container that is
+ * momentarily hidden, change nothing. Spec 0004, AC-9.
+ */
+function setWorkArea(state: WindowManagerState, size: WindowSize): WindowManagerState {
+  if (size.width <= 0 || size.height <= 0) {
+    return state
+  }
+
+  const same =
+    state.workArea !== null &&
+    state.workArea.width === size.width &&
+    state.workArea.height === size.height
+
+  if (same) {
+    return state
+  }
+
+  return {
+    workArea: size,
+    instances: state.instances.map((instance): WindowInstance => ({
+      ...instance,
+      position: clampPosition(instance.position, instance.size, size),
+    })),
+  }
 }
 
 /**
@@ -312,10 +418,14 @@ export function reduceWindowManager(
 ): WindowManagerState {
   switch (action.type) {
     case 'open':
-      return openWindow(state, action.target, action.opener)
+      return openWindow(state, action.target, action.opener, action.cascadeStep)
     case 'focus':
       return focusWindow(state, action.key)
     case 'close':
       return closeWindow(state, action.key)
+    case 'move':
+      return moveWindow(state, action.key, action.position)
+    case 'setWorkArea':
+      return setWorkArea(state, action.size)
   }
 }

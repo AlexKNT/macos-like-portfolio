@@ -1,15 +1,19 @@
 import { createContext, useContext } from 'react'
 
-import type { WindowInstance, WindowKey, WindowOpener } from '#store/windowManager'
+import type { WindowInstance, WindowKey, WindowOpener, WorkArea } from '#store/windowManager'
 import type { OpenTarget } from '#content/types'
+import type { WindowPosition, WindowSize } from '#store/windowManager'
 
 /** What the shell reads from the manager, and the actions it can call. */
 export type WindowManager = {
   readonly instances: readonly WindowInstance[]
   readonly focusedKey: WindowKey | null
+  readonly workArea: WorkArea
   readonly open: (target: OpenTarget, opener: WindowOpener) => void
   readonly focus: (key: WindowKey) => void
   readonly close: (key: WindowKey) => void
+  readonly move: (key: WindowKey, position: WindowPosition) => void
+  readonly setWorkArea: (size: WindowSize) => void
 }
 
 /** Holds the manager for the tree below `WindowManagerProvider`, or null outside one. */

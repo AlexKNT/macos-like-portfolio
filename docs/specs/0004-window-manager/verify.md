@@ -82,3 +82,50 @@ Every row of the spec's Value sourcing table, checked rather than assumed.
 
 - [ ] read the reducer for a path that changes `position` without the clamp. The edge drag steps only exercise the paths they call, and a future action could write a position directly → AC-4, AC-9
 - [ ] read the frame's effects for a timeline that is not reverted on unmount, since `StrictMode`'s double invoke passes as long as the cleanup exists, not because it was exercised → AC-10
+
+## The moving thread, added by /develop on 2026-09-20
+
+The rows above were written when the spec was captured, and they describe the whole feature. The
+drag and the arrow keys landed on 2026-09-20, so the rows that exercise moving are now live: the
+title bar drag, the drag past each edge, the drag released outside, the arrow keys with Shift, the
+page not scrolling, the arrow inside a scrollable body, and the drag that meets a work area change.
+The rows waiting on a later strand (Escape, the exit timeline, the focus handoff, the quiet
+treatment, the lights beyond the red one, the dock link, the zoom, the shrink to fit, the compact
+fill and reduced motion) stay unticked until that strand lands.
+
+What the moving thread built, in the order a check can reach it:
+
+### Commands
+
+- [ ] `npx tsc -b` → clean, with no `any` in `src/store` → AC-1
+- [ ] `npm run lint` → clean → AC-1
+- [ ] `npm test` → 87 tests pass, including the clamp, the clamped spawn, the work area change, the drag gesture and the arrow rules → AC-1, AC-4, AC-5, AC-9
+- [ ] `npm run test:e2e` → 22 pass, five of them the moving thread, in a real browser → AC-4, AC-5, AC-9
+- [ ] search `src/store/windowManager.ts` for `document.`, `getComputedStyle`, `setTimeout`, `requestAnimationFrame` and `localStorage` → no hit, so the reducer reads no DOM, sets no timer and writes no storage. A search for `window.` does hit, on the full stop at the end of a comment that says "window", which is why this row names the calls instead → AC-1
+- [ ] read `src/index.css`, `src/lib/measure.ts`, `src/components/useWindowMove.ts` and `src/store/WindowManagerProvider.tsx` → the three window measures are declared as tokens, named by `MeasureToken`, and read at the edge (the provider reads the cascade distance, the move reads the two steps), so no geometry value is a literal in the reducer, and the values carry no unit because a custom property keeps the unit it was written with → AC-2, AC-5
+
+### UI / manual
+
+- [ ] `npm run dev`, open two windows from the dock, then drag the top one by its title bar → it follows the pointer smoothly, the page does not scroll and no text is selected → AC-4
+- [ ] release the drag → the window stays exactly where it was released, and a second drag from there starts from that spot → AC-4
+- [ ] drag a window hard against each edge and each corner → it stops at the work area with the whole window still inside it → AC-4, AC-9
+- [ ] drag from the window body, and from one of the three lights → nothing moves, and a press on the body still focuses that window → AC-3, AC-4
+- [ ] click a window body, then press each arrow key, then Shift with each arrow → it steps by the token distance, the larger step is visibly larger, and the page never scrolls → AC-5
+- [ ] watch the element while the pointer moves → the transform changes per event and the committed `left` and `top` only move once, on release → AC-4
+- [ ] start a drag and take the pointer away with the window still in reach of the edge → the window keeps the last valid spot → AC-4
+- [ ] park a window near the bottom right, then shrink the browser window → it comes back inside the work area → AC-9
+- [ ] shrink the browser window until the work area is narrower than the window → the window keeps its size and sits at the work area's top left corner, with its title bar still reachable (the shrink to fit floor and the compact fill are a later strand) → AC-9
+- [ ] open a window whose body scrolls once a window with real scrolling content lands, focus the body, press an arrow → the body scrolls and the window does not move → AC-5
+
+### One row that cannot be reached yet
+
+- [ ] press Escape with a window focused → nothing happens today, because the exit timeline and the focus handoff are the next strand on this row → AC-5, AC-8
+
+### What this thread covers
+
+- AC-4 … the drag rows and the gesture tests in `src/components/useWindowMove.test.tsx`, plus the title bar and clamp rows in `e2e/window-manager.spec.ts`
+- AC-5 … the arrow key rows, the scrollable body row, and the keyboard tests in both unit files. Escape is AC-8's and is still open
+- AC-9 … the work area rows, the clamped spawn, and the shrink row in `e2e/window-manager.spec.ts`
+- AC-1, AC-2 … the model rows, the cascade token row, and the store tests, which run with no DOM and no render
+- AC-3 … only the part a move needs (a press focuses the window, and a Tab into its controls focuses it). The quiet treatment and its contrast pairs are still open
+- AC-6, AC-7, AC-8, AC-10 … not exercised by this thread, and unticked above

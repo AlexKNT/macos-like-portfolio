@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   EMPTY_WINDOW_MANAGER,
   WINDOW_LAYOUT,
+  clampPosition,
   focusedKeyOf,
   reduceWindowManager,
   resolveOpenTarget,
@@ -15,6 +16,9 @@ import type { WindowManagerAction, WindowManagerState } from '#store/windowManag
  * point of keeping them pure. Spec 0003 opens the store; spec 0004 extends the same module.
  */
 
+/** The cascade step the caller passes in the built app, read from its measure token. */
+const STEP = 32
+
 /** Runs one action over a state. */
 function dispatch(state: WindowManagerState, action: WindowManagerAction): WindowManagerState {
   return reduceWindowManager(state, action)
@@ -26,7 +30,23 @@ function open(
   target: OpenTarget,
   opener: 'dock' | 'desktop' | 'bar' = 'dock',
 ): WindowManagerState {
-  return dispatch(state, { type: 'open', target, opener: { kind: opener } })
+  return dispatch(state, { type: 'open', target, opener: { kind: opener }, cascadeStep: STEP })
+}
+
+/** Opens one plain window, which is the state most of the movement checks start from. */
+function openProjects(): WindowManagerState {
+  return open(EMPTY_WINDOW_MANAGER, { kind: 'window', windowId: 'projects' })
+}
+
+/** The single instance of a state, for the checks that only ever open one window. */
+function only(state: WindowManagerState) {
+  const instance = state.instances[0]
+
+  if (instance === undefined) {
+    throw new Error('expected one open window')
+  }
+
+  return instance
 }
 
 describe('the window manager', () => {
@@ -70,6 +90,21 @@ describe('the window manager', () => {
 
     expect(first?.position).not.toEqual(second?.position)
     expect(second?.z).toBeGreaterThan(first?.z ?? 0)
+  })
+
+  it('takes the cascade step it is given, so the token layer owns the distance', () => {
+    const roomy = dispatch(EMPTY_WINDOW_MANAGER, {
+      type: 'setWorkArea',
+      size: { width: 1600, height: 900 },
+    })
+    const opened = dispatch(roomy, {
+      type: 'open',
+      target: { kind: 'window', windowId: 'projects' },
+      opener: { kind: 'dock' },
+      cascadeStep: 40,
+    })
+
+    expect(opened.instances[0]?.position).toEqual({ x: 20, y: 20 })
   })
 
   it('raises the window it is asked to focus, and leaves an unknown key alone', () => {
@@ -150,5 +185,92 @@ describe('the target resolver', () => {
       collection: 'files',
       id: 'nope',
     })
+  })
+})
+
+describe('the work area', () => {
+  /** A work area the Projects window fits in twice over, so both edges are reachable. */
+  const AREA = { width: 1600, height: 900 }
+
+  it('clamps nothing until the container has been measured', () => {
+    const opened = openProjects()
+    const moved = dispatch(opened, {
+      type: 'move',
+      key: 'projects',
+      position: { x: 99_999, y: -500 },
+    })
+
+    expect(opened.workArea).toBeNull()
+    expect(only(moved).position).toEqual({ x: 99_999, y: -500 })
+  })
+
+  it('keeps a window inside the work area, whichever edge it is pushed against', () => {
+    const projects = WINDOW_LAYOUT.projects.defaultSize
+    const measured = dispatch(openProjects(), { type: 'setWorkArea', size: AREA })
+
+    const bottomRight = dispatch(measured, {
+      type: 'move',
+      key: 'projects',
+      position: { x: AREA.width, y: AREA.height },
+    })
+    const topLeft = dispatch(bottomRight, {
+      type: 'move',
+      key: 'projects',
+      position: { x: -40, y: -40 },
+    })
+
+    expect(only(bottomRight).position).toEqual({
+      x: AREA.width - projects.width,
+      y: AREA.height - projects.height,
+    })
+    expect(only(topLeft).position).toEqual({ x: 0, y: 0 })
+  })
+
+  it('pins a window bigger than the work area to its top left corner, so the title bar stays reachable', () => {
+    const tiny = { width: 200, height: 120 }
+    const measured = dispatch(openProjects(), { type: 'setWorkArea', size: tiny })
+
+    expect(clampPosition({ x: 400, y: 300 }, WINDOW_LAYOUT.projects.defaultSize, tiny)).toEqual({
+      x: 0,
+      y: 0,
+    })
+    expect(only(measured).position).toEqual({ x: 0, y: 0 })
+  })
+
+  it('spawns a new window clamped into the work area rather than off it', () => {
+    const projects = WINDOW_LAYOUT.projects.defaultSize
+    // Room for the window and eight pixels to spare, so the cascade's first step overshoots.
+    const snug = { width: projects.width + 8, height: projects.height + 8 }
+    const measured = dispatch(EMPTY_WINDOW_MANAGER, { type: 'setWorkArea', size: snug })
+    const opened = open(measured, { kind: 'window', windowId: 'projects' })
+
+    expect(only(opened).position).toEqual({ x: 8, y: 8 })
+  })
+
+  it('pulls every window back in when the work area shrinks, and ignores an unmeasured one', () => {
+    const projects = WINDOW_LAYOUT.projects.defaultSize
+    const measured = dispatch(openProjects(), { type: 'setWorkArea', size: AREA })
+    const far = dispatch(measured, {
+      type: 'move',
+      key: 'projects',
+      position: { x: AREA.width - projects.width, y: 400 },
+    })
+    const shrunk = dispatch(far, { type: 'setWorkArea', size: { width: 800, height: 600 } })
+
+    expect(only(shrunk).position).toEqual({ x: 800 - projects.width, y: 600 - projects.height })
+    expect(dispatch(shrunk, { type: 'setWorkArea', size: { width: 0, height: 0 } })).toBe(shrunk)
+    expect(dispatch(shrunk, { type: 'setWorkArea', size: { width: 800, height: 600 } })).toBe(
+      shrunk,
+    )
+  })
+
+  it('leaves the state untouched when a move lands where the window already sits', () => {
+    const measured = dispatch(openProjects(), { type: 'setWorkArea', size: AREA })
+    const here = only(measured).position
+
+    expect(dispatch(measured, { type: 'move', key: 'projects', position: here })).toBe(measured)
+    expect(dispatch(measured, { type: 'move', key: 'gallery', position: { x: 10, y: 10 } })).toBe(
+      measured,
+    )
   })
 })

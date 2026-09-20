@@ -87,6 +87,15 @@
   --dock-clearance: 5.5rem;
   --dock-hover-lift: 0.5rem;
   --dock-magnify-scale: 1.5;
+
+  /* the window manager: how far each newly opened window steps down and right from the one
+     before, and how far one arrow key moves the focused window, in the plain step and in the
+     Shift step. These three are pixel counts read by script (through `readMeasureToken`),
+     which is why they carry no unit: a custom property keeps the unit it was written with,
+     so `2rem` would arrive as 2. Spec 0004. */
+  --window-cascade-step: 32;
+  --window-nudge-step: 16;
+  --window-nudge-step-large: 64;
   --font-georama: 'Georama Variable', Georama, system-ui, sans-serif;
   --font-roboto: 'Roboto Mono Variable', Roboto Mono, ui-monospace, monospace;
   --font-display: 'Great Vibes', Great Vibes, cursive;

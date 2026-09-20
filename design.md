@@ -85,6 +85,11 @@ The measures are tokens too: `--radius-control`, `--radius-panel`, `--radius-win
 have on a small screen, `--ease-out` and `--ease-in-out` for movement, and `--duration-fast`,
 `--duration-base` and `--duration-slow` in a plain `:root` block so script can read them.
 
+The measures script reads rather than CSS applies are pixel counts with no unit
+(`--dock-magnify-scale`, and the window manager's `--window-cascade-step`, `--window-nudge-step` and
+`--window-nudge-step-large`), since a custom property keeps the unit it was written with and
+`readMeasureToken` would read `2rem` as 2.
+
 Motion is read, never guessed: `readMotionToken` returns milliseconds and `readEaseToken` returns an
 easing string, both from the computed value on the document element. Under reduced motion every
 duration resolves to zero, so a timeline built from these tokens stops by itself.
