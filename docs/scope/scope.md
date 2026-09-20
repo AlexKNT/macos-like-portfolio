@@ -73,7 +73,7 @@ Wallpaper, translucency, type scale, spacing, and the window frame (title bar, t
   - [x] The menu bar on the tokens, and the contrast suite that proves the pairs, translucent ones included (AC-3, AC-7)
   - [x] The chrome primitives: the two layer ring, the five state utilities, `Window` and `WindowControls` (AC-4, AC-5, AC-6)
   - [x] Motion, fonts, small screens, forced colours, and the design notes in `design.md` (AC-9, AC-10, AC-11, AC-12, AC-13)
-- [ ] Verify it: `/check verify design system & window chrome`
+- [x] Verify it: `/check verify design system & window chrome`
 - [ ] Test it: `/test design system & window chrome`
 spec [0002](../specs/0002-design-system-window-chrome/index.md) · code in `src/index.css`, `src/lib/appearance.ts`, `src/lib/motion.ts`, `src/components/Window.tsx`
 
