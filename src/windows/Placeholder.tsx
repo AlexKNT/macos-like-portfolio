@@ -1,4 +1,5 @@
 import { WINDOWS } from '#content/windows'
+import { WindowStage } from '#windows/WindowStage'
 import type { WindowId } from '#content/types'
 
 /**
@@ -25,16 +26,20 @@ export type PlaceholderProps = { readonly windowId: WindowId }
 /**
  * The body a window shows while it has no body of its own yet: the app's icon, the window
  * name, and one line naming what will live there. It is a normal body in every other
- * respect, so the frame around it behaves exactly as the real one will. Spec 0003, AC-8.
+ * respect, so the frame around it behaves exactly as the real one will, and it composes the
+ * shared stage with its own line as the content so the registry baseline stays true for every
+ * registered entry. Spec 0003, AC-8; spec 0006, AC-1.
  */
 export function Placeholder({ windowId }: PlaceholderProps) {
   const window = WINDOWS[windowId]
 
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-3 px-8 py-10 text-center">
-      <img src={window.icon} alt="" className="size-12 select-none" />
-      <p className="text-text text-lg font-medium">{window.title}</p>
-      <p className="text-text-muted max-w-72 text-sm">{PLACEHOLDER_LINES[windowId]}</p>
-    </div>
+    <WindowStage name={window.title}>
+      <div className="flex h-full flex-col items-center justify-center gap-3 px-8 py-10 text-center">
+        <img src={window.icon} alt="" className="size-12 select-none" />
+        <p className="text-text text-lg font-medium">{window.title}</p>
+        <p className="text-text-muted max-w-72 text-sm">{PLACEHOLDER_LINES[windowId]}</p>
+      </div>
+    </WindowStage>
   )
 }

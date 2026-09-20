@@ -124,6 +124,9 @@
   --duration-fast: 120ms;
   --duration-base: 200ms;
   --duration-slow: 320ms;
+  /* The gap between one printed line and the next, which is the first timing value the design
+     system has for a staggered print. Spec 0006, AC-5. */
+  --duration-stagger: 60ms;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -131,6 +134,7 @@
     --duration-fast: 0ms;
     --duration-base: 0ms;
     --duration-slow: 0ms;
+    --duration-stagger: 0ms;
   }
 }
 
@@ -456,52 +460,6 @@
 
           a {
             @apply text-blue-600 text-xs hover:underline flex items-center gap-3;
-          }
-        }
-      }
-    }
-  }
-
-  #terminal {
-    @apply w-xl absolute top-32 left-1/12 bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
-
-    h2 {
-      @apply font-bold text-sm text-center w-full;
-    }
-
-    .techstack {
-      @apply text-sm font-roboto p-5;
-
-      .label {
-        @apply flex items-center ms-10 mt-7;
-      }
-
-      .content {
-        @apply py-5 my-5 border-y border-dashed space-y-1;
-
-        li {
-          .check {
-            @apply text-[#00A154] w-5;
-          }
-
-          h3 {
-            @apply font-semibold text-[#00A154] w-32 ms-5;
-          }
-
-          ul {
-            @apply flex items-center gap-3;
-          }
-        }
-      }
-
-      .footnote {
-        @apply text-[#00A154] space-y-1;
-
-        p {
-          @apply flex items-center;
-
-          svg {
-            @apply w-5 me-5;
           }
         }
       }

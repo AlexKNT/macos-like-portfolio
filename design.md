@@ -169,7 +169,7 @@ and bring it to `/architect`.
 ## Reference only, not yet migrated
 
 `src/index.css` still carries the window classes ported from the reference build: `#safari`,
-`#terminal`, `#photos`, `#contact`, `#resume`, `#home` and `#dock`. They are palette based and light
+`#photos`, `#contact`, `#resume`, `#home` and `#dock`. They are palette based and light
 only, and they are kept so the windows that are still to be built have a starting point. Do not copy
 them as they stand. Each window feature migrates its own rules onto the tokens when it lands, and
 what is left is deleted once every window is built. That is tracked debt, not a second design system.
@@ -177,6 +177,10 @@ what is left is deleted once every window is built. That is tracked debt, not a 
 The projects window has landed, so `#finder`, `#txtfile` and `#imgfile` are gone from that file: the
 Finder builds its own surfaces from the state utilities and the token layer, and the two file
 windows are ordinary bodies of the shared frame.
+
+The skills window has landed too, so `#terminal` is gone: it prints in `--font-roboto` on the body's
+own surface, with `--color-success` on the mark, `--color-text-muted` on the prompt line and the hint,
+and `--color-divider` on the dashed rule above that hint.
 
 ## Open items
 

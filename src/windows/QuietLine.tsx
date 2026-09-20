@@ -4,9 +4,10 @@ import type { ReactNode } from 'react'
 export type QuietLineProps = { readonly children: ReactNode }
 
 /**
- * The line a window shows where content is missing rather than broken. It sits on a surface of
- * its own rather than floating on the body, so a missing state reads as a place in the layout
- * instead of a hole in it. Spec 0005, AC-8, AC-9.
+ * The one way a window shows a thing that is missing, empty or refused, wherever it happens.
+ * It sits on a surface of its own rather than floating on the body, so a missing state reads as
+ * a place in the layout instead of a hole in it. The words come from the window that shows it.
+ * Spec 0005, AC-8, AC-9; spec 0006, AC-2.
  */
 export function QuietLine({ children }: QuietLineProps) {
   return (

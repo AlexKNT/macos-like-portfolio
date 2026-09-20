@@ -1,6 +1,15 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
 import { afterEach, describe, expect, it } from 'vitest'
 
 import { readEaseToken, readMotionToken } from '#lib/motion'
+
+/**
+ * The stylesheet read straight off disk, so the check below sees what the author wrote rather
+ * than the compiled stylesheet a raw import would return. Spec 0006, AC-5.
+ */
+const STYLESHEET = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
 
 /** Stops one test's token from deciding the next one's answer. */
 afterEach(() => {
@@ -40,5 +49,36 @@ describe('readEaseToken', () => {
 
   it('answers with the standard ease out when the token is missing', () => {
     expect(readEaseToken('in-out')).toContain('cubic-bezier')
+  })
+})
+
+describe('the stagger token', () => {
+  // covers: AC-5
+  it('is declared once for the print and once at zero, so reduced motion needs no second path', () => {
+    const values = [...STYLESHEET.matchAll(/--duration-stagger:\s*([^;]+);/g)].map((match) =>
+      (match[1] ?? '').trim(),
+    )
+
+    // Two declarations: the duration the print runs at, and the zero reduced motion leaves.
+    expect(values).toHaveLength(2)
+    expect(values).toContain('0ms')
+    expect(
+      values.some((value) => value !== '0ms'),
+      'a duration the print runs at',
+    ).toBe(true)
+  })
+
+  // covers: AC-5
+  it('reads as the gap between one printed line and the next', () => {
+    document.documentElement.style.setProperty('--duration-stagger', '60ms')
+
+    expect(readMotionToken('stagger')).toBe(60)
+  })
+
+  // covers: AC-5
+  it('reads zero under reduced motion, so a reveal does nothing at all', () => {
+    document.documentElement.style.setProperty('--duration-stagger', '0ms')
+
+    expect(readMotionToken('stagger')).toBe(0)
   })
 })

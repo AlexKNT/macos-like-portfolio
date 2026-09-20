@@ -1,5 +1,5 @@
 /** The durations the desktop animates with, as the stylesheet names them. */
-export type MotionToken = 'fast' | 'base' | 'slow'
+export type MotionToken = 'fast' | 'base' | 'slow' | 'stagger'
 
 /** The easings the desktop animates with, as the stylesheet names them. */
 export type EaseToken = 'out' | 'in-out'

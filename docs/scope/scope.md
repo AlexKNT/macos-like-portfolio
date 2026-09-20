@@ -129,15 +129,15 @@ One strand each, all end to end: the rest of the core windows a recruiter expect
 Your stack printed in a terminal, grouped by area, so a recruiter can scan what you work with in a few seconds.
 **Done when:** the window lists each category with its items, and the text is readable by a screen reader.
 - [x] Design it (spec): `/architect skills window`
-- [ ] Build it: `/develop skills window`
-  - [ ] The shared pieces and the baseline test: the stage, the quiet line, the copy pair with its confirmation, the four bodies moved onto the stage, and the test over the window registry (umbrella AC-1, AC-2, AC-3)
-  - [ ] The thin thread: the prompt line, the six groups in order and the hint, with the window's own words in one module (AC-1, AC-10, AC-11)
-  - [ ] Copy and confirmation: every name a button, the confirmation on its row, the refusal as a value, and the empty group line (AC-2, AC-3, AC-4, AC-9)
-  - [ ] The reveal: the stagger token and the mask over text that is already in the page (AC-5)
-  - [ ] Tokens, narrow widths and the suite: the token pass, `#terminal` deleted, the stacked layout at 360px and `e2e/skills.spec.ts` (AC-6, AC-7, AC-8, AC-12)
-- [ ] Verify it: `/check verify skills window`
-- [ ] Test it: `/test skills window`
-spec [0006](../specs/0006-content-window-bodies/index.md)
+- [x] Build it: `/develop skills window`
+  - [x] The shared pieces and the baseline test: the stage, the quiet line, the copy pair with its confirmation, the four bodies moved onto the stage, and the test over the window registry (umbrella AC-1, AC-2, AC-3)
+  - [x] The thin thread: the prompt line, the six groups in order and the hint, with the window's own words in one module (AC-1, AC-10, AC-11)
+  - [x] Copy and confirmation: every name a button, the confirmation on its row, the refusal as a value, and the empty group line (AC-2, AC-3, AC-4, AC-9)
+  - [x] The reveal: the stagger token and the mask over text that is already in the page (AC-5)
+  - [x] Tokens, narrow widths and the suite: the token pass, `#terminal` deleted, the stacked layout at 360px and `e2e/skills.spec.ts` (AC-6, AC-7, AC-8, AC-12)
+- [x] Verify it: `/check verify skills window`
+- [x] Test it: `/test skills window`
+spec [0006](../specs/0006-content-window-bodies/index.md) · code in `src/windows/WindowStage.tsx`, `src/windows/skills`, `src/windows/copyLines.ts`, `src/windows/useCopyText.ts`, `src/windows/useLineReveal.ts`, `src/lib/clipboard.ts`, `e2e/skills.spec.ts`
 
 ### 10. Resume window · planned · needs a decision
 Your resume, readable and downloadable inside the desktop, since recruiters look for it first.

@@ -1,5 +1,5 @@
 import { openTargetFor } from '#content/reads'
-import { QuietLine } from '#windows/projects/QuietLine'
+import { QuietLine } from '#windows/QuietLine'
 import { emptyPlaceLine } from '#windows/projects/quietLines'
 import type { TreeEntry } from '#content/reads'
 import type { OpenTarget } from '#content/types'
