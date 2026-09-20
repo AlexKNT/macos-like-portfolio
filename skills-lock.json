@@ -1,6 +1,36 @@
 {
   "version": 1,
   "skills": {
+    "accessibility-audit": {
+      "source": "accesslint/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/accesslint/skills/accessibility-audit/SKILL.md",
+      "computedHash": "18273e55e03bb6b17dfc79ced58ba1b737641102d8824ec36dca6bdd502b6810"
+    },
+    "accessibility-diff": {
+      "source": "accesslint/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/accesslint/skills/accessibility-diff/SKILL.md",
+      "computedHash": "0ebf8aa96036a55708303e469beeb79d4b9352eab4a90401489b43f2aff620e7"
+    },
+    "accessibility-fix": {
+      "source": "accesslint/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/accesslint/skills/accessibility-fix/SKILL.md",
+      "computedHash": "f6b9ace1a17ea13e493115bdcd0cd6ef3ff95fd211171c1ca2dd424e8cdda237"
+    },
+    "accessibility-inspect": {
+      "source": "accesslint/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/accesslint/skills/accessibility-inspect/SKILL.md",
+      "computedHash": "18ac0fc47e509546df8f79e4629d89e00f10a641448fbfa24859b86ca5e957a4"
+    },
+    "accessibility-scan": {
+      "source": "accesslint/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/accesslint/skills/accessibility-scan/SKILL.md",
+      "computedHash": "26960081c35e33ebf7957a08504ad6a4a4f13fd13f9d85e6e06577ae5a722b7e"
+    },
     "gsap-core": {
       "source": "greensock/gsap-skills",
       "sourceType": "github",

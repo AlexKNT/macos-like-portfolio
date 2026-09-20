@@ -14,8 +14,8 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 1 | Project scaffold & build | Foundation | existing |
 | 2 | Tailwind wiring & base styles | Foundation | done |
 | 3 | Coding standards & tooling | Foundation | in-progress |
-| 4 | Content data model | Foundation | in-progress |
-| 5 | Design system & window chrome | Foundation | planned |
+| 4 | Content data model | Foundation | done |
+| 5 | Design system & window chrome | Foundation | in-progress |
 | 6 | Desktop shell | Slice 1 | planned |
 | 7 | Window manager | Slice 1 | planned |
 | 8 | Projects window (Finder style) | Slice 1 | planned |
@@ -48,7 +48,7 @@ The conventions and the tooling choices are recorded in `AGENTS.md` from the ear
 - [ ] Build it: `/develop coding standards & tooling`
 - [ ] Check it runs clean: `/test`
 
-### 4. Content data model · in-progress
+### 4. Content data model · done
 The seed data for the menu bar, the dock, projects, articles, the stack, socials, the gallery, and the window spots already exists in JavaScript and nothing reads it yet. Settling its final typed shape now keeps every window building on the same structure.
 **Done when:** the data is TypeScript with no `any`, one registry says which window opens for each item, and leftover seed data is trimmed.
 - [x] Design it (spec): `/architect content data model`
@@ -62,10 +62,19 @@ The seed data for the menu bar, the dock, projects, articles, the stack, socials
 - [x] Test it: `/test content data model`
 spec [0001](../specs/0001-content-data-model/index.md) · code in `src/content`, `src/lib/result.ts`
 
-### 5. Design system & window chrome · planned · needs a decision
+### 5. Design system & window chrome · in-progress
 Wallpaper, translucency, type scale, spacing, and the window frame (title bar, traffic lights, focus and hover states), so every window looks like it belongs to one desktop and meets the contrast bar.
 **Done when:** the design notes cover color, type, spacing, and window chrome, and the base pieces handle focus and keyboard use.
-- [ ] Design it (spec): `/architect design system & window chrome`
+- [x] Design it (spec): `/architect design system & window chrome`
+- [ ] Build it: `/develop design system & window chrome`
+  - [ ] The token layer and both sets of values: the six families in one `@theme static` block, the ground colour in the base layer, and the wallpaper read from the content layer (AC-1, AC-8)
+  - [ ] The mode before paint: the resolution and the startup call in `#lib/appearance`, plus the small script in `index.html` (AC-2)
+  - [ ] The menu bar on the tokens, and the contrast suite that proves the pairs, translucent ones included (AC-3, AC-7)
+  - [ ] The chrome primitives: the two layer ring, the five state utilities, `Window` and `WindowControls` (AC-4, AC-5, AC-6)
+  - [ ] Motion, fonts, small screens, forced colours, and the design notes in `design.md` (AC-9, AC-10, AC-11, AC-12, AC-13)
+- [ ] Verify it: `/check verify design system & window chrome`
+- [ ] Test it: `/test design system & window chrome`
+spec [0002](../specs/0002-design-system-window-chrome/index.md)
 
 ## Slice 1: The desktop that works
 The walking skeleton: the shell, the window behavior, and one real window with real content. Everything after this thickens the same thread.
