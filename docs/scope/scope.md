@@ -52,15 +52,15 @@ The conventions and the tooling choices are recorded in `AGENTS.md` from the ear
 The seed data for the menu bar, the dock, projects, articles, the stack, socials, the gallery, and the window spots already exists in JavaScript and nothing reads it yet. Settling its final typed shape now keeps every window building on the same structure.
 **Done when:** the data is TypeScript with no `any`, one registry says which window opens for each item, and leftover seed data is trimmed.
 - [x] Design it (spec): `/architect content data model`
-- [ ] Build it: `/develop content data model`
-  - [ ] Content layer and the shell thread: the aliases, the Result type, zod, the id unions, the nine windows and the shell content, with `Navbar` repointed (AC-1, AC-3, AC-4, AC-9)
-  - [ ] The Finder tree and the profile: the four file kinds, the locations and the projects, the profile and the socials (AC-2, AC-6, AC-9)
-  - [ ] Opening an item: `findById` and `openTargetFor` (AC-4, AC-6)
-  - [ ] The rest of the content: articles, the tech stack, the gallery (AC-1, AC-2, AC-5)
-  - [ ] Authoring and proof: the accessibility text and links, the old seed deleted, the development check and the content tests (AC-7, AC-8, AC-10)
+- [x] Build it: `/develop content data model`
+  - [x] Content layer and the shell thread: the aliases, the Result type, zod, the id unions, the nine windows and the shell content, with `Navbar` repointed (AC-1, AC-3, AC-4, AC-9)
+  - [x] The Finder tree and the profile: the four file kinds, the locations and the projects, the profile and the socials (AC-2, AC-6, AC-9)
+  - [x] Opening an item: `findById` and `openTargetFor` (AC-4, AC-6)
+  - [x] The rest of the content: articles, the tech stack, the gallery (AC-1, AC-2, AC-5)
+  - [x] Authoring and proof: the accessibility text and links, the old seed deleted, the development check and the content tests (AC-7, AC-8, AC-10)
 - [ ] Verify it: `/check verify content data model`
 - [ ] Test it: `/test content data model`
-spec [0001](../specs/0001-content-data-model.md)
+spec [0001](../specs/0001-content-data-model/index.md) · code in `src/content`, `src/lib/result.ts`
 
 ### 5. Design system & window chrome · planned · needs a decision
 Wallpaper, translucency, type scale, spacing, and the window frame (title bar, traffic lights, focus and hover states), so every window looks like it belongs to one desktop and meets the contrast bar.

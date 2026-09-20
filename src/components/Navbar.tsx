@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { navIcons, navLinks } from '#constants'
+import { NAV_ICONS, NAV_LINKS } from '#content/shell'
 
 const CLOCK_FORMAT = new Intl.DateTimeFormat(undefined, {
   hour: 'numeric',
@@ -40,7 +40,9 @@ function useCurrentMinute(): Date {
 /**
  * The menu bar across the top of the desktop: the logo and the window links on the left,
  * the status icons and the live clock on the right.
- * The links are keyboard reachable but open nothing yet, the window manager wires them later.
+ * The links are keyboard reachable but open nothing yet, and the icons stay decorative,
+ * so each one keeps an empty `alt`. The accessible label on the icons that act joins
+ * when the desktop shell wires their actions.
  */
 export function Navbar() {
   const now = useCurrentMinute()
@@ -50,16 +52,16 @@ export function Navbar() {
       <div>
         <img src="/images/logo.svg" alt="" />
         <ul>
-          {navLinks.map(({ id, name }) => (
+          {NAV_LINKS.map(({ id, label }) => (
             <li key={id}>
-              <button type="button">{name}</button>
+              <button type="button">{label}</button>
             </li>
           ))}
         </ul>
       </div>
       <div>
-        {navIcons.map(({ id, img }) => (
-          <img key={id} src={img} alt="" />
+        {NAV_ICONS.map(({ id, icon }) => (
+          <img key={id} src={icon} alt="" />
         ))}
         <time dateTime={now.toISOString()}>{CLOCK_FORMAT.format(now)}</time>
       </div>

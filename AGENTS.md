@@ -40,7 +40,7 @@ npx tsc -b       # typecheck only
 - Naming: `PascalCase` components, `camelCase` functions, `useSomething` hooks, `SCREAMING_SNAKE_CASE` constants, `SomethingProps` prop types.
 - Document every exported function, component, and hook in one short comment: what it does, what it returns.
 - Accessibility baseline on every control: keyboard reachable, visible focus ring, labels on icon buttons, `alt` text on images, WCAG AA contrast.
-- File layout follows the aliases already in `vite.config.ts`: `#components`, `#windows`, `#store`, `#hoc`, `#constants`, one job per folder. Register any new alias in `jsconfig.json` too.
+- File layout follows the aliases already in `vite.config.ts`: `#components`, `#content`, `#lib`, `#windows`, `#store`, `#hoc`, one job per folder. Register any new alias in `jsconfig.json` too.
 
 ## Tooling
 
