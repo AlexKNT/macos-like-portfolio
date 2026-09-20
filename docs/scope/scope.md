@@ -18,7 +18,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 5 | Design system & window chrome | Foundation | done |
 | 6 | Desktop shell | Slice 1 | done |
 | 7 | Window manager | Slice 1 | in-progress |
-| 8 | Projects window (Finder style) | Slice 1 | planned |
+| 8 | Projects window (Finder style) | Slice 1 | in-progress |
 | 9 | Skills window (Terminal style) | Slice 2 | planned |
 | 10 | Resume window | Slice 2 | planned |
 | 11 | Contact window | Slice 2 | planned |
@@ -108,10 +108,19 @@ The shared behavior for every window: focus and stacking order, dragging, minimi
 - [x] Test it: `/test window manager`
 spec [0004](../specs/0004-window-manager/index.md) · code in `src/store/windowManager.ts`, `src/store/windowElements.ts`, `src/components/useWindowMove.ts`, `src/components/useWindowFrame.ts`
 
-### 8. Projects window (Finder style) · planned · needs a decision
+### 8. Projects window (Finder style) · in-progress
 The centrepiece for recruiters: browse project folders, then open one to read what it is, what it does, and where to find it.
 **Done when:** a visitor opens a project, reads its detail view, follows a live or source link, and sees sensible empty and missing states.
-- [ ] Design it (spec): `/architect projects window`
+- [x] Design it (spec): `/architect projects window`
+- [x] Build it: `/develop projects window`
+  - [x] The content model moves: `position` leaves the tree, the three source links land, and the project contents rule holds (AC-15)
+  - [x] The thin thread: the place model, the resolver naming the place, the widened body props and the registry, and a real Finder body (AC-1, AC-2, AC-3, AC-13)
+  - [x] Moving between places: the history, the Back control, the focus move and the project detail view (AC-4, AC-5, AC-10, AC-11)
+  - [x] The file windows and the quiet states: the text body, the image body, the link anchors and the empty place line (AC-6, AC-7, AC-8, AC-9)
+  - [x] Narrow widths and the design pass: the icon row sidebar, the tokens and the end to end suite (AC-12, AC-14)
+- [x] Verify it: `/check verify projects window`
+- [x] Test it: `/test projects window`
+spec [0005](../specs/0005-projects-window/index.md) · code in `src/windows/projects`, `src/content/reads.ts`, `src/store/windowManager.ts`, `src/windows/WindowBody.tsx`
 
 ## Slice 2: The content windows
 One strand each, all end to end: the rest of the core windows a recruiter expects.
