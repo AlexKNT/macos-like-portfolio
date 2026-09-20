@@ -13,11 +13,11 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 |---|---------|-------|--------|
 | 1 | Project scaffold & build | Foundation | existing |
 | 2 | Tailwind wiring & base styles | Foundation | done |
-| 3 | Coding standards & tooling | Foundation | in-progress |
+| 3 | Coding standards & tooling | Foundation | done |
 | 4 | Content data model | Foundation | done |
-| 5 | Design system & window chrome | Foundation | in-progress |
-| 6 | Desktop shell | Slice 1 | planned |
-| 7 | Window manager | Slice 1 | planned |
+| 5 | Design system & window chrome | Foundation | done |
+| 6 | Desktop shell | Slice 1 | in-progress |
+| 7 | Window manager | Slice 1 | in-progress |
 | 8 | Projects window (Finder style) | Slice 1 | planned |
 | 9 | Skills window (Terminal style) | Slice 2 | planned |
 | 10 | Resume window | Slice 2 | planned |
@@ -80,15 +80,33 @@ spec [0002](../specs/0002-design-system-window-chrome/index.md) · code in `src/
 ## Slice 1: The desktop that works
 The walking skeleton: the shell, the window behavior, and one real window with real content. Everything after this thickens the same thread.
 
-### 6. Desktop shell · planned · needs a decision
+### 6. Desktop shell · in-progress
 The menu bar, the dock, and the wallpaper: the first thing a visitor sees, and the frame every window sits in.
 **Done when:** the menu bar shows the live time and the nav links, a dock icon opens its window, keyboard users can reach both, and the wallpaper fills the viewport at any size.
-- [ ] Design it (spec): `/architect desktop shell`
+- [x] Design it (spec): `/architect desktop shell`
+- [ ] Build it: `/develop desktop shell`
+  - [ ] The content additions and the checks: the greeting, the desktop items, the window target (AC-2, AC-3)
+  - [ ] The thin thread: the store's first three actions, the window layer and one placeholder, proven by one dock button (AC-1, AC-8, AC-11)
+  - [ ] The desktop surface, the menu bar actions and the session appearance press (AC-1, AC-2, AC-3, AC-4, AC-5)
+  - [ ] The dock: the region, the six buttons, the tooltips, the lift, the indicators, the keyboard path and the GSAP magnify (AC-6, AC-7, AC-9)
+  - [ ] The nine placeholder bodies, the compact behaviour and the dock ring pair (AC-8, AC-9, AC-10)
+- [ ] Verify it: `/check verify desktop shell`
+- [ ] Test it: `/test desktop shell`
+spec [0003](../specs/0003-desktop-shell/index.md)
 
-### 7. Window manager · planned · needs a decision
+### 7. Window manager · in-progress
 The shared behavior for every window: focus and stacking order, dragging, minimize and maximize, and closing. This is the thread the whole desktop runs on, so it comes before any single window.
 **Done when:** opening from the dock focuses the window, dragging moves it, the focused window sits above the rest, minimize and close animate, and each of those actions has a keyboard path.
-- [ ] Design it (spec): `/architect window manager`
+- [x] Design it (spec): `/architect window manager`
+- [ ] Build it: `/develop window manager`
+  - [ ] The model, the layout config, the resolver and the reducer, tested without a DOM (AC-1, AC-2)
+  - [ ] The focus and stacking thread with the quiet treatment (AC-3)
+  - [ ] The drag, the keyboard paths and the exit timeline with the focus handoff (AC-4, AC-5, AC-8)
+  - [ ] Minimise, restore, the dock link and zoom (AC-6, AC-7)
+  - [ ] The work area observer, the resize clamp, reduced motion and StrictMode hygiene (AC-9, AC-10)
+- [ ] Verify it: `/check verify window manager`
+- [ ] Test it: `/test window manager`
+spec [0004](../specs/0004-window-manager/index.md)
 
 ### 8. Projects window (Finder style) · planned · needs a decision
 The centrepiece for recruiters: browse project folders, then open one to read what it is, what it does, and where to find it.
@@ -159,6 +177,7 @@ Dock and window sounds that give the desktop its feel, with a mute control, beca
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.
+- **Window resizing**: a grip on the window frame, a resize action in the manager, and the smallest allowed size as its floor · from spec 0004
 - **Visitor analytics**: see which windows visitors open and which projects they read · needs a decision
 - **A second language**: translate the desktop and add a language switch · needs a decision
 - **Hosted contact form**: messages that arrive without the visitor's mail app · needs a decision
