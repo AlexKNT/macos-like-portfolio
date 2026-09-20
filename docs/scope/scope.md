@@ -19,7 +19,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 6 | Desktop shell | Slice 1 | done |
 | 7 | Window manager | Slice 1 | in-progress |
 | 8 | Projects window (Finder style) | Slice 1 | in-progress |
-| 9 | Skills window (Terminal style) | Slice 2 | planned |
+| 9 | Skills window (Terminal style) | Slice 2 | in-progress |
 | 10 | Resume window | Slice 2 | planned |
 | 11 | Contact window | Slice 2 | planned |
 | 12 | Mobile app switcher shell | Slice 3 | planned |
@@ -108,7 +108,7 @@ The shared behavior for every window: focus and stacking order, dragging, minimi
 - [x] Test it: `/test window manager`
 spec [0004](../specs/0004-window-manager/index.md) · code in `src/store/windowManager.ts`, `src/store/windowElements.ts`, `src/components/useWindowMove.ts`, `src/components/useWindowFrame.ts`
 
-### 8. Projects window (Finder style) · in-progress
+### 8. Projects window (Finder style) · done
 The centrepiece for recruiters: browse project folders, then open one to read what it is, what it does, and where to find it.
 **Done when:** a visitor opens a project, reads its detail view, follows a live or source link, and sees sensible empty and missing states.
 - [x] Design it (spec): `/architect projects window`
@@ -125,10 +125,19 @@ spec [0005](../specs/0005-projects-window/index.md) · code in `src/windows/proj
 ## Slice 2: The content windows
 One strand each, all end to end: the rest of the core windows a recruiter expects.
 
-### 9. Skills window (Terminal style) · planned · needs a decision
+### 9. Skills window (Terminal style) · in-progress
 Your stack printed in a terminal, grouped by area, so a recruiter can scan what you work with in a few seconds.
 **Done when:** the window lists each category with its items, and the text is readable by a screen reader.
-- [ ] Design it (spec): `/architect skills window`
+- [x] Design it (spec): `/architect skills window`
+- [ ] Build it: `/develop skills window`
+  - [ ] The shared pieces and the baseline test: the stage, the quiet line, the copy pair with its confirmation, the four bodies moved onto the stage, and the test over the window registry (umbrella AC-1, AC-2, AC-3)
+  - [ ] The thin thread: the prompt line, the six groups in order and the hint, with the window's own words in one module (AC-1, AC-10, AC-11)
+  - [ ] Copy and confirmation: every name a button, the confirmation on its row, the refusal as a value, and the empty group line (AC-2, AC-3, AC-4, AC-9)
+  - [ ] The reveal: the stagger token and the mask over text that is already in the page (AC-5)
+  - [ ] Tokens, narrow widths and the suite: the token pass, `#terminal` deleted, the stacked layout at 360px and `e2e/skills.spec.ts` (AC-6, AC-7, AC-8, AC-12)
+- [ ] Verify it: `/check verify skills window`
+- [ ] Test it: `/test skills window`
+spec [0006](../specs/0006-content-window-bodies/index.md)
 
 ### 10. Resume window · planned · needs a decision
 Your resume, readable and downloadable inside the desktop, since recruiters look for it first.
