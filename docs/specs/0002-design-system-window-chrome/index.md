@@ -1,7 +1,7 @@
 # 0002. Adopt a semantic token layer and one window chrome
 
 **Date**: 2026-09-20
-**Status**: Proposed
+**Status**: In Progress
 
 ## Summary
 

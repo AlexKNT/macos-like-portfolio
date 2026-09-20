@@ -83,3 +83,31 @@ Both pass trivially when nothing renders the thing being checked, so read them a
 
 - [ ] open `design.md` and check the four areas the scope asks for are actually covered, and that the window rules which are not yet migrated are called out as reference
 - [ ] open the contrast suite and confirm the pair list covers every surface the menu bar paints, not only the obvious text pairs
+
+## Added by /develop, 2026-09-20
+
+The build landed the whole plan, so these steps cover what the plan above could only describe. The
+first five are the ones the suite now proves by itself, which is why they say what a failure looks
+like rather than what to read.
+
+- [ ] `npm test` → 46 tests pass, the contrast suite among them, and it names every pair it checks → AC-3
+- [ ] set `--color-text-muted` to `#9aa0aa` in `src/index.css` and run `npm test` → it fails with "light: muted text on surface is 2.63:1, below 4.5:1" and the same for `surface-sunken`, then `git checkout -- src/index.css` → AC-3
+- [ ] `npm run test:e2e` → 10 tests pass in Chromium: the mode before paint, the wallpaper the mode names, the wallpaper files served, the bar following the mode, the two layer ring, the duration and easing readers, and the compact fallback → AC-2, AC-4, AC-7, AC-8, AC-9, AC-11
+- [ ] `npm run format:check` → clean, so the formatter and the linter agree about every file → the tooling feature
+- [ ] open `src/lib/contrast.ts` and `src/lib/tokens.ts` → the ratios are computed from the values the suite reads out of `src/index.css`, so nothing is retyped and a weakened token cannot pass → AC-3
+- [ ] first visit in dark mode with nothing stored → the bar is dark with light text, the logo is light rather than black, and the wallpaper is `/images/wallpaper-dark.png` → AC-2, AC-7, AC-8
+- [ ] hover a menu bar link in either mode → the wash comes from `--color-surface-raised`, so it is a step up in dark and a step in light, never a palette class → AC-6, AC-7
+- [ ] tab to a menu bar link → the outline is 2px `--color-focus-outer` with a 2px offset and a 2px `--color-focus-inner` shadow → AC-4
+- [ ] render a `Window` with no handlers in `App.tsx`, then compare against `designs/lightSpecific-Project.png` and `designs/darkSpecific-Project.png` → the title bar reads as one step from the body, the three lights keep their colours, and the lights are skipped in the tab order, then revert → AC-5
+- [ ] narrow to 360px → the bar is solid `--color-surface` with no blur and nothing scrolls sideways → AC-11
+- [ ] turn on forced colours → the window edge and the focus ring stay visible and the inner shadow is replaced rather than left invisible → AC-4, AC-12
+
+### Pairs the build added to check
+
+- [ ] open `src/lib/tokens.test.ts` → the pair list covers the menu bar, the control boundary, the ring on the ground colour and on the bar, and the three quiet accents, in both modes → AC-3, AC-6, AC-7
+- [ ] open `design.md` and read the Exceptions section → the three traffic lights are the one graphic not held at 3:1, with the reason stated, and the hairlines are named as decorative → AC-3, AC-10
+
+### Left open on purpose
+
+- [ ] the resume window decides what ink a page uses in dark mode; until then the paper pairs run in light mode only, and both `design.md` and the stylesheet say so → AC-3, AC-10
+- [ ] the dock adds its own ring pair when the desktop shell builds it; the ring on the translucent panel is the one pair the suite cannot judge without a control on it → AC-3, AC-6

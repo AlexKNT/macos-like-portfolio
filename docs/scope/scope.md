@@ -45,8 +45,9 @@ code in `vite.config.ts`, `src/index.css`, `src/components/Navbar.tsx`, `src/App
 The conventions and the tooling choices are recorded in `AGENTS.md` from the earlier audit. What is left is the enforcement: the formatter, the pre commit hook, the test runners, and the CI job.
 **Done when:** lint and format agree with each other, one pre commit hook runs lint, format, and typecheck on changed files, component and end to end tests run, and CI runs those checks on every push and pull request.
 - [x] Capture conventions and tooling choices: `/audit`
-- [ ] Build it: `/develop coding standards & tooling`
+- [x] Build it: `/develop coding standards & tooling`
 - [ ] Check it runs clean: `/test`
+code in `package.json`, `eslint.config.js`, `.prettierrc.json`, `.husky/pre-commit`, `.github/workflows/ci.yml`, `playwright.config.ts`, `e2e/`
 
 ### 4. Content data model · done
 The seed data for the menu bar, the dock, projects, articles, the stack, socials, the gallery, and the window spots already exists in JavaScript and nothing reads it yet. Settling its final typed shape now keeps every window building on the same structure.
@@ -66,15 +67,15 @@ spec [0001](../specs/0001-content-data-model/index.md) · code in `src/content`,
 Wallpaper, translucency, type scale, spacing, and the window frame (title bar, traffic lights, focus and hover states), so every window looks like it belongs to one desktop and meets the contrast bar.
 **Done when:** the design notes cover color, type, spacing, and window chrome, and the base pieces handle focus and keyboard use.
 - [x] Design it (spec): `/architect design system & window chrome`
-- [ ] Build it: `/develop design system & window chrome`
-  - [ ] The token layer and both sets of values: the six families in one `@theme static` block, the ground colour in the base layer, and the wallpaper read from the content layer (AC-1, AC-8)
-  - [ ] The mode before paint: the resolution and the startup call in `#lib/appearance`, plus the small script in `index.html` (AC-2)
-  - [ ] The menu bar on the tokens, and the contrast suite that proves the pairs, translucent ones included (AC-3, AC-7)
-  - [ ] The chrome primitives: the two layer ring, the five state utilities, `Window` and `WindowControls` (AC-4, AC-5, AC-6)
-  - [ ] Motion, fonts, small screens, forced colours, and the design notes in `design.md` (AC-9, AC-10, AC-11, AC-12, AC-13)
+- [x] Build it: `/develop design system & window chrome`
+  - [x] The token layer and both sets of values: the six families in one `@theme static` block, the ground colour in the base layer, and the wallpaper read from the content layer (AC-1, AC-8)
+  - [x] The mode before paint: the resolution and the startup call in `#lib/appearance`, plus the small script in `index.html` (AC-2)
+  - [x] The menu bar on the tokens, and the contrast suite that proves the pairs, translucent ones included (AC-3, AC-7)
+  - [x] The chrome primitives: the two layer ring, the five state utilities, `Window` and `WindowControls` (AC-4, AC-5, AC-6)
+  - [x] Motion, fonts, small screens, forced colours, and the design notes in `design.md` (AC-9, AC-10, AC-11, AC-12, AC-13)
 - [ ] Verify it: `/check verify design system & window chrome`
 - [ ] Test it: `/test design system & window chrome`
-spec [0002](../specs/0002-design-system-window-chrome/index.md)
+spec [0002](../specs/0002-design-system-window-chrome/index.md) · code in `src/index.css`, `src/lib/appearance.ts`, `src/lib/motion.ts`, `src/components/Window.tsx`
 
 ## Slice 1: The desktop that works
 The walking skeleton: the shell, the window behavior, and one real window with real content. Everything after this thickens the same thread.
