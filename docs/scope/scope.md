@@ -104,8 +104,8 @@ The shared behavior for every window: focus and stacking order, dragging, minimi
   - [x] The drag, the keyboard paths and the exit timeline with the focus handoff (AC-4, AC-5, AC-8)
   - [x] Minimise, restore, the dock link and zoom (AC-6, AC-7)
   - [x] The work area observer, the resize clamp, reduced motion and StrictMode hygiene (AC-9, AC-10)
-- [ ] Verify it: `/check verify window manager`
-- [ ] Test it: `/test window manager`
+- [x] Verify it: `/check verify window manager`
+- [x] Test it: `/test window manager`
 spec [0004](../specs/0004-window-manager/index.md) · code in `src/store/windowManager.ts`, `src/store/windowElements.ts`, `src/components/useWindowMove.ts`, `src/components/useWindowFrame.ts`
 
 ### 8. Projects window (Finder style) · planned · needs a decision
