@@ -58,7 +58,7 @@ The seed data for the menu bar, the dock, projects, articles, the stack, socials
   - [x] Opening an item: `findById` and `openTargetFor` (AC-4, AC-6)
   - [x] The rest of the content: articles, the tech stack, the gallery (AC-1, AC-2, AC-5)
   - [x] Authoring and proof: the accessibility text and links, the old seed deleted, the development check and the content tests (AC-7, AC-8, AC-10)
-- [ ] Verify it: `/check verify content data model`
+- [x] Verify it: `/check verify content data model`
 - [x] Test it: `/test content data model`
 spec [0001](../specs/0001-content-data-model/index.md) · code in `src/content`, `src/lib/result.ts`
 
