@@ -38,7 +38,14 @@ export const navIconIdSchema = z.enum(['wifi', 'search', 'profile', 'appearance'
 export type NavIconId = z.infer<typeof navIconIdSchema>
 
 /** The dock apps, in the order the dock shows them. */
-export const dockAppIdSchema = z.enum(['portfolio', 'articles', 'gallery', 'contact', 'skills', 'archive'])
+export const dockAppIdSchema = z.enum([
+  'portfolio',
+  'articles',
+  'gallery',
+  'contact',
+  'skills',
+  'archive',
+])
 /** A dock app. */
 export type DockAppId = z.infer<typeof dockAppIdSchema>
 
@@ -85,7 +92,14 @@ export const articleIdSchema = z.enum(['typescript-explained', 'three-js-guide',
 export type ArticleId = z.infer<typeof articleIdSchema>
 
 /** The stack areas the skills window prints. */
-export const techGroupIdSchema = z.enum(['frontend', 'mobile', 'styling', 'backend', 'database', 'tools'])
+export const techGroupIdSchema = z.enum([
+  'frontend',
+  'mobile',
+  'styling',
+  'backend',
+  'database',
+  'tools',
+])
 /** A stack area. */
 export type TechGroupId = z.infer<typeof techGroupIdSchema>
 
@@ -136,6 +150,26 @@ export type WindowEntry = z.infer<typeof windowEntrySchema>
 
 /** The window registry, keyed by the union so a missing window fails to typecheck. */
 export const windowsSchema = z.record(windowIdSchema, windowEntrySchema)
+
+/* ---------------------------------------------------------------------- theme */
+
+/** The wallpapers the desktop paints: one per mode, plus the crop a narrow screen uses. */
+export const wallpaperIdSchema = z.enum(['light', 'dark', 'compact'])
+/** A wallpaper. */
+export type WallpaperId = z.infer<typeof wallpaperIdSchema>
+
+/** A wallpaper image, keyed by the id it is stored under. */
+export const wallpaperSchema = z
+  .strictObject({
+    id: wallpaperIdSchema,
+    imageUrl: z.string().min(1),
+  })
+  .readonly()
+/** A wallpaper. */
+export type Wallpaper = z.infer<typeof wallpaperSchema>
+
+/** The wallpaper registry, keyed by the union so a missing mode fails to typecheck. */
+export const wallpapersSchema = z.record(wallpaperIdSchema, wallpaperSchema)
 
 /* ----------------------------------------------------------------------- shell */
 
@@ -265,7 +299,12 @@ export type PdfFile = z.infer<typeof pdfFileSchema>
  * an image file cannot omit its `alt`, and a link file cannot hold a local path,
  * so the fields a kind does not use are impossible to write.
  */
-export const fileEntrySchema = z.union([textFileSchema, imageFileSchema, linkFileSchema, pdfFileSchema])
+export const fileEntrySchema = z.union([
+  textFileSchema,
+  imageFileSchema,
+  linkFileSchema,
+  pdfFileSchema,
+])
 /** A file in the tree. */
 export type FileEntry = z.infer<typeof fileEntrySchema>
 

@@ -5,6 +5,38 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>macos-like-portfolio</title>
+    <script>
+      /*
+       * Resolves the appearance before the first paint, so a visitor whose mode is dark
+       * never sees a light surface first. This has to be an inline script: a module would
+       * be deferred, and anything it imported would arrive too late. The key below is the
+       * same one `src/lib/appearance.ts` exports; a test holds the two in step because a
+       * script that cannot import a module has to repeat the literal. Spec 0002, AC-2.
+       */
+      ;(function resolveAppearance() {
+        var key = 'portfolio.appearance'
+        var stored = 'system'
+
+        try {
+          stored = window.localStorage.getItem(key) || 'system'
+        } catch (error) {
+          stored = 'system'
+        }
+
+        var prefersDark = false
+
+        try {
+          prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        } catch (error) {
+          prefersDark = false
+        }
+
+        var chosen =
+          stored === 'light' || stored === 'dark' ? stored : prefersDark ? 'dark' : 'light'
+
+        document.documentElement.dataset.theme = chosen
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

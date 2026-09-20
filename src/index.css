@@ -1,22 +1,145 @@
-@import url("https://fonts.googleapis.com/css2?family=Georama:ital,wght@0,100..900;1,100..900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap");
+/*
+ * The three families are served from the bundle, so no request leaves the page at
+ * runtime. Each font token also declares the fallback stack the browser uses while
+ * the face loads (and if it never does), because Vite hashes these file names and a
+ * hand written preload link could not name them. Spec 0002, AC-13.
+ */
+@import '@fontsource-variable/georama';
+@import '@fontsource-variable/roboto-mono';
+@import '@fontsource/great-vibes';
 
-@import "tailwindcss";
+@import 'tailwindcss';
 
-html,
-body {
-  width: 100dvw;
-  overflow: hidden;
-  height: 100dvh;
-  background-image: url("/images/wallpaper.png");
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
+/*
+ * The token layer. One semantic name per value, and the palette value lives here and
+ * nowhere else: a component reads `bg-surface`, never `bg-white`. Light and dark are
+ * one swap of these values rather than a second set of styles, which is why both sets
+ * ship together and why `[data-theme='dark']` below only redefines what changes.
+ *
+ * `static` is load bearing: Tailwind drops a theme variable that no generated utility
+ * references, and the ground colour and the ring's inner shadow are read only through
+ * `var()` in author CSS below. Without `static` those two resolve to nothing in the
+ * built stylesheet while the dev server still looks correct. Spec 0002, AC-1.
+ */
+@theme static {
+  /* background: the ground behind the wallpaper, and the wash behind a desktop label */
+  --color-background: #5790c7;
+  --color-scrim: rgb(0 0 0 / 0.78);
+
+  /* surface: the window body, its sidebars and wells, a control above it, and the glass */
+  --color-surface: #ffffff;
+  --color-surface-sunken: #f0f1f0;
+  --color-surface-raised: #f7f8f8;
+  --color-surface-paper: #ffffff;
+  --color-chrome: rgb(255 255 255 / 0.5);
+  --color-glass-panel: rgb(255 255 255 / 0.2);
+  --color-glass-hover: rgb(0 60 140 / 0.9);
+
+  /* text */
+  --color-text: #1f2937;
+  --color-text-muted: #5b6472;
+  --color-text-subtle: #6b7280;
+  --color-text-on-accent: #ffffff;
+  --color-desktop-text: #ffffff;
+
+  /* border: `--color-border` and `--color-divider` are hairlines that dress a surface;
+     a control that needs a boundary of its own uses `--color-border-strong`, which the
+     contrast suite holds to 3:1 on both surfaces */
+  --color-border: #d8dbdf;
+  --color-border-strong: #7d838c;
+  --color-divider: #c9ced6;
+
+  /* accent */
+  --color-accent: #0060d0;
+  --color-accent-quiet-bg: #e3edfb;
+  --color-accent-quiet-fg: #0b4aa2;
+  --color-link: #005dd6;
+  --color-focus-inner: #ffffff;
+  --color-focus-outer: #1e3a8a;
+
+  /* status: the four lights and the terminal green are the same in both modes, so
+     they are stated once, here, and never overridden below */
+  --color-success: #0f7a3d;
+  --color-warning: #8a5300;
+  --color-danger: #b42318;
+  --color-info: #0060d0;
+  --color-traffic-close: #ff6157;
+  --color-traffic-minimise: #ffc030;
+  --color-traffic-zoom: #2acb42;
+
+  /* measures */
+  --radius-control: 0.375rem;
+  --radius-panel: 0.5rem;
+  --radius-window: 0.75rem;
+  --radius-dock: 1rem;
+  --shadow-window: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --shadow-control: 0 1px 2px 0 rgb(0 0 0 / 0.08);
+  --blur-chrome: 64px;
+  --blur-panel: 24px;
+  --spacing-touch: 2.75rem;
+  --font-georama: 'Georama Variable', Georama, system-ui, sans-serif;
+  --font-roboto: 'Roboto Mono Variable', Roboto Mono, ui-monospace, monospace;
+  --font-display: 'Great Vibes', Great Vibes, cursive;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --breakpoint-3xl: 1920px;
 }
 
-@theme {
-  --font-georama: "Georama", sans-serif;
-  --font-roboto: "Roboto Mono", monospace;
-  --breakpoint-3xl: 1920px;
+/*
+ * Durations sit in a plain `:root` block rather than in the theme: CSS reads them
+ * through `var()` and script reads the computed value, and there is no utility to
+ * generate from them. Under reduced motion every one resolves to zero, which is the
+ * answer `readMotionToken` inherits rather than checking the media query again.
+ */
+:root {
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+  }
+}
+
+/*
+ * The dark values, unlayered and after the Tailwind import so they win over the theme
+ * layer. Only the tokens that differ appear here.
+ */
+[data-theme='dark'] {
+  --color-background: #2336a2;
+  --color-scrim: rgb(0 0 0 / 0.55);
+
+  --color-surface: #1e1e1e;
+  --color-surface-sunken: #303038;
+  --color-surface-raised: #3a3a41;
+  --color-chrome: rgb(24 24 27 / 0.65);
+  --color-glass-panel: rgb(24 24 27 / 0.5);
+  --color-glass-hover: rgb(20 40 90 / 0.85);
+
+  --color-text: #f4f4f5;
+  --color-text-muted: #a1a1aa;
+  --color-text-subtle: #9a9aa5;
+  --color-text-on-accent: #10131a;
+
+  --color-border: #3a3a41;
+  --color-border-strong: #808089;
+  --color-divider: #45454d;
+
+  --color-accent: #7cb0ff;
+  --color-accent-quiet-bg: #22304a;
+  --color-accent-quiet-fg: #cfe1ff;
+  --color-link: #9dc0ff;
+  --color-focus-inner: #18181b;
+  --color-focus-outer: #bfdbfe;
+
+  --color-success: #4ade80;
+  --color-warning: #fbbf24;
+  --color-danger: #ff8a80;
+  --color-info: #7cb0ff;
 }
 
 @utility flex-center {
@@ -31,45 +154,170 @@ body {
   @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2;
 }
 
+/*
+ * The three translucent levels, named so the tint and the blur stay paired and no
+ * component invents a fourth. Each tint has a light and a dark value.
+ */
+@utility glass-chrome {
+  background-color: var(--color-chrome);
+  backdrop-filter: blur(var(--blur-chrome));
+}
+
+@utility glass-panel {
+  background-color: var(--color-glass-panel);
+  backdrop-filter: blur(var(--blur-panel));
+}
+
+@utility glass-hover {
+  background-color: var(--color-glass-hover);
+  backdrop-filter: blur(var(--blur-panel));
+}
+
+/*
+ * The focus ring, pinned in one place: a 2px outer outline 2px outside the control,
+ * and a 2px inner shadow at its edge, so the ring reads on the wallpaper, on the
+ * translucent bar and on a window body in either mode. Compose it as
+ * `focus-visible:interactive-focus`; the pointer states below carry their own pseudo
+ * class, this one is the ring itself.
+ */
+@utility interactive-focus {
+  outline: 2px solid var(--color-focus-outer);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--color-focus-inner);
+}
+
+/*
+ * The interaction states, one definition each, built from tokens. Hover and press are
+ * a step of the surface ladder; selected is the quiet accent pair; disabled keeps its
+ * own guard inside the utility, so listing the class is safe on an enabled control.
+ */
+@utility interactive-hover {
+  transition-property: color, background-color, border-color, opacity;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-out);
+
+  &:hover {
+    background-color: var(--color-surface-raised);
+  }
+}
+
+@utility interactive-active {
+  &:active {
+    background-color: var(--color-surface-sunken);
+  }
+}
+
+@utility interactive-selected {
+  background-color: var(--color-accent-quiet-bg);
+  color: var(--color-accent-quiet-fg);
+}
+
+@utility interactive-disabled {
+  &:disabled,
+  &[aria-disabled='true'] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
 @layer base {
+  html,
   body {
-    @apply font-georama antialiased;
+    width: 100dvw;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  /*
+   * The ground colour paints first and stays if the wallpaper never arrives, so a
+   * missing image leaves a readable desktop rather than a white page. The wallpaper
+   * path comes from the content layer through `--wallpaper-image`, written before the
+   * first paint; with no image the property falls back to its initial `none`.
+   */
+  body {
+    @apply font-georama antialiased text-text;
+    background-color: var(--color-background);
+    background-image: var(--wallpaper-image);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
   }
 
   main {
     @apply w-dvw h-dvh overflow-hidden;
   }
 
-  nav {
-    @apply flex justify-between items-center bg-white/50 backdrop-blur-3xl p-2 px-5 select-none;
+  /*
+   * The app wide focus ring. A control that composes `interactive-focus` gets the
+   * second, inner layer on top of this one; one that does not still shows a ring
+   * rather than the browser default. Nothing removes an outline without replacing it.
+   */
+  :focus-visible {
+    outline: 2px solid var(--color-focus-outer);
+    outline-offset: 2px;
+  }
+}
 
-    div {
-      @apply flex items-center max-sm:w-full max-sm:justify-center gap-5;
+/*
+ * Below Tailwind's `sm` (40rem) the translucent levels become a solid surface: blur is
+ * the expensive part on a phone, and a narrow screen has less room for a wash to read
+ * against. The compact wallpaper keeps its own framing. Spec 0002, AC-11.
+ */
+@media (width < 40rem) {
+  .glass-chrome,
+  .glass-panel,
+  .glass-hover {
+    background-color: var(--color-surface);
+    backdrop-filter: none;
+  }
 
-      &:last-child {
-        @apply max-sm:hidden;
-      }
-    }
+  body {
+    background-image: var(--wallpaper-image-compact, var(--wallpaper-image));
+  }
+}
 
-    ul {
-      @apply flex items-center gap-5 max-sm:hidden;
-    }
+/*
+ * Forced colours takes the palette away, so the two things that must never disappear
+ * are redrawn from system colours: the window frame's edge and the focus ring. The
+ * inner shadow goes, since the system draws the outline. Spec 0002, AC-4, AC-12.
+ */
+@media (forced-colors: active) {
+  .window-frame {
+    border-color: CanvasText;
+  }
 
-    button {
-      @apply text-sm cursor-pointer rounded transition-all hover:underline;
-    }
-
-    button:focus-visible {
-      @apply outline-2 outline-offset-2 outline-blue-950;
-    }
-
-    time {
-      @apply text-sm font-medium text-black;
-    }
+  .interactive-focus,
+  :focus-visible {
+    outline-color: CanvasText;
+    box-shadow: none;
   }
 }
 
 @layer components {
+  /*
+   * The window frame's edge. It is a component class rather than a utility because the
+   * forced colours block above has to name it, and because every window shares it.
+   */
+  .window-frame {
+    border: 1px solid var(--color-border);
+  }
+
+  /*
+   * The logo is a single colour mark, so it is drawn through a mask and painted with the
+   * bar's own text colour rather than with the black it is filled with. That is what
+   * keeps it visible when the mode swaps and the bar turns dark.
+   */
+  .menu-logo {
+    mask-image: url('/images/logo.svg');
+    mask-size: contain;
+    mask-position: center;
+    mask-repeat: no-repeat;
+    -webkit-mask-image: url('/images/logo.svg');
+    -webkit-mask-size: contain;
+    -webkit-mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+  }
+
   .icon {
     @apply p-1 hover:bg-gray-200 rounded hover:cursor-default;
   }

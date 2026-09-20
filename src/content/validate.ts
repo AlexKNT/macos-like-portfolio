@@ -6,6 +6,7 @@ import { LOCATIONS } from '#content/locations'
 import { PROFILE, SOCIALS } from '#content/profile'
 import { DOCK_APPS, NAV_ICONS, NAV_LINKS } from '#content/shell'
 import { TECH_GROUPS } from '#content/techStack'
+import { WALLPAPER } from '#content/theme'
 import {
   albumSchema,
   articleSchema,
@@ -16,6 +17,7 @@ import {
   profileSchema,
   socialSchema,
   techGroupSchema,
+  wallpapersSchema,
   windowsSchema,
 } from '#content/types'
 import { WINDOWS } from '#content/windows'
@@ -40,7 +42,11 @@ function describeIssues(error: z.ZodError): string {
  * match its schema is a programmer error rather than an expected failure, so this is the
  * one documented exception to the return a value rule. Spec 0001, AC-7.
  */
-export function assertCollectionIsValid(collection: string, schema: z.ZodType, value: unknown): void {
+export function assertCollectionIsValid(
+  collection: string,
+  schema: z.ZodType,
+  value: unknown,
+): void {
   const parsed = schema.safeParse(value)
 
   if (!parsed.success) {
@@ -60,6 +66,7 @@ const CONTENT_CHECKS: readonly ContentCheck[] = [
   { collection: 'articles', schema: z.array(articleSchema), value: ARTICLES },
   { collection: 'tech groups', schema: z.array(techGroupSchema), value: TECH_GROUPS },
   { collection: 'albums', schema: z.array(albumSchema), value: ALBUMS },
+  { collection: 'wallpapers', schema: wallpapersSchema, value: WALLPAPER },
 ]
 
 /**
