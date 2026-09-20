@@ -6,6 +6,7 @@
     "module": "esnext",
     "types": ["vite/client"],
     "allowArbitraryExtensions": true,
+    "allowJs": true,
     "skipLibCheck": true,
 
     /* Bundler mode */
@@ -15,6 +16,11 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
+
+    /* Folder aliases, kept in step with vite.config.ts and jsconfig.json */
+    "paths": {
+      "#*": ["./src/*"]
+    },
 
     /* Linting */
     "noUnusedLocals": true,

@@ -38,7 +38,8 @@ Vite 8 with React 19 and TypeScript 6, plus the folder aliases every import uses
 ### 2. Tailwind wiring & base styles · in-progress
 Tailwind 4 is installed and imported in the stylesheet, but it is missing from the plugin list, so the theme, the utilities, and the base layers do not compile yet. Every later window depends on this working.
 **Done when:** the plugin is registered, the theme tokens and utilities compile, and the Vite starter page and its styles are gone.
-- [ ] Build it: `/develop tailwind wiring & base styles`
+- [x] Build it: `/develop tailwind wiring & base styles`
+code in `vite.config.ts`, `src/index.css`, `src/components/Navbar.tsx`, `src/App.tsx`
 
 ### 3. Coding standards & tooling · in-progress
 The conventions and the tooling choices are recorded in `AGENTS.md` from the earlier audit. What is left is the enforcement: the formatter, the pre commit hook, the test runners, and the CI job.
