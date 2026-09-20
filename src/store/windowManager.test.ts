@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { WINDOWS } from '#content/windows'
 import {
   EMPTY_WINDOW_MANAGER,
   WINDOW_LAYOUT,
@@ -8,8 +9,13 @@ import {
   reduceWindowManager,
   resolveOpenTarget,
 } from '#store/windowManager'
-import type { FileId, OpenTarget } from '#content/types'
-import type { WindowManagerAction, WindowManagerState } from '#store/windowManager'
+import type { FileId, OpenTarget, WindowId } from '#content/types'
+import type {
+  WindowInstance,
+  WindowManagerAction,
+  WindowManagerState,
+  WindowOpener,
+} from '#store/windowManager'
 
 /**
  * The window manager's rules, tested without a render and without a browser, which is the
@@ -28,9 +34,23 @@ function dispatch(state: WindowManagerState, action: WindowManagerAction): Windo
 function open(
   state: WindowManagerState,
   target: OpenTarget,
-  opener: 'dock' | 'desktop' | 'bar' = 'dock',
+  opener: WindowOpener = { kind: 'dock' },
 ): WindowManagerState {
-  return dispatch(state, { type: 'open', target, opener: { kind: opener }, cascadeStep: STEP })
+  return dispatch(state, { type: 'open', target, opener, cascadeStep: STEP })
+}
+
+/**
+ * The same state with one window put away in the dock. The minimise action that will do this
+ * belongs to a later strand, so the check builds the state the model already describes, out of
+ * an instance the reducer really produced.
+ */
+function withMinimised(state: WindowManagerState, key: string): WindowManagerState {
+  return {
+    ...state,
+    instances: state.instances.map((instance): WindowInstance =>
+      instance.key === key ? { ...instance, status: 'minimised' } : instance,
+    ),
+  }
 }
 
 /** Opens one plain window, which is the state most of the movement checks start from. */
@@ -139,6 +159,110 @@ describe('the window manager', () => {
     expect(resolveOpenTarget(external).ok).toBe(false)
     expect(open(EMPTY_WINDOW_MANAGER, external)).toBe(EMPTY_WINDOW_MANAGER)
   })
+
+  // covers: AC-2, AC-6
+  it('brings a window back from the dock when its key is opened again', () => {
+    const putAway = withMinimised(openProjects(), 'projects')
+    const reopened = open(putAway, { kind: 'window', windowId: 'projects' })
+
+    expect(reopened.instances).toHaveLength(1)
+    expect(only(reopened).status).toBe('normal')
+    expect(focusedKeyOf(reopened.instances)).toBe('projects')
+  })
+
+  // covers: AC-3, AC-6
+  it('leaves a minimised window out of the focus, whichever one is put away', () => {
+    const both = open(openProjects(), { kind: 'window', windowId: 'contact' })
+
+    expect(focusedKeyOf(withMinimised(both, 'contact').instances)).toBe('projects')
+    expect(focusedKeyOf(withMinimised(both, 'projects').instances)).toBe('contact')
+  })
+
+  // covers: AC-1
+  it('reports no focused window while nothing is open', () => {
+    expect(focusedKeyOf(EMPTY_WINDOW_MANAGER.instances)).toBeNull()
+  })
+
+  // covers: AC-3
+  it('gives every arrival a stacking number nothing else holds, above the ones below it', () => {
+    const three = open(openProjects(), { kind: 'window', windowId: 'contact' })
+    const opened = open(three, { kind: 'window', windowId: 'gallery' })
+    const numbers = opened.instances.map((instance) => instance.z)
+
+    expect(new Set(numbers).size).toBe(numbers.length)
+    expect(only(opened).z).toBeLessThan(Math.max(...numbers))
+    expect(focusedKeyOf(opened.instances)).toBe('gallery')
+  })
+
+  // covers: AC-3
+  it('leaves the state alone when the window asked for is already on top', () => {
+    const both = open(openProjects(), { kind: 'window', windowId: 'contact' })
+
+    expect(dispatch(both, { type: 'focus', key: 'contact' })).toBe(both)
+  })
+
+  // covers: AC-2
+  it('wraps the cascade after four steps instead of walking off the surface', () => {
+    const roomy = dispatch(EMPTY_WINDOW_MANAGER, {
+      type: 'setWorkArea',
+      size: { width: 4000, height: 4000 },
+    })
+    const targets: readonly OpenTarget[] = [
+      { kind: 'window', windowId: 'projects' },
+      { kind: 'window', windowId: 'articles' },
+      { kind: 'window', windowId: 'gallery' },
+      { kind: 'window', windowId: 'skills' },
+      { kind: 'window', windowId: 'resume' },
+      { kind: 'window', windowId: 'contact' },
+    ]
+    const opened = targets.reduce<WindowManagerState>((state, target) => open(state, target), roomy)
+
+    // The first window sits half a step in, the sixth steps back onto the second one's spot.
+    expect(opened.instances[0]?.position).toEqual({ x: STEP / 2, y: STEP / 2 })
+    expect(opened.instances[5]?.position).toEqual(opened.instances[1]?.position)
+  })
+
+  // covers: AC-2
+  it('counts only the windows on the desktop toward the cascade step', () => {
+    const two = open(openProjects(), { kind: 'window', windowId: 'contact' })
+    const third = open(withMinimised(two, 'projects'), { kind: 'window', windowId: 'gallery' })
+
+    // One window is on the desktop, so this is the second spot, not the third.
+    expect(third.instances.find((instance) => instance.key === 'gallery')?.position).toEqual({
+      x: STEP,
+      y: STEP,
+    })
+  })
+
+  // covers: AC-8
+  it('records the window that asked for a window, so focus can walk back to it', () => {
+    const opened = open(
+      EMPTY_WINDOW_MANAGER,
+      { kind: 'window', windowId: 'articles' },
+      { kind: 'window', key: 'projects' },
+    )
+
+    expect(only(opened).opener).toEqual({ kind: 'window', key: 'projects' })
+  })
+})
+
+describe('the window layout', () => {
+  // covers: AC-1
+  it('has an entry for every window the content layer lists, with a floor below its default', () => {
+    const ids = Object.keys(WINDOWS) as readonly WindowId[]
+
+    expect(ids).toHaveLength(9)
+
+    for (const id of ids) {
+      const layout = WINDOW_LAYOUT[id]
+
+      expect(layout.windowId, id).toBe(id)
+      expect(layout.minSize.width, id).toBeGreaterThan(0)
+      expect(layout.minSize.height, id).toBeGreaterThan(0)
+      expect(layout.minSize.width, id).toBeLessThanOrEqual(layout.defaultSize.width)
+      expect(layout.minSize.height, id).toBeLessThanOrEqual(layout.defaultSize.height)
+    }
+  })
 })
 
 describe('the target resolver', () => {
@@ -185,6 +309,41 @@ describe('the target resolver', () => {
       collection: 'files',
       id: 'nope',
     })
+  })
+
+  // covers: AC-1, AC-2
+  it('sends an image file to the preview window, keyed by the item and titled by the file', () => {
+    const resolved = resolveOpenTarget({ kind: 'file', fileId: 'nike-screenshot' })
+
+    expect(resolved.ok && resolved.value).toMatchObject({
+      windowId: 'imageFile',
+      key: 'imageFile:nike-screenshot',
+      title: 'nike.png',
+    })
+  })
+
+  // covers: AC-1
+  it('sends a link and the resume out of the app, carrying where they go', () => {
+    const link = resolveOpenTarget({ kind: 'file', fileId: 'nike-live' })
+    const resume = resolveOpenTarget({ kind: 'file', fileId: 'resume-pdf' })
+
+    expect(link.ok).toBe(false)
+    expect(link.ok ? undefined : link.error).toEqual({
+      kind: 'leavesApp',
+      href: expect.stringContaining('youtu.be'),
+    })
+    expect(resume.ok ? undefined : resume.error).toEqual({
+      kind: 'leavesApp',
+      href: '/files/resume.pdf',
+    })
+  })
+
+  // covers: AC-2
+  it('hands the target it resolved back, so a re-open can re-target the same window', () => {
+    const target: OpenTarget = { kind: 'location', locationId: 'about' }
+    const resolved = resolveOpenTarget(target)
+
+    expect(resolved.ok && resolved.value.target).toEqual(target)
   })
 })
 

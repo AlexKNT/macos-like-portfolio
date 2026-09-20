@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useWindowMove } from '#components/useWindowMove'
-import type { WindowKey, WindowPosition } from '#store/windowManager'
+import type { WindowKey, WindowPosition, WindowSize } from '#store/windowManager'
 
 /**
  * Moving a window: the drag of its title bar and the arrow key path, both of which end in the
@@ -23,15 +23,16 @@ type HostProps = {
   readonly move: (key: WindowKey, position: WindowPosition) => void
   readonly focus: (key: WindowKey) => void
   readonly position?: WindowPosition
+  readonly workArea?: WindowSize
 }
 
 /** A stand in frame with the handlers under test spread onto it. */
-function Host({ move, focus, position = { x: 0, y: 0 } }: HostProps) {
+function Host({ move, focus, position = { x: 0, y: 0 }, workArea = AREA }: HostProps) {
   const frameProps = useWindowMove({
     windowKey: 'projects',
     position,
     size: SIZE,
-    workArea: AREA,
+    workArea,
     move,
     focus,
   })
@@ -54,13 +55,16 @@ function setup(position?: WindowPosition) {
   const move = vi.fn()
   const focus = vi.fn()
 
-  render(<Host move={move} focus={focus} position={position} />)
+  const view = render(<Host move={move} focus={focus} position={position} />)
 
   return {
     move,
     focus,
     frame: screen.getByTestId('frame'),
     handle: screen.getByTestId('frame').querySelector('header') as HTMLElement,
+    /** The same window, after the desktop box it sits in has been measured again. */
+    resizeTo: (box: WindowSize) =>
+      view.rerender(<Host move={move} focus={focus} position={position} workArea={box} />),
   }
 }
 
@@ -170,6 +174,54 @@ describe('dragging a window', () => {
 
     expect(document.activeElement).toBe(light)
     expect(document.activeElement).not.toBe(frame)
+  })
+
+  // covers: AC-3
+  it('focuses the window from a press on a light, without starting a drag', () => {
+    const { focus, move, frame } = setup()
+
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Close Projects' }), {
+      pointerId: 1,
+      button: 0,
+      clientX: 40,
+      clientY: 40,
+    })
+    fireEvent.pointerMove(frame, { pointerId: 1, clientX: 240, clientY: 240 })
+    fireEvent.pointerUp(frame, { pointerId: 1, clientX: 240, clientY: 240 })
+
+    expect(focus).toHaveBeenCalledWith('projects')
+    expect(move).not.toHaveBeenCalled()
+  })
+
+  // covers: AC-4
+  it('follows only the pointer that started the drag', () => {
+    const { move, frame, handle } = setup()
+
+    fireEvent.pointerDown(handle, { pointerId: 1, button: 0, clientX: 0, clientY: 0 })
+    fireEvent.pointerMove(frame, { pointerId: 2, clientX: 400, clientY: 400 })
+
+    expect(frame.style.transform).toBe('')
+
+    fireEvent.pointerUp(frame, { pointerId: 2 })
+
+    expect(move).not.toHaveBeenCalled()
+  })
+
+  // covers: AC-4, AC-9
+  it('re-clamps from the live work area when the container changes size mid drag', () => {
+    const { move, frame, handle, resizeTo } = setup({ x: 0, y: 0 })
+
+    fireEvent.pointerDown(handle, { pointerId: 1, button: 0, clientX: 100, clientY: 100 })
+
+    // The same pointer travel now lands past the bottom right of a smaller desktop.
+    resizeTo({ width: SIZE.width + 40, height: SIZE.height + 40 })
+    fireEvent.pointerMove(frame, { pointerId: 1, clientX: 180, clientY: 140 })
+
+    expect(frame.style.transform).toBe('translate(40px, 40px)')
+
+    fireEvent.pointerUp(frame, { pointerId: 1, clientX: 180, clientY: 140 })
+
+    expect(move).toHaveBeenCalledWith('projects', { x: 40, y: 40 })
   })
 })
 

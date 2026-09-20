@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { useEffect } from 'react'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
@@ -6,7 +7,7 @@ import { WindowLayer } from '#components/WindowLayer'
 import { WINDOW_LAYOUT } from '#store/windowManager'
 import { WindowManagerProvider } from '#store/WindowManagerProvider'
 import { useWindowManager } from '#store/useWindowManager'
-import type { WindowId } from '#content/types'
+import type { FileId, WindowId } from '#content/types'
 
 /**
  * One window bound to the manager: it takes the spot and the size the manager holds, and both
@@ -22,16 +23,19 @@ const STEP = 32
 
 type ShellProps = {
   readonly windowId?: WindowId
+  readonly fileId?: FileId
 }
 
 /** A stand in desktop: a work area, then one open window. */
-function Shell({ windowId = 'projects' }: ShellProps) {
+function Shell({ windowId = 'projects', fileId }: ShellProps) {
   const { open, setWorkArea } = useWindowManager()
 
   useEffect(() => {
     setWorkArea(AREA)
-    open({ kind: 'window', windowId }, { kind: 'dock' })
-  }, [open, setWorkArea, windowId])
+    open(fileId === undefined ? { kind: 'window', windowId } : { kind: 'file', fileId }, {
+      kind: 'dock',
+    })
+  }, [open, setWorkArea, windowId, fileId])
 
   return <WindowLayer />
 }
@@ -48,6 +52,17 @@ function setup(windowId: WindowId = 'projects') {
     frame: screen.getByRole('region', { name: 'Projects' }),
     handle: screen.getByRole('region', { name: 'Projects' }).querySelector('header') as HTMLElement,
   }
+}
+
+/** Renders the shell with one file window open, and hands back the frame it renders. */
+function setupFile(fileId: FileId): HTMLElement {
+  render(
+    <WindowManagerProvider>
+      <Shell fileId={fileId} />
+    </WindowManagerProvider>,
+  )
+
+  return screen.getAllByRole('region')[0] as HTMLElement
 }
 
 beforeEach(() => {
@@ -99,5 +114,25 @@ describe('a window the manager holds', () => {
     fireEvent.keyDown(document.activeElement as HTMLElement, { key: 'ArrowRight', shiftKey: true })
 
     expect(frame.style.left).toBe(`${STEP / 2 + 16 + 64}px`)
+  })
+
+  // covers: AC-2
+  it('names its frame after the item the manager opened, not after the app', () => {
+    const frame = setupFile('nike-about')
+
+    // The key carries the item and the title bar carries the file's own name, so two notes
+    // from two places sit side by side without the frame knowing about either.
+    expect(frame).toHaveAccessibleName('Nike Project.txt')
+    expect(frame.style.width).toBe(`${WINDOW_LAYOUT.textFile.defaultSize.width}px`)
+  })
+
+  // covers: AC-8
+  it('closes through the manager when its red light is pressed', async () => {
+    const user = userEvent.setup()
+
+    setup()
+    await user.click(screen.getByRole('button', { name: 'Close Projects' }))
+
+    expect(screen.queryByRole('region', { name: 'Projects' })).toBeNull()
   })
 })

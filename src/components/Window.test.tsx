@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -75,5 +75,64 @@ describe('Window', () => {
 
     expect(window).toHaveTextContent('Lead')
     expect(window).toHaveTextContent('Trail')
+  })
+
+  // covers: AC-4, AC-5
+  it('takes the movement a caller wires onto the frame, so a window can be dragged and stepped', () => {
+    const down = vi.fn()
+    const stepped = vi.fn()
+
+    render(
+      <Window title="Projects" frameProps={{ onPointerDown: down, onKeyDown: stepped }}>
+        <p>Project files</p>
+      </Window>,
+    )
+
+    const frame = screen.getByRole('region', { name: 'Projects' })
+
+    fireEvent.pointerDown(frame, { pointerId: 1 })
+    fireEvent.keyDown(frame, { key: 'ArrowRight' })
+
+    expect(down).toHaveBeenCalledOnce()
+    expect(stepped).toHaveBeenCalledOnce()
+  })
+
+  // covers: AC-4
+  it('marks the title bar as the drag handle, and leaves the body unmarked', () => {
+    render(
+      <Window title="Projects">
+        <p>Project files</p>
+      </Window>,
+    )
+
+    const frame = screen.getByRole('region', { name: 'Projects' })
+    const handle = frame.querySelector('header[data-window-handle]')
+
+    expect(handle).not.toBeNull()
+    expect(handle?.closest('section')).toBe(frame)
+    expect(screen.getByText('Project files').closest('[data-window-handle]')).toBeNull()
+  })
+
+  // covers: AC-5
+  it('can be handed the keyboard without joining the tab order', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <Window title="Projects">
+        <button type="button">Open</button>
+      </Window>,
+    )
+
+    const frame = screen.getByRole('region', { name: 'Projects' })
+
+    // A press hands the frame the keyboard, which is what makes the arrows move the window.
+    frame.focus()
+    expect(document.activeElement).toBe(frame)
+
+    frame.blur()
+    await user.tab()
+
+    // Tab skips the frame and walks the window's own controls.
+    expect(document.activeElement).toHaveTextContent('Open')
   })
 })
