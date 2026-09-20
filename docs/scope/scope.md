@@ -84,15 +84,15 @@ The walking skeleton: the shell, the window behavior, and one real window with r
 The menu bar, the dock, and the wallpaper: the first thing a visitor sees, and the frame every window sits in.
 **Done when:** the menu bar shows the live time and the nav links, a dock icon opens its window, keyboard users can reach both, and the wallpaper fills the viewport at any size.
 - [x] Design it (spec): `/architect desktop shell`
-- [ ] Build it: `/develop desktop shell`
-  - [ ] The content additions and the checks: the greeting, the desktop items, the window target (AC-2, AC-3)
-  - [ ] The thin thread: the store's first three actions, the window layer and one placeholder, proven by one dock button (AC-1, AC-8, AC-11)
-  - [ ] The desktop surface, the menu bar actions and the session appearance press (AC-1, AC-2, AC-3, AC-4, AC-5)
-  - [ ] The dock: the region, the six buttons, the tooltips, the lift, the indicators, the keyboard path and the GSAP magnify (AC-6, AC-7, AC-9)
-  - [ ] The nine placeholder bodies, the compact behaviour and the dock ring pair (AC-8, AC-9, AC-10)
+- [x] Build it: `/develop desktop shell`
+  - [x] The content additions and the checks: the greeting, the desktop items, the window target (AC-2, AC-3)
+  - [x] The thin thread: the store's first three actions, the window layer and one placeholder, proven by one dock button (AC-1, AC-8, AC-11)
+  - [x] The desktop surface, the menu bar actions and the session appearance press (AC-1, AC-2, AC-3, AC-4, AC-5)
+  - [x] The dock: the region, the six buttons, the tooltips, the lift, the indicators, the keyboard path and the GSAP magnify (AC-6, AC-7, AC-9)
+  - [x] The nine placeholder bodies, the compact behaviour and the dock ring pair (AC-8, AC-9, AC-10)
 - [ ] Verify it: `/check verify desktop shell`
 - [ ] Test it: `/test desktop shell`
-spec [0003](../specs/0003-desktop-shell/index.md)
+spec [0003](../specs/0003-desktop-shell/index.md) · code in `src/store`, `src/components`, `src/windows`, `src/content/desktop.ts`, `src/lib/measure.ts`, `src/index.css`
 
 ### 7. Window manager · in-progress
 The shared behavior for every window: focus and stacking order, dragging, minimize and maximize, and closing. This is the thread the whole desktop runs on, so it comes before any single window.

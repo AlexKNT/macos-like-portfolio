@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
+
+import { MenuBarIcon } from '#components/MenuBarIcon'
 import { NAV_ICONS, NAV_LINKS } from '#content/shell'
+import { useWindowManager } from '#store/useWindowManager'
 
 const CLOCK_FORMAT = new Intl.DateTimeFormat(undefined, {
   hour: 'numeric',
@@ -40,14 +43,16 @@ function useCurrentMinute(): Date {
 /**
  * The menu bar across the top of the desktop: the logo and the window links on the left,
  * the status icons and the live clock on the right.
- * Every surface it paints comes from a semantic token, so it follows the mode without a
- * rule of its own, and the pointer states come from the shared interaction utilities.
- * The links are keyboard reachable but open nothing yet, and the icons stay decorative,
- * so each one keeps an empty `alt`. The accessible label on the icons that act joins
- * when the desktop shell wires their actions. Spec 0002, AC-7.
+ *
+ * Every control here does what its content entry says, through the window manager's one open
+ * action, so a link opens its window and a second press on the same link focuses the window
+ * that is already open rather than opening another. Every surface it paints comes from a
+ * semantic token, so it follows the mode without a rule of its own, and the pointer states
+ * come from the shared interaction utilities. Spec 0002, AC-7. Spec 0003, AC-4.
  */
 export function Navbar() {
   const now = useCurrentMinute()
+  const { open } = useWindowManager()
 
   return (
     <nav
@@ -57,10 +62,11 @@ export function Navbar() {
       <div className="flex items-center gap-5">
         <span aria-hidden="true" className="menu-logo bg-text block h-[17px] w-[14px]" />
         <ul className="flex items-center gap-1 max-sm:hidden">
-          {NAV_LINKS.map(({ id, label }) => (
+          {NAV_LINKS.map(({ id, label, windowId }) => (
             <li key={id}>
               <button
                 type="button"
+                onClick={() => open({ kind: 'window', windowId }, { kind: 'bar' })}
                 className="rounded-control px-2 py-1 text-sm cursor-pointer interactive-hover interactive-active focus-visible:interactive-focus max-sm:min-h-touch max-sm:px-3"
               >
                 {label}
@@ -70,8 +76,8 @@ export function Navbar() {
         </ul>
       </div>
       <div className="flex items-center gap-4 max-sm:hidden">
-        {NAV_ICONS.map(({ id, icon }) => (
-          <img key={id} src={icon} alt="" className="size-4" />
+        {NAV_ICONS.map((icon) => (
+          <MenuBarIcon key={icon.id} icon={icon} onOpen={open} />
         ))}
         <time dateTime={now.toISOString()} className="text-sm font-medium text-text">
           {CLOCK_FORMAT.format(now)}

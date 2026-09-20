@@ -9,6 +9,10 @@ export const PROFILE: Profile = {
   name: 'Adrian',
   role: 'Web Developer',
   tagline: 'Fast, clear interfaces, built to feel effortless.',
+  greeting: {
+    lead: 'Hey, welcome to my',
+    display: 'portfolio',
+  },
   bio: [
     "Hey! I'm Adrian, a web developer who enjoys building sleek, interactive websites that actually work well.",
     'I specialize in JavaScript, React, and Next.js, and I love making things feel smooth, fast, and just a little bit delightful.',

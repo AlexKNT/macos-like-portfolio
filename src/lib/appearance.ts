@@ -78,6 +78,30 @@ export function applyAppearance(mode: AppearanceMode): void {
   root.style.setProperty('--wallpaper-image-compact', `url('${WALLPAPER.compact.imageUrl}')`)
 }
 
+/**
+ * The mode the document is showing, read from the attribute `applyAppearance` writes. It
+ * falls back to `light` when nothing has been applied yet, which is the mode the pre paint
+ * script in `index.html` writes in that case. Spec 0003, AC-5.
+ */
+export function currentMode(): AppearanceMode {
+  return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
+}
+
+/**
+ * Switches the mode for this session: it reads the mode the document is showing and applies
+ * the other one. Storage is deliberately left alone, so the stored preference, the explicit
+ * `system` choice and the menu that owns them stay with the light and dark appearance feature
+ * (row 16), and a reload goes back to the resolved preference rather than to the last press.
+ * Returns the mode it applied. Spec 0003, AC-5.
+ */
+export function toggleAppearance(): AppearanceMode {
+  const next: AppearanceMode = currentMode() === 'dark' ? 'light' : 'dark'
+
+  applyAppearance(next)
+
+  return next
+}
+
 /** What the operating system asks for. False when the platform cannot be asked. */
 function systemPrefersDark(): boolean {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {

@@ -1,0 +1,33 @@
+import { createContext, useContext } from 'react'
+
+import type { WindowInstance, WindowKey, WindowOpener } from '#store/windowManager'
+import type { OpenTarget } from '#content/types'
+
+/** What the shell reads from the manager, and the actions it can call. */
+export type WindowManager = {
+  readonly instances: readonly WindowInstance[]
+  readonly focusedKey: WindowKey | null
+  readonly open: (target: OpenTarget, opener: WindowOpener) => void
+  readonly focus: (key: WindowKey) => void
+  readonly close: (key: WindowKey) => void
+}
+
+/** Holds the manager for the tree below `WindowManagerProvider`, or null outside one. */
+export const WindowManagerContext = createContext<WindowManager | null>(null)
+
+/**
+ * Reads the window manager. Called by the menu bar, the desktop icons, the dock and every
+ * window frame, so no shell module keeps a window list of its own.
+ *
+ * It throws when there is no provider above, because that is a wiring mistake rather than a
+ * state the shell should paper over. Spec 0003, AC-11.
+ */
+export function useWindowManager(): WindowManager {
+  const manager = useContext(WindowManagerContext)
+
+  if (manager === null) {
+    throw new Error('useWindowManager needs a WindowManagerProvider above it')
+  }
+
+  return manager
+}

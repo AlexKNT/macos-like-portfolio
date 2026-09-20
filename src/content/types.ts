@@ -113,6 +113,16 @@ export const photoIdSchema = z.enum(['library-1', 'library-2', 'library-3', 'lib
 /** A photo in an album. */
 export type PhotoId = z.infer<typeof photoIdSchema>
 
+/** The items the desktop shows on the wallpaper: the three project folders and the resume. */
+export const desktopItemIdSchema = z.enum([
+  'nike-ecommerce',
+  'ai-resume-analyzer',
+  'food-delivery-app',
+  'resume',
+])
+/** A desktop item. */
+export type DesktopItemId = z.infer<typeof desktopItemIdSchema>
+
 /* ---------------------------------------------------------------------- shared */
 
 /** A link that leaves the app: absolute, and https. */
@@ -234,6 +244,46 @@ export const dockAppSchema = z
 /** A dock app. */
 export type DockApp = z.infer<typeof dockAppSchema>
 
+/* ----------------------------------------------------------------- open target */
+
+/**
+ * Where opening an item goes: a Finder location, one project, one file, a window named
+ * outright, or a link out of the page. Naming the item rather than a window keeps window
+ * state in the window manager, so this model stays free of any view state. Spec 0001, AC-6.
+ *
+ * The `window` kind is what the resume icon on the desktop needs, since the resume is a
+ * window rather than a file in the tree. Spec 0003, AC-3.
+ */
+export const openTargetSchema = z.union([
+  z.strictObject({ kind: z.literal('location'), locationId: locationIdSchema }).readonly(),
+  z.strictObject({ kind: z.literal('project'), projectId: projectIdSchema }).readonly(),
+  z.strictObject({ kind: z.literal('file'), fileId: fileIdSchema }).readonly(),
+  z.strictObject({ kind: z.literal('window'), windowId: windowIdSchema }).readonly(),
+  z.strictObject({ kind: z.literal('external'), href: outboundLinkSchema }).readonly(),
+])
+/** Where opening an item goes. */
+export type OpenTarget = z.infer<typeof openTargetSchema>
+
+/* --------------------------------------------------------------- desktop items */
+
+/**
+ * An item the desktop shows before any window opens: the label it carries, the icon it
+ * paints, the spot it sits at, and what activating it opens. The spot is a top and a left
+ * pair, so no icon depends on a right edge that a narrow screen does not have.
+ * Spec 0003, AC-3.
+ */
+export const desktopItemSchema = z
+  .strictObject({
+    id: desktopItemIdSchema,
+    label: z.string().min(1),
+    icon: z.string().min(1),
+    position: z.string().min(1),
+    target: openTargetSchema,
+  })
+  .readonly()
+/** A desktop item. */
+export type DesktopItem = z.infer<typeof desktopItemSchema>
+
 /* ------------------------------------------------------------------------ tree */
 
 /** A text file, with the paragraphs it shows and an optional subtitle above them. */
@@ -316,7 +366,6 @@ export const projectFolderSchema = z
     name: z.string().min(1),
     icon: z.string().min(1),
     position: z.string().min(1),
-    windowPosition: z.string().min(1).optional(),
     children: z.array(fileEntrySchema).readonly(),
   })
   .readonly()
@@ -340,6 +389,19 @@ export const locationsSchema = z.record(locationIdSchema, locationSchema)
 
 /* ----------------------------------------------------------- profile, socials */
 
+/**
+ * The two lines the desktop greets a visitor with. Two fields rather than one, because the
+ * second line is set in the display face and the first one is not. Spec 0003, AC-2.
+ */
+export const greetingSchema = z
+  .strictObject({
+    lead: z.string().min(1),
+    display: z.string().min(1),
+  })
+  .readonly()
+/** The desktop greeting. */
+export type Greeting = z.infer<typeof greetingSchema>
+
 /** The profile the About window and the contact window read. */
 export const profileSchema = z
   .strictObject({
@@ -347,6 +409,7 @@ export const profileSchema = z
     name: z.string().min(1),
     role: z.string().min(1),
     tagline: z.string().min(1).optional(),
+    greeting: greetingSchema,
     bio: z.array(z.string().min(1)).readonly(),
     email: z.email(),
     avatar: imageSchema,
@@ -426,12 +489,5 @@ export type LookupFailure = {
   readonly id: string
 }
 
-/**
- * Where opening an item goes. Naming the item rather than a window keeps window
- * state in the window manager, so this model stays free of any view state.
- */
-export type OpenTarget =
-  | { readonly kind: 'location'; readonly locationId: LocationId }
-  | { readonly kind: 'project'; readonly projectId: ProjectId }
-  | { readonly kind: 'file'; readonly fileId: FileId }
-  | { readonly kind: 'external'; readonly href: string }
+/* `OpenTarget`, the fifth outcome of opening something, is declared above the desktop
+   items, which carry one each. */

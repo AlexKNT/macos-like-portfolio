@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { describe, expect, it } from 'vitest'
 
 import { ARTICLES } from '#content/articles'
+import { DESKTOP_ITEMS } from '#content/desktop'
 import { ALBUMS } from '#content/gallery'
 import { LOCATIONS } from '#content/locations'
 import { PROFILE, SOCIALS } from '#content/profile'
@@ -12,6 +13,8 @@ import {
   albumIdSchema,
   albumSchema,
   articleIdSchema,
+  desktopItemIdSchema,
+  desktopItemSchema,
   dockAppIdSchema,
   fileIdSchema,
   imageFileSchema,
@@ -48,6 +51,7 @@ const ARRAY_COLLECTIONS: readonly {
   { name: 'nav links', ids: navLinkIdSchema.options, entries: NAV_LINKS },
   { name: 'nav icons', ids: navIconIdSchema.options, entries: NAV_ICONS },
   { name: 'dock apps', ids: dockAppIdSchema.options, entries: DOCK_APPS },
+  { name: 'desktop items', ids: desktopItemIdSchema.options, entries: DESKTOP_ITEMS },
   { name: 'socials', ids: socialIdSchema.options, entries: SOCIALS },
   { name: 'articles', ids: articleIdSchema.options, entries: ARTICLES },
   { name: 'tech groups', ids: techGroupIdSchema.options, entries: TECH_GROUPS },
@@ -216,5 +220,65 @@ describe('content model', () => {
     const resume = LOCATIONS.resume.children.find((child) => child.kind === 'pdf')
 
     expect(resume?.kind === 'pdf' ? resume.href : '').toMatch(/^\/files\/\S+$/)
+  })
+
+  it('gives every desktop item a spot in the left gutter, with nothing anchored right', () => {
+    for (const item of DESKTOP_ITEMS) {
+      expect(item.position, item.id).toMatch(/\btop-\S+/)
+      expect(item.position, item.id).toMatch(/\bleft-\S+/)
+      expect(item.position, item.id).not.toMatch(/\bright-/)
+    }
+  })
+
+  it('names a real project, location or window from every desktop item', () => {
+    for (const { id, target } of DESKTOP_ITEMS) {
+      switch (target.kind) {
+        case 'project':
+          expect(
+            LOCATIONS.work.children.some((child) => child.id === target.projectId),
+            id,
+          ).toBe(true)
+          break
+        case 'window':
+          expect(WINDOWS[target.windowId], id).toBeDefined()
+          break
+        case 'location':
+          expect(LOCATIONS[target.locationId], id).toBeDefined()
+          break
+        case 'file':
+        case 'external':
+          throw new Error(`desktop item ${id} carries a ${target.kind} target`)
+      }
+    }
+  })
+
+  it('rejects a desktop item whose window target names a window that does not exist', () => {
+    const unknownWindow = {
+      id: 'resume',
+      label: 'Resume',
+      icon: '/images/pdf.png',
+      position: 'top-[46vh] left-7',
+      target: { kind: 'window', windowId: 'nowhere' },
+    }
+
+    expect(desktopItemSchema.safeParse(unknownWindow).success).toBe(false)
+  })
+
+  it('rejects a desktop item carrying a field the shape does not use', () => {
+    const withExtraField = {
+      id: 'resume',
+      label: 'Resume',
+      icon: '/images/pdf.png',
+      position: 'top-[46vh] left-7',
+      target: { kind: 'window', windowId: 'resume' },
+      windowPosition: 'top-[46vh] left-7',
+    }
+
+    expect(desktopItemSchema.safeParse(withExtraField).success).toBe(false)
+  })
+
+  it('carries both lines of the desktop greeting', () => {
+    expect(PROFILE.greeting.lead.trim().length).toBeGreaterThan(0)
+    expect(PROFILE.greeting.display.trim().length).toBeGreaterThan(0)
   })
 })

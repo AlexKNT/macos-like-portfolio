@@ -32,7 +32,11 @@
   --color-surface-raised: #f7f8f8;
   --color-surface-paper: #ffffff;
   --color-chrome: rgb(255 255 255 / 0.5);
-  --color-glass-panel: rgb(255 255 255 / 0.2);
+  /* The dock's own panel. Its weight is set by the pair spec 0002 could not judge until the
+     dock existed: over the darkest tone of the light wallpaper, 20% left the panel too dark
+     for the focus ring and for the dot that says a window is open, so it is 55% here. The
+     same pair is checked in `src/lib/tokens.test.ts`. Spec 0003, AC-9. */
+  --color-glass-panel: rgb(255 255 255 / 0.55);
   --color-glass-hover: rgb(0 60 140 / 0.9);
 
   /* text */
@@ -77,6 +81,12 @@
   --blur-chrome: 64px;
   --blur-panel: 24px;
   --spacing-touch: 2.75rem;
+
+  /* the dock: the band it reserves at the bottom of the work area, the small rise a button
+     takes under the pointer, and the largest scale an icon reaches toward it */
+  --dock-clearance: 5.5rem;
+  --dock-hover-lift: 0.5rem;
+  --dock-magnify-scale: 1.5;
   --font-georama: 'Georama Variable', Georama, system-ui, sans-serif;
   --font-roboto: 'Roboto Mono Variable', Roboto Mono, ui-monospace, monospace;
   --font-display: 'Great Vibes', Great Vibes, cursive;

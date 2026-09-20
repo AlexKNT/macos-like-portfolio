@@ -1,3 +1,4 @@
+import { LOCATIONS } from '#content/locations'
 import { err, ok } from '#lib/result'
 import type { Result } from '#lib/result'
 import type { FileEntry, LookupFailure, OpenTarget } from '#content/types'
@@ -41,4 +42,22 @@ export function openTargetFor(entry: FileEntry): OpenTarget {
     case 'pdf':
       return { kind: 'external', href: entry.href }
   }
+}
+
+/**
+ * Every file in the tree, whichever location holds it. The ids are global, so one flat
+ * list is enough to look one up, and it is built once at module load rather than walked
+ * again per lookup. Spec 0003, AC-3.
+ */
+export const TREE_FILES: readonly FileEntry[] = Object.values(LOCATIONS).flatMap((location) =>
+  location.children.flatMap((child) => (child.kind === 'folder' ? child.children : [child])),
+)
+
+/**
+ * Finds one file anywhere in the tree by its id, so a target that names a file can be
+ * resolved to the entry behind it. Returns the entry, or a `notFound` failure carrying
+ * the id it looked for, the same shape `findById` returns. Spec 0003, AC-8.
+ */
+export function findFile(fileId: string): Result<FileEntry, LookupFailure> {
+  return findById(TREE_FILES, fileId, 'files')
 }

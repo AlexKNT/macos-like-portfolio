@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import { ARTICLES } from '#content/articles'
+import { DESKTOP_ITEMS } from '#content/desktop'
 import { ALBUMS } from '#content/gallery'
 import { LOCATIONS } from '#content/locations'
 import { PROFILE, SOCIALS } from '#content/profile'
@@ -10,6 +11,7 @@ import { WALLPAPER } from '#content/theme'
 import {
   albumSchema,
   articleSchema,
+  desktopItemSchema,
   dockAppSchema,
   locationsSchema,
   navIconSchema,
@@ -60,6 +62,7 @@ const CONTENT_CHECKS: readonly ContentCheck[] = [
   { collection: 'nav links', schema: z.array(navLinkSchema), value: NAV_LINKS },
   { collection: 'nav icons', schema: z.array(navIconSchema), value: NAV_ICONS },
   { collection: 'dock apps', schema: z.array(dockAppSchema), value: DOCK_APPS },
+  { collection: 'desktop items', schema: z.array(desktopItemSchema), value: DESKTOP_ITEMS },
   { collection: 'locations', schema: locationsSchema, value: LOCATIONS },
   { collection: 'profile', schema: profileSchema, value: PROFILE },
   { collection: 'socials', schema: z.array(socialSchema), value: SOCIALS },

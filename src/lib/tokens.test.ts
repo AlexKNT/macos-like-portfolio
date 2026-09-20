@@ -180,6 +180,9 @@ const PAIRS: readonly Pair[] = [
     minimum: 4.5,
     over: BOTH_TONES,
   },
+  // These two are the desktop labels' pairs and the greeting's: the greeting's lead line and
+  // display line both paint in `--color-desktop-text` on the scrim, and the greeting and the
+  // labels both swap to the hover wash under the pointer. Spec 0003, AC-2.
   {
     name: 'desktop label on its wash',
     foreground: '--color-desktop-text',
@@ -230,6 +233,23 @@ const PAIRS: readonly Pair[] = [
     name: 'ring on the menu bar',
     foreground: '--color-focus-outer',
     background: '--color-chrome',
+    minimum: 3,
+    over: BOTH_TONES,
+  },
+  // The pair spec 0002 could not judge, because it had no control on the translucent panel
+  // yet: the dock's own ring, on the dock's own glass. Spec 0003, AC-9.
+  {
+    name: 'ring on the dock panel',
+    foreground: '--color-focus-outer',
+    background: '--color-glass-panel',
+    minimum: 3,
+    over: BOTH_TONES,
+  },
+  // The dot under a dock icon that says its window is open, quieter while it is minimised.
+  {
+    name: 'dock indicator on the panel',
+    foreground: '--color-text',
+    background: '--color-glass-panel',
     minimum: 3,
     over: BOTH_TONES,
   },

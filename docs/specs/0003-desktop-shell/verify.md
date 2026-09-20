@@ -73,3 +73,47 @@ Every row of the spec's Value sourcing table, checked rather than assumed.
 
 - [ ] open the shell's modules and confirm no module holds window state; the search command above only finds a field if it is written down, so read for a list that is rebuilt on every render → AC-11
 - [ ] open the contrast suite and confirm the dock button pair is composited over the translucent panel rather than checked against the page background, which is the judgement spec 0002 could not make → AC-9
+
+## Added by `/develop` (2026-09-20)
+
+The build's own steps, derived from the acceptance criteria and the spec's value sourcing table. The rows above are `/architect`'s plan and stay for `/check verify`; these add what the build found worth checking by hand.
+
+Exercise these, then tick them. This run already ran the ones marked **ran green**, which is a record of the build, not a substitute for the pass.
+
+**Ran green while building:** `npx tsc -b --force`, `npm run lint`, `npm run format:check`, `npm test` (67 tests, including the reducer and resolver suite and the contrast suite with the two new dock pairs), `npm run build`, and `npm run test:e2e` (nine shell specs in Chromium: the dock open and focus, the desktop item, the magnify with its falloff and its return to rest, the magnify absent under reduce motion, the appearance press, the tab path to the dock with Enter, and the 360px layout). The desktop was also rendered and looked at at 1280x800 and at 360x740.
+
+### UI / manual
+
+- [ ] sweep the pointer across the dock → the icon under the pointer is the largest, the two on each side fall away in a straight line, every icon past them keeps its resting size, and the panel itself does not move → AC-7
+- [ ] open a window, then hover its dock button → the tooltip and the dot both show, and the dot is the quiet one while the window is minimised → AC-6
+- [ ] with a window open, Tab from the top of the page → 3 bar links, 2 acting icons, 4 desktop items, the window's lights, then the six dock buttons, each with the two layer ring → AC-9
+- [ ] set the OS to reduce motion, reload, and sweep the dock → no magnify at all, and the dock still opens and focuses windows → AC-7
+- [ ] at 360px wide, activate a desktop icon → the window opens, the page still does not scroll sideways, and the bar keeps only its logo → AC-3, AC-10
+- [ ] turn on forced colours → the bar, the desktop icons and the dock buttons stay visible and the ring is still drawn → AC-9
+
+### Commands
+
+- [ ] `npm test` → the contrast suite names a failing pair if the dock panel's glass is weakened, and the reducer suite fails if one key ever opens two windows → AC-2, AC-8, AC-9
+- [ ] `npm run test:e2e` → the nine shell specs pass → AC-3, AC-4, AC-5, AC-7, AC-8, AC-10
+- [ ] change a desktop item's target to name a window that does not exist → `npx tsc -b` fails with the `WindowId` union printed, and the development check throws `Invalid content in desktop items` before the desktop paints → AC-3, AC-8
+- [ ] set `--dock-magnify-scale` to `2` in `src/index.css` → the icon under the pointer grows further and still nothing reflows → AC-7
+
+### Values that could be invented
+
+- [ ] the greeting copy → `(await import('/src/content/profile.ts')).PROFILE.greeting` matches the two lines on the screen, and editing it changes the desktop without a code change → AC-2
+- [ ] a desktop icon's label, image and spot → the rendered button matches its `DESKTOP_ITEMS` entry, and the label's full text is the button's accessible name while the pill shows two lines → AC-3
+- [ ] the placeholder line → each of the nine windows shows its own line from the `WindowId` keyed map, and no line claims the window is finished → AC-8
+- [ ] the dock's names and images → the accessible name matches `DOCK_APPS[i].name` while the image matches `WINDOWS[windowId].icon`, so the panel says "Portfolio" for a window titled "Projects" → AC-6
+- [ ] the dock's open indicator → it comes from the manager's instances rather than from a flag in the shell, so closing the window clears it → AC-6
+- [ ] the magnify's reach and falloff → read `src/components/Dock.tsx`: the scale comes from `--dock-magnify-scale` through `readMeasureToken`, the falloff from `gsap.utils.mapRange` and `gsap.utils.clamp`, and the timing from `readMotionToken` rather than from a literal → AC-7
+- [ ] two project icons → one Projects window re-targeted rather than two windows, since a project target resolves to the same key → AC-3, AC-8
+
+### Acceptance-criteria coverage added here
+
+- AC-3 → the 360px icon step, the label row and the resolver row
+- AC-5 → the appearance press among the ran green specs
+- AC-6 → the dock indicator row and the name and image row
+- AC-7 → the sweep steps, the reduce motion step and the magnify settings row
+- AC-8 → the duplicate window rows and the placeholder line row
+- AC-9 → the Tab order step, the forced colours step and the dock panel pair
+- AC-10 → the 360px icon step

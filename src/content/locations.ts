@@ -20,7 +20,6 @@ export const LOCATIONS: Record<LocationId, Location> = {
         name: 'Nike Ecommerce Website Application',
         icon: '/images/folder.png',
         position: 'top-10 left-5',
-        windowPosition: 'top-[5vh] left-5',
         children: [
           {
             id: 'nike-about',
@@ -60,7 +59,6 @@ export const LOCATIONS: Record<LocationId, Location> = {
         name: 'AI Resume Analyzer',
         icon: '/images/folder.png',
         position: 'top-52 right-80',
-        windowPosition: 'top-[20vh] left-7',
         children: [
           {
             id: 'ai-resume-about',
@@ -100,7 +98,6 @@ export const LOCATIONS: Record<LocationId, Location> = {
         name: 'Food Delivery App',
         icon: '/images/folder.png',
         position: 'top-10 left-80',
-        windowPosition: 'top-[33vh] left-7',
         children: [
           {
             id: 'food-delivery-about',
