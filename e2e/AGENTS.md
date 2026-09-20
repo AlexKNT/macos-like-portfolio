@@ -14,6 +14,7 @@ npx playwright install chromium           # once per machine, before the first r
 
 - `desktop.spec.ts`: the menu bar, what it shows and whether the keyboard reaches it.
 - `design-system.spec.ts`: the mode resolved before the first paint, the wallpaper the mode names, the two layer focus ring, the glass following the mode, and the compact fallback.
+- `window-manager.spec.ts`: the drag and the arrow keys, the clamp to the work area, the quiet treatment, minimise and restore with the focus handoff, zoom, Escape close, reduced motion and the compact fill.
 
 `playwright.config.ts` at the repo root holds the settings: Chromium only, its own dev server on port 4174 with `--strictPort`, so a run never fights the dev server you have open on 5173. CI gets two retries and the `github` reporter; a local run reuses a server already on that port.
 

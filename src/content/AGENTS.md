@@ -10,6 +10,7 @@ Governing spec: [`docs/specs/0001-content-data-model/index.md`](../../docs/specs
 - `windows.ts`: `WINDOWS`, the nine windows the desktop can open, keyed by `WindowId`.
 - `shell.ts`: `NAV_LINKS`, `NAV_ICONS`, `DOCK_APPS`.
 - `theme.ts`: `WALLPAPER`, the image each mode paints plus the compact crop a narrow screen prefers. `#lib/appearance` writes the two paths onto the document element, so no image path is hardcoded in the stylesheet.
+- `desktop.ts`: `DESKTOP_ITEMS`, the four items on the wallpaper, each with the spot it sits in and the target it opens.
 - `locations.ts`: `LOCATIONS`, the Finder sidebar, the projects, and their files.
 - `profile.ts`: `PROFILE`, `SOCIALS`.
 - `articles.ts`, `techStack.ts`, `gallery.ts`: the remaining collections.

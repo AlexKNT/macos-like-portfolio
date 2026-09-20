@@ -6,7 +6,7 @@ A desktop style portfolio in the browser: menu bar, dock, draggable windows, ani
 
 - **Language / Runtime**: TypeScript 6 and React 19, in the browser only
 - **Framework**: Vite 8 with the React plugin
-- **Key dependencies**: Tailwind CSS 4 (imported in `src/index.css`), zod 4 (the content schemas in `src/content/types.ts`), the three faces served from the bundle through `@fontsource` (Georama, Roboto Mono, Great Vibes, so no request leaves the page for a font), GSAP for animation (chosen, not installed yet), React DOM
+- **Key dependencies**: Tailwind CSS 4 (imported in `src/index.css`), zod 4 (the content schemas in `src/content/types.ts`), the three faces served from the bundle through `@fontsource` (Georama, Roboto Mono, Great Vibes, so no request leaves the page for a font), GSAP 3 for animation (installed: the dock magnify and the window timelines), React DOM
 - **Package manager**: npm
 - **Reference build**: the JSMastery macOS portfolio tutorial, https://jsmastery.com/video-kit/6a15ea4e-dbf9-458c-9faa-3eb4c2b90b75
 
@@ -55,7 +55,7 @@ Installed and wired by the `/develop tooling` step.
 - Lint and format: ESLint 10 (installed) plus Prettier, configured so the two do not fight. One pre commit hook runs lint, format, and typecheck on changed files.
 - Tests: Vitest runs in jsdom over `src/**/*.test.ts(x)` (the content layer, the design tokens, and the components through React Testing Library) behind `npm test`, and Playwright covers the rendered desktop end to end behind `npm run test:e2e`.
 - CI: one GitHub Actions job on push and pull request, running lint, format check, typecheck, tests, then the end to end suite.
-- Not installed yet: GSAP.
+- GSAP is installed (the dock magnify and the window timelines) and every animation is timed from the motion tokens.
 
 ## Git
 
@@ -82,13 +82,14 @@ Installed and wired by the `/develop tooling` step.
 - [accessibility-diff](.agents/skills/accessibility-diff/): `accesslint/skills`, diff a page's violations against a baseline, as a regression gate
 
 MCP servers: Playwright MCP (recommended), Tailwind MCP server (recommended)
-Declined: Tailwind layouts and animations (josiahsiegel), Advanced TypeScript types (wshobson/agents), Chrome DevTools MCP, Figma MCP, zod and vitest Agent Skills (declined at /sync)
+Declined: Tailwind layouts and animations (josiahsiegel), Advanced TypeScript types (wshobson/agents), Chrome DevTools MCP, Figma MCP, zod, vitest and Testing Library Agent Skills (declined at /sync)
 
 ## Context files
 
 <!-- Nested AGENTS.md files are listed here as they are created -->
 
 - [src/content/AGENTS.md](src/content/AGENTS.md): the typed content model, its schemas, its id unions, and the development check
+- [src/store/AGENTS.md](src/store/AGENTS.md): the window manager, its pure reducer, its actions and the React edge that holds them
 - [e2e/AGENTS.md](e2e/AGENTS.md): the Playwright suite, one spec per desktop surface
 
 _Drafted by /audit from the repo, worth a quick human pass. Edit freely: once a line stops matching this draft, later runs treat it as curated and will flag rather than overwrite it._
