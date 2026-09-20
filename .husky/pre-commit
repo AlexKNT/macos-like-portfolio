@@ -1,0 +1,3 @@
+# Runs on every commit: lint and format the files being committed, then typecheck.
+npx lint-staged
+npm run typecheck

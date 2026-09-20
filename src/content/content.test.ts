@@ -170,9 +170,9 @@ describe('content model', () => {
       href: 'http://example.com',
     }
 
-    expect(() => assertCollectionIsValid('test links', z.array(linkFileSchema), [insecureLink])).toThrow(
-      /Invalid content in test links[\s\S]*0\.href/,
-    )
+    expect(() =>
+      assertCollectionIsValid('test links', z.array(linkFileSchema), [insecureLink]),
+    ).toThrow(/Invalid content in test links[\s\S]*0\.href/)
   })
 
   it('carries the text a screen reader announces for every image', () => {
