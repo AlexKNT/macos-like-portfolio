@@ -12,7 +12,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | # | Feature | Phase | Status |
 |---|---------|-------|--------|
 | 1 | Project scaffold & build | Foundation | existing |
-| 2 | Tailwind wiring & base styles | Foundation | in-progress |
+| 2 | Tailwind wiring & base styles | Foundation | done |
 | 3 | Coding standards & tooling | Foundation | in-progress |
 | 4 | Content data model | Foundation | in-progress |
 | 5 | Design system & window chrome | Foundation | planned |
@@ -35,7 +35,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 ### 1. Project scaffold & build · existing
 Vite 8 with React 19 and TypeScript 6, plus the folder aliases every import uses. Already in place, nothing planned here. code in `package.json`, `vite.config.ts`, `jsconfig.json`
 
-### 2. Tailwind wiring & base styles · in-progress
+### 2. Tailwind wiring & base styles · done
 Tailwind 4 is installed and imported in the stylesheet, but it is missing from the plugin list, so the theme, the utilities, and the base layers do not compile yet. Every later window depends on this working.
 **Done when:** the plugin is registered, the theme tokens and utilities compile, and the Vite starter page and its styles are gone.
 - [x] Build it: `/develop tailwind wiring & base styles`
@@ -59,7 +59,7 @@ The seed data for the menu bar, the dock, projects, articles, the stack, socials
   - [x] The rest of the content: articles, the tech stack, the gallery (AC-1, AC-2, AC-5)
   - [x] Authoring and proof: the accessibility text and links, the old seed deleted, the development check and the content tests (AC-7, AC-8, AC-10)
 - [ ] Verify it: `/check verify content data model`
-- [ ] Test it: `/test content data model`
+- [x] Test it: `/test content data model`
 spec [0001](../specs/0001-content-data-model/index.md) · code in `src/content`, `src/lib/result.ts`
 
 ### 5. Design system & window chrome · planned · needs a decision
