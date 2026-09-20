@@ -1,0 +1,26 @@
+# src/windows
+
+The window bodies: what a window shows once the shell has opened it. A body reads the target it was handed, reads the content layer, and paints inside a frame the shell has already placed. Nothing here positions, sizes or moves a window, and nothing here decides which window opens: that is `src/store` and `src/components`.
+
+Governing specs: [`0005-projects-window`](../../docs/specs/0005-projects-window/index.md) for the Finder and the two file windows, [`0003-desktop-shell`](../../docs/specs/0003-desktop-shell/index.md) for the registry it introduced, [`0006-content-window-bodies`](../../docs/specs/0006-content-window-bodies/index.md) for the standard the windows still to come are built to.
+
+## Files
+
+- `WindowBody.tsx`: the one place a window id becomes a body. The props a body is given (the window id, the window key, the target), the props its own scope is given (the same three plus `children`), the entry shape (a `Body`, an optional title bar `Lead`, an optional `Scope`), and the `WINDOW_BODIES` record. Read it first.
+- `Placeholder.tsx`: the stand in body that every window not built yet registers.
+- `projects/`: the Finder (`ProjectsWindow`, `FinderSidebar`, `FinderGrid`, `ProjectDetail`, `PitchContent`), the window's own state (`projectHistory`, `useProjectHistory`, `ProjectHistoryScope`, `ProjectBackButton`), the two file bodies (`TextFileBody`, `ImageFileBody`), and the shared state lines (`QuietLine`, `quietLines`).
+- `projects/fileFromTarget.ts`: the file a target names, or `null` when it names none or names one that is not there. A file window's target carries the file's id rather than the file itself, so the file is looked up when the body renders and there is one truth about what it holds.
+
+## Conventions
+
+- A window feature edits its own line in `WINDOW_BODIES` and touches nothing else, so no window feature has to know about the desktop surface. The `Record<WindowId, WindowBodyEntry>` annotation is what makes a window id with no body a typecheck failure rather than a blank window.
+- A body is a pure function of what the manager holds. It reads the target it was handed, asks `#content/reads` for what that target names, and reports a missing entry as a value (`Result` or `null`), never a throw.
+- The target names what to show, so a window on a place and a window on a file are one mechanism. `Place` is a member of `openTargetSchema`, which is why the Finder looks the same whether a desktop icon, a dock button or a menu bar link sent the visitor there.
+- React reserves `key`, so the instance key travels as `windowKey`. A body that changes what its own window shows calls `open(target, { kind: 'window', key: windowKey })`: the same instance with a new target. That is how the Back control works, and why a second open never makes a second window.
+- Window state the manager does not own (the Finder's place history) lives in the window, in a component registered as the entry's `Scope`, wrapped around the frame so the title bar reads that state through one provider. Nothing about it is stored twice: the place showing is the instance's target.
+- A window frame is already a named `region`, so a body's content area is a named `group`. Two nested regions carrying one name break every role and name query and read as a stutter in a screen reader's landmark list.
+- Every literal a visitor reads lives in one pure module (`quietLines.ts`), each function named for the state it describes rather than for where it appears on screen.
+- Import through the aliases (`#content`, `#lib`, `#store`, `#windows`), keep one job per module, export names only, and give every exported thing a short comment saying what it does.
+- The accessibility bar holds here as it does everywhere: a control is a button with an accessible name, an image keeps its `alt` text even when its asset never loads, and a state that replaces content is text a screen reader can read.
+
+_Drafted by /sync from the introducing change, worth a quick human pass._

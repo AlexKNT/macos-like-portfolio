@@ -14,7 +14,7 @@ Governing spec: [`docs/specs/0001-content-data-model/index.md`](../../docs/specs
 - `locations.ts`: `LOCATIONS`, the Finder sidebar, the projects, and their files.
 - `profile.ts`: `PROFILE`, `SOCIALS`.
 - `articles.ts`, `techStack.ts`, `gallery.ts`: the remaining collections.
-- `reads.ts`: `findById` and `openTargetFor`, the two ways a window reads this content.
+- `reads.ts`: `findById`, `openTargetFor` and the place helpers (`PROJECT_FOLDERS`, `TREE_FILES`, `findFile`, `findPlace`, `placeOfTarget`, `placeName`, `targetForPlace`), which are how a window reads this content.
 - `validate.ts`: `assertContentIsValid`, run once in development before the desktop renders.
 - `content.test.ts`, `theme.test.ts`: the suites behind `npm test`.
 

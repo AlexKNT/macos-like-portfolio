@@ -1,7 +1,7 @@
 # 0005. Adopt one Finder style window for the project tree
 
 **Date**: 2026-09-20
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 

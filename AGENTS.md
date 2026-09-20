@@ -44,7 +44,7 @@ Every spec is a directory under `docs/specs/`: an `index.md` (the build spec `/d
 - Naming: `PascalCase` components, `camelCase` functions, `useSomething` hooks, `SCREAMING_SNAKE_CASE` constants, `SomethingProps` prop types.
 - Document every exported function, component, and hook in one short comment: what it does, what it returns.
 - Accessibility baseline on every control: keyboard reachable, visible focus ring, labels on icon buttons, `alt` text on images, WCAG AA contrast.
-- File layout follows the aliases already in `vite.config.ts`: `#components`, `#content`, `#lib`, `#windows`, `#store`, `#hoc`, one job per folder. Register any new alias in `jsconfig.json` too.
+- File layout follows the aliases already in `vite.config.ts`: `#components`, `#content`, `#lib`, `#windows`, `#store`, `#hoc`, one job per folder. `jsconfig.json` and `tsconfig.app.json` already map `#*` onto `src/*`, so a new folder needs its `vite.config.ts` entry only.
 - Design system: build all UI to `design.md` (colour, type, spacing, frame anatomy, states); token values live in CSS.
 - Animation takes its timing from the CSS tokens through `readMotionToken` and `readEaseToken` (`#lib/motion`), never a literal duration, so reduced motion needs no second code path.
 
@@ -90,6 +90,7 @@ Declined: Tailwind layouts and animations (josiahsiegel), Advanced TypeScript ty
 
 - [src/content/AGENTS.md](src/content/AGENTS.md): the typed content model, its schemas, its id unions, and the development check
 - [src/store/AGENTS.md](src/store/AGENTS.md): the window manager, its pure reducer, its actions and the React edge that holds them
+- [src/windows/AGENTS.md](src/windows/AGENTS.md): the window body registry every window registers in
 - [e2e/AGENTS.md](e2e/AGENTS.md): the Playwright suite, one spec per desktop surface
 
 _Drafted by /audit from the repo, worth a quick human pass. Edit freely: once a line stops matching this draft, later runs treat it as curated and will flag rather than overwrite it._
