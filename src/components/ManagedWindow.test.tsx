@@ -1,7 +1,8 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import gsap from 'gsap'
 import { useEffect } from 'react'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { Dock } from '#components/Dock'
 import { WindowLayer } from '#components/WindowLayer'
@@ -56,7 +57,7 @@ function Shell({ windowId = 'projects', fileId, also }: ShellProps) {
 
 /** Renders the shell and returns the frame of the window it opened. */
 function setup(windowId: WindowId = 'projects', fileId?: FileId, also?: WindowId) {
-  render(
+  const view = render(
     <WindowManagerProvider>
       <Shell windowId={windowId} fileId={fileId} also={also} />
     </WindowManagerProvider>,
@@ -67,6 +68,7 @@ function setup(windowId: WindowId = 'projects', fileId?: FileId, also?: WindowId
   return {
     frame,
     handle: frame.querySelector('header') as HTMLElement,
+    view,
   }
 }
 
@@ -100,9 +102,13 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  vi.restoreAllMocks()
   document.documentElement.style.removeProperty('--window-nudge-step')
   document.documentElement.style.removeProperty('--window-nudge-step-large')
   document.documentElement.style.removeProperty('--window-cascade-step')
+  document.documentElement.style.removeProperty('--duration-base')
+  document.documentElement.style.removeProperty('--duration-slow')
+  document.documentElement.style.removeProperty('--window-dock-shrink')
 })
 
 describe('a window the manager holds', () => {
@@ -295,5 +301,172 @@ describe('the lights', () => {
 
     expect(within(frame).getByRole('button', { name: 'Minimise Nike Project.txt' })).toBeDisabled()
     expect(within(frame).getByRole('button', { name: 'Close Nike Project.txt' })).toBeEnabled()
+  })
+})
+
+/** A movement the frame started, recorded instead of played, so a case can finish it by hand. */
+type Recorded = {
+  element: HTMLElement | null
+  vars: gsap.TweenVars | null
+  readonly kill: ReturnType<typeof vi.fn>
+  readonly finish: () => void
+}
+
+/**
+ * Stands in for gsap's timelines, which are the one boundary a movement crosses. Nothing is
+ * played, so a case sees exactly what the frame asked for and decides when it lands.
+ */
+function recordTimelines(): Recorded[] {
+  const created: Recorded[] = []
+
+  vi.spyOn(gsap, 'timeline').mockImplementation(((timelineVars: gsap.TimelineVars = {}) => {
+    const recorded: Recorded = {
+      element: null,
+      vars: null,
+      kill: vi.fn(),
+      finish: () => timelineVars.onComplete?.(),
+    }
+
+    const handle = {
+      to: (element: HTMLElement, tweenVars: gsap.TweenVars) => {
+        recorded.element = element
+        recorded.vars = tweenVars
+
+        return handle
+      },
+      kill: recorded.kill,
+    }
+
+    created.push(recorded)
+
+    return handle
+  }) as never)
+
+  return created
+}
+
+describe('the movements a frame plays', () => {
+  // covers: AC-6, AC-10
+  it('reaches the end state at once, and starts no movement, when the durations read zero', async () => {
+    const user = userEvent.setup()
+    const timelines = recordTimelines()
+    const { frame } = setup()
+
+    await user.click(screen.getByRole('button', { name: 'Minimise Projects' }))
+
+    expect(frame.classList.contains('hidden')).toBe(true)
+    expect(timelines).toHaveLength(0)
+
+    await user.click(screen.getByRole('button', { name: 'Portfolio' }))
+    await user.click(screen.getByRole('button', { name: 'Close Projects' }))
+
+    expect(screen.queryByRole('region', { name: 'Projects' })).toBeNull()
+    expect(timelines).toHaveLength(0)
+  })
+
+  // covers: AC-6
+  it('shrinks toward the dock with the token scale, and tells the manager once it lands', async () => {
+    const user = userEvent.setup()
+    const timelines = recordTimelines()
+
+    document.documentElement.style.setProperty('--duration-slow', '400')
+    document.documentElement.style.setProperty('--window-dock-shrink', '0.5')
+
+    const { frame } = setup()
+
+    await user.click(screen.getByRole('button', { name: 'Minimise Projects' }))
+
+    // The window is still on the desk: the manager hears about the minimise when it lands.
+    expect(frame.classList.contains('hidden')).toBe(false)
+    expect(timelines).toHaveLength(1)
+    expect(timelines[0]?.element).toBe(frame)
+    expect(timelines[0]?.vars?.scale).toBe(0.5)
+    expect(timelines[0]?.vars?.opacity).toBe(0)
+
+    act(() => timelines[0]?.finish())
+
+    expect(screen.getByRole('region', { name: 'Projects' }).classList.contains('hidden')).toBe(true)
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Portfolio' }))
+  })
+
+  // covers: AC-8
+  it('leaves only once the exit movement has landed', async () => {
+    const user = userEvent.setup()
+    const timelines = recordTimelines()
+
+    document.documentElement.style.setProperty('--duration-base', '300')
+
+    const { frame } = setup()
+
+    screen.getByRole('button', { name: 'Close Projects' }).focus()
+    await user.keyboard('{Escape}')
+
+    expect(screen.getByRole('region', { name: 'Projects' })).toBe(frame)
+    expect(timelines).toHaveLength(1)
+    expect(timelines[0]?.element).toBe(frame)
+    expect(timelines[0]?.vars?.scale).toBeCloseTo(0.96)
+    expect(timelines[0]?.vars?.opacity).toBe(0)
+
+    act(() => timelines[0]?.finish())
+
+    expect(screen.queryByRole('region', { name: 'Projects' })).toBeNull()
+  })
+
+  // covers: AC-10
+  it('stops the movement in flight when the frame unmounts', async () => {
+    const user = userEvent.setup()
+    const timelines = recordTimelines()
+
+    document.documentElement.style.setProperty('--duration-base', '300')
+
+    const { view } = setup()
+
+    screen.getByRole('button', { name: 'Close Projects' }).focus()
+    await user.keyboard('{Escape}')
+    view.unmount()
+
+    expect(timelines[0]?.kill).toHaveBeenCalled()
+  })
+
+  // covers: AC-6
+  it('brings the window back holding the keyboard, with no movement at zero', async () => {
+    const user = userEvent.setup()
+
+    // gsap is the one boundary a movement crosses, and it is stood in for here: jsdom does not
+    // report what the real library leaves on the element when it clears props, so the browser
+    // check for this case lives in the end to end suite.
+    const fromTo = vi.spyOn(gsap, 'fromTo').mockImplementation((() => ({})) as never)
+    const set = vi.spyOn(gsap, 'set').mockImplementation((() => ({})) as never)
+
+    const { frame } = setup()
+
+    await user.click(screen.getByRole('button', { name: 'Minimise Projects' }))
+    await user.click(screen.getByRole('button', { name: 'Portfolio' }))
+
+    expect(frame.classList.contains('hidden')).toBe(false)
+    expect(document.activeElement).toBe(frame)
+    // A movement that reads zero is not played: the props a drag could have left are cleared.
+    expect(fromTo).not.toHaveBeenCalled()
+    expect(set).toHaveBeenCalledWith(frame, { clearProps: 'transform,opacity' })
+  })
+
+  // covers: AC-6
+  it('plays the way back from the dock button, at the geometry the window left with', async () => {
+    const user = userEvent.setup()
+    const fromTo = vi.spyOn(gsap, 'fromTo').mockImplementation((() => ({})) as never)
+
+    const { frame } = setup()
+
+    await user.click(screen.getByRole('button', { name: 'Minimise Projects' }))
+
+    // The way back reads the token when the status changes, so the duration is set now.
+    document.documentElement.style.setProperty('--duration-slow', '400')
+
+    await user.click(screen.getByRole('button', { name: 'Portfolio' }))
+
+    expect(fromTo).toHaveBeenCalledTimes(1)
+    expect(fromTo.mock.calls[0]?.[0]).toBe(frame)
+    expect(fromTo.mock.calls[0]?.[2]).toMatchObject({ x: 0, y: 0, scale: 1, opacity: 1 })
+    expect(document.activeElement).toBe(frame)
   })
 })
