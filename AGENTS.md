@@ -24,13 +24,14 @@ npm run preview  # serve the built app
 npm run lint     # ESLint
 npm run format   # Prettier (`npm run format:check` checks without writing)
 npm test         # Vitest in jsdom, src/**/*.test.ts(x)
+npm run test:watch # Vitest in watch mode, for local work
 npm run test:e2e # Playwright in Chromium, on its own dev server
 npx tsc -b       # typecheck only (`npm run typecheck`)
 ```
 
 ## Specs
 
-`docs/specs/0001-content-data-model/` uses the umbrella shape: an `index.md`, plus `rationale.md` and `verify.md`. Scope lives in `docs/scope/`.
+Every spec is a directory under `docs/specs/`: an `index.md` (the build spec `/develop` reads), a `rationale.md` (the reasoning) and a `verify.md` (`/check verify` runs it). Scope lives in `docs/scope/`.
 
 ## Rules
 
@@ -45,6 +46,7 @@ npx tsc -b       # typecheck only (`npm run typecheck`)
 - Accessibility baseline on every control: keyboard reachable, visible focus ring, labels on icon buttons, `alt` text on images, WCAG AA contrast.
 - File layout follows the aliases already in `vite.config.ts`: `#components`, `#content`, `#lib`, `#windows`, `#store`, `#hoc`, one job per folder. Register any new alias in `jsconfig.json` too.
 - Design system: build all UI to `design.md` (colour, type, spacing, frame anatomy, states); token values live in CSS.
+- Animation takes its timing from the CSS tokens through `readMotionToken` and `readEaseToken` (`#lib/motion`), never a literal duration, so reduced motion needs no second code path.
 
 ## Tooling
 
@@ -73,6 +75,11 @@ Installed and wired by the `/develop tooling` step.
 - [vite](.agents/skills/vite/): `antfu/skills`, Vite config, plugins, build behaviour
 - [playwright-best-practices](.agents/skills/playwright-best-practices/): `currents-dev/playwright-best-practices-skill`, end to end test structure
 - [shared-tooling-eslint-prettier](.agents/skills/shared-tooling-eslint-prettier/): `agents-inc/skills`, Prettier and ESLint kept from fighting (`eslint-config-prettier` in a flat config)
+- [accessibility-scan](.agents/skills/accessibility-scan/): `accesslint/skills`, the automated rule engine over a live page (contrast, alt text, labels)
+- [accessibility-inspect](.agents/skills/accessibility-inspect/): `accesslint/skills`, the hands on tier: keyboard, focus order, screen reader names, reflow, target size
+- [accessibility-audit](.agents/skills/accessibility-audit/): `accesslint/skills`, a whole site WCAG 2.2 conformance audit across sampled pages
+- [accessibility-fix](.agents/skills/accessibility-fix/): `accesslint/skills`, repair the violations a scan or an audit returns
+- [accessibility-diff](.agents/skills/accessibility-diff/): `accesslint/skills`, diff a page's violations against a baseline, as a regression gate
 
 MCP servers: Playwright MCP (recommended), Tailwind MCP server (recommended)
 Declined: Tailwind layouts and animations (josiahsiegel), Advanced TypeScript types (wshobson/agents), Chrome DevTools MCP, Figma MCP, zod and vitest Agent Skills (declined at /sync)

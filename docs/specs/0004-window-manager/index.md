@@ -1,7 +1,7 @@
 # 0004. Adopt one window manager for every window
 
 **Date**: 2026-09-20
-**Status**: Proposed
+**Status**: In Progress
 
 ## Summary
 
