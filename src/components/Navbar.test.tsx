@@ -1,9 +1,11 @@
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { Navbar } from '#components/Navbar'
+import { WindowLayer } from '#components/WindowLayer'
 import { NAV_ICONS, NAV_LINKS } from '#content/shell'
+import { WINDOWS } from '#content/windows'
 import { APPEARANCE_STORAGE_KEY } from '#lib/appearance'
 import { WindowManagerProvider } from '#store/WindowManagerProvider'
 
@@ -17,6 +19,21 @@ function renderBar() {
       <Navbar />
     </WindowManagerProvider>,
   )
+}
+
+/** The bar with the window layer beside it, so a press can be watched opening a window. */
+function renderBarWithWindows() {
+  return render(
+    <WindowManagerProvider>
+      <Navbar />
+      <WindowLayer />
+    </WindowManagerProvider>,
+  )
+}
+
+/** The clock the bar shows, which carries the moment it was rendered with as `datetime`. */
+function clock(): Element | null {
+  return screen.getByRole('navigation', { name: 'Desktop menu bar' }).querySelector('time')
 }
 
 describe('Navbar', () => {
@@ -47,11 +64,45 @@ describe('Navbar', () => {
   it('shows the clock as a time element carrying the current moment', () => {
     renderBar()
 
-    const clock = screen.getByRole('navigation', { name: 'Desktop menu bar' }).querySelector('time')
+    expect(clock()).not.toBeNull()
+    expect(clock()?.getAttribute('datetime')).toBe(NOW.toISOString())
+    expect(clock()?.textContent?.trim()).not.toBe('')
+  })
 
-    expect(clock).not.toBeNull()
-    expect(clock?.getAttribute('datetime')).toBe(NOW.toISOString())
-    expect(clock?.textContent?.trim()).not.toBe('')
+  it('rolls the clock over on the minute boundary, so the bar keeps the time', () => {
+    vi.setSystemTime(new Date('2026-09-20T09:41:30.000Z'))
+    renderBar()
+
+    expect(clock()?.getAttribute('datetime')).toBe('2026-09-20T09:41:30.000Z')
+
+    // Half a minute left in the minute it woke on, so the clock is due to move exactly then.
+    act(() => {
+      vi.advanceTimersByTime(30_000)
+    })
+
+    expect(clock()?.getAttribute('datetime')).toBe('2026-09-20T09:42:00.000Z')
+  })
+
+  it('opens the window each link names, focusing that one on a second press', async () => {
+    // This test drives the pointer, so the clock the file freezes for the two checks above
+    // stands down and the interactions run on real timers.
+    vi.useRealTimers()
+
+    const user = userEvent.setup()
+    renderBarWithWindows()
+
+    const bar = screen.getByRole('navigation', { name: 'Desktop menu bar' })
+
+    for (const { label, windowId } of NAV_LINKS) {
+      const link = within(bar).getByRole('button', { name: label })
+      const title = WINDOWS[windowId].title
+
+      await user.click(link)
+      expect(screen.getAllByRole('region', { name: title }), label).toHaveLength(1)
+
+      await user.click(link)
+      expect(screen.getAllByRole('region', { name: title }), label).toHaveLength(1)
+    }
   })
 
   it('renders a labelled control for every icon that acts, and none for the ones that decorate', () => {

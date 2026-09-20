@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { Desktop } from '#components/Desktop'
@@ -123,5 +124,50 @@ describe('the desktop surface', () => {
 
     expect(frame.style.left).toBe('0px')
     expect(frame.style.top).toBe('0px')
+  })
+
+  // covers: AC-3, AC-9
+  it('lists the items in the order the content gives, which is the order the keyboard walks them', () => {
+    const desktop = setup()
+    const buttons = within(desktop).getAllByRole('button')
+
+    expect(buttons).toHaveLength(DESKTOP_ITEMS.length)
+
+    buttons.forEach((button, index) => {
+      expect(button, DESKTOP_ITEMS[index]?.id).toHaveAccessibleName(
+        DESKTOP_ITEMS[index]?.label ?? '',
+      )
+    })
+  })
+
+  // covers: AC-11
+  it('brings the keyboard into the first item rather than onto the surface itself', async () => {
+    const user = userEvent.setup()
+    const desktop = setup()
+
+    await user.tab()
+
+    // The surface is a focus target without being a tab stop: the keyboard lands on its
+    // contents, and the surface is only reached when something asks it to take over.
+    expect(desktop).not.toHaveFocus()
+
+    const first = within(desktop).getAllByRole('button')[0]
+
+    expect(first).toHaveFocus()
+
+    act(() => desktop.focus())
+
+    expect(desktop).toHaveFocus()
+  })
+
+  // covers: AC-11
+  it('renders the greeting, the items and the layer while the manager holds no window', () => {
+    const desktop = setup()
+
+    expect(within(desktop).getByRole('heading', { level: 1 })).toBeInTheDocument()
+    expect(within(desktop).getByRole('list', { name: 'Desktop items' })).toBeInTheDocument()
+
+    // The surface itself is the only region on screen, since nothing has been opened on it.
+    expect(screen.getAllByRole('region')).toEqual([desktop])
   })
 })

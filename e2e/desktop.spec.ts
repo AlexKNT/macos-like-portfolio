@@ -205,3 +205,52 @@ test('keeps the shell usable at 360px wide, with no dock and no sideways scroll'
 
   expect(sideways).toBe(0)
 })
+
+/**
+ * The surface holds its windows: however far a frame is stacked and however far it is stretched,
+ * the bar and the dock are still the elements under the pointer. Spec 0003, AC-1.
+ */
+test('keeps the menu bar and the dock above a window, however that window is stacked', async ({
+  page,
+}) => {
+  await page.goto('/')
+
+  const bar = page.getByRole('navigation', { name: 'Desktop menu bar' })
+  const dock = page.getByRole('region', { name: 'Dock' })
+  const portfolio = dock.getByRole('button', { name: 'Portfolio' })
+
+  await expect(dock).toBeVisible()
+  await portfolio.click()
+
+  const projects = page.getByRole('region', { name: 'Projects' })
+
+  await expect(projects).toBeVisible()
+
+  // The strongest attack a window can make: a stacking number far above anything the shell
+  // uses, and a box stretched over the whole viewport and pushed up under the menu bar.
+  await projects.evaluate((element) => {
+    const frame = element as HTMLElement
+
+    frame.style.zIndex = '9999'
+    frame.style.top = '-40px'
+    frame.style.left = '0px'
+    frame.style.width = '100vw'
+    frame.style.height = '100vh'
+  })
+
+  /** Whether the element is still what the pointer meets at the middle of its own box. */
+  function meetsItself(this: void, element: Element): boolean {
+    const box = element.getBoundingClientRect()
+    const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)
+
+    return hit !== null && element.contains(hit)
+  }
+
+  const barLink = bar.getByRole('button', { name: 'Projects' })
+
+  expect(await barLink.evaluate(meetsItself)).toBe(true)
+  expect(await portfolio.evaluate(meetsItself)).toBe(true)
+
+  // The frame is still the thing on the desk, so the two checks above mean something.
+  expect(await projects.evaluate(meetsItself)).toBe(true)
+})
