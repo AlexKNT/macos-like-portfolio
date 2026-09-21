@@ -208,8 +208,8 @@ and bring it to `/architect`.
 
 ## Reference only, not yet migrated
 
-`src/index.css` still carries the window classes ported from the reference build: `#safari`,
-`#home` and `#dock`. They are palette based and light
+`src/index.css` still carries the window classes ported from the reference build: `#home` and
+`#dock`. They are palette based and light
 only, and they are kept so the windows that are still to be built have a starting point. Do not copy
 them as they stand. Each window feature migrates its own rules onto the tokens when it lands, and
 what is left is deleted once every window is built. That is tracked debt, not a second design system.
@@ -237,6 +237,13 @@ as many columns as the width allows. A photo opens into a viewer inside the same
 into an overlay over the desktop, so the frame, the one region rule and the focus rules all hold. No
 new token and no animation arrived with it: the tiles, the marked album row and the viewer's Close
 control use the state utilities every other control already uses.
+
+The articles window has landed, so `#safari` is gone: the reference block carried a search field, a
+title bar and a card per post, and none of them are here. The window is an ordinary body of the
+shared frame holding one heading and a list of rows, and a row is a 64 pixel cover square beside the
+date and the title, with the title itself the link that leaves the page. It reuses the surface,
+radius, link and state names the other windows already use, so no token, no pair and no new
+animation arrived with it, and the shared reveal is all the movement a row has.
 
 ## Open items
 

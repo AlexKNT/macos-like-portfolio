@@ -1,4 +1,5 @@
 import { Placeholder } from '#windows/Placeholder'
+import { ArticlesWindow } from '#windows/articles/ArticlesWindow'
 import { ContactWindow } from '#windows/contact/ContactWindow'
 import { GalleryWindow } from '#windows/gallery/GalleryWindow'
 import { ImageFileBody } from '#windows/projects/ImageFileBody'
@@ -51,7 +52,7 @@ export type WindowBodyEntry = {
  */
 export const WINDOW_BODIES: Record<WindowId, WindowBodyEntry> = {
   projects: { Body: ProjectsWindow, Lead: ProjectBackButton, Scope: ProjectHistoryScope },
-  articles: { Body: Placeholder },
+  articles: { Body: ArticlesWindow },
   gallery: { Body: GalleryWindow },
   skills: { Body: SkillsWindow },
   resume: { Body: ResumeWindow },
