@@ -70,4 +70,13 @@ describe('the order posts are shown in', () => {
     expect(dates).toHaveLength(ARTICLES.length)
     expect(dates).toEqual([...dates].sort((left, right) => right.localeCompare(left)))
   })
+
+  // covers: AC-2
+  it('answers an empty list for an empty list, and the one post for one post', () => {
+    expect(newestFirst([])).toEqual([])
+
+    const only = dated(0, '2025-04-01')
+
+    expect(newestFirst([only])).toEqual([only])
+  })
 })

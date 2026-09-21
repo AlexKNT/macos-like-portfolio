@@ -213,7 +213,7 @@ A browser looking window that links out to posts you wrote elsewhere, so the wri
   - [x] The movement, the narrow pass and the suites: the reveal on every open, the 380 and 360 pixel passes, `#safari` retired, and the unit and end to end suites (AC-9, AC-10)
   - [ ] Your own posts: the three placeholder posts, their ids and their covers give way to your own writing (deliberately outside the acceptance criteria, so a post you have not written yet does not fail the verification)
 - [x] Verify it: `/check verify articles window`
-- [ ] Test it: `/test articles window`
+- [x] Test it: `/test articles window`
 spec [0011](../specs/0011-articles-window/index.md) · code in `src/windows/articles`
 
 ### 15. Archive window (Trash style) · planned · needs a decision

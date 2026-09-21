@@ -76,4 +76,29 @@ describe('the articles window', () => {
       expect(screen.getByText(post.title)).toBeVisible()
     }
   })
+
+  // covers: AC-1
+  it('shows the same list whatever the window was pointed at, because it reads the content', () => {
+    // A body is handed whatever target opened it. This one shows the portfolio's posts, so a place
+    // target has to make no difference to what it paints.
+    render(
+      <WindowManagerProvider>
+        <ArticlesWindow
+          windowId="articles"
+          windowKey="articles"
+          target={{ kind: 'location', locationId: 'work' }}
+        />
+      </WindowManagerProvider>,
+    )
+
+    expect(screen.getByRole('heading', { name: headingLine() })).toBeInTheDocument()
+    expect(screen.getAllByRole('listitem')).toHaveLength(ARTICLES.length)
+  })
+
+  // covers: AC-10
+  it('opts every row into the shared reveal, which is what uncovers them on each open', () => {
+    const { container } = setup()
+
+    expect(container.querySelectorAll('li[data-line]')).toHaveLength(ARTICLES.length)
+  })
 })

@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { ARTICLES } from '#content/articles'
@@ -109,5 +109,27 @@ describe('an article row', () => {
     setup(postAt(0))
 
     expect(screen.getByRole('link')).toHaveClass('min-h-touch')
+  })
+
+  // covers: AC-7
+  it('keeps the row, its place and its description when the cover file never arrives', () => {
+    const article = postAt(0)
+    const { container } = setup(article)
+    const cover = screen.getByRole('img')
+
+    // The browser reporting the picture it cannot draw is the shape a file that is not there
+    // takes. Nothing about the window changes: it is the browser's own state, not the window's.
+    fireEvent.error(cover)
+
+    expect(cover).toBeInTheDocument()
+    expect(cover).toHaveAttribute('src', article.image.imageUrl)
+    expect(cover).toHaveAttribute('alt', article.image.alt)
+    expect(cover).toHaveClass('size-16')
+
+    // The row keeps its place in the list, its one control and its own two lines of words, and
+    // no polite line is put in the cover's stead.
+    expect(container.querySelectorAll('li')).toHaveLength(1)
+    expect(screen.getByRole('link')).toHaveAccessibleName(article.title)
+    expect(container.textContent).toBe(`${printArticleDate(article.date)}${article.title}`)
   })
 })

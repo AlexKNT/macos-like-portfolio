@@ -37,4 +37,9 @@ describe('the date words', () => {
       expect(printArticleDate(article.date)).toMatch(/^[A-Z][a-z]{2} \d{1,2}, \d{4}$/)
     }
   })
+
+  // covers: AC-4
+  it('prints a day that has not happened yet, since a post may be prepared ahead of its date', () => {
+    expect(printArticleDate('2027-03-09')).toBe('Mar 9, 2027')
+  })
 })
