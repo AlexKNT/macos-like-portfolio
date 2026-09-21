@@ -21,7 +21,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 8 | Projects window (Finder style) | Slice 1 | done |
 | 9 | Skills window (Terminal style) | Slice 2 | done |
 | 10 | Resume window | Slice 2 | done |
-| 11 | Contact window | Slice 2 | planned |
+| 11 | Contact window | Slice 2 | in-progress |
 | 12 | Mobile app switcher shell | Slice 3 | planned |
 | 13 | Gallery window (Photos style) | Slice 4 | planned |
 | 14 | Articles window (Safari style) | Slice 4 | planned |
@@ -153,10 +153,19 @@ Your resume, readable and downloadable inside the desktop, since recruiters look
 - [x] Test it: `/test resume window`
 spec [0007](../specs/0007-resume-window/index.md) · code in `src/windows/resume`, `src/lib/files.ts`, `src/content/reads.ts`
 
-### 11. Contact window · planned · needs a decision
+### 11. Contact window · in-progress
 How to reach you with no server involved: a copy address button, a mail link, and your socials.
 **Done when:** copy puts the address on the clipboard and confirms it, the mail link opens the visitor's mail app, and each social is a labelled link.
-- [ ] Design it (spec): `/architect contact window`
+- [x] Design it (spec): `/architect contact window`
+- [x] Build it: `/develop contact window`
+  - [x] The content and the words: the optional availability field on the profile, the atom entry renamed `site`, and the window's words module (AC-9, AC-10, AC-14)
+  - [x] The thin thread: the window on the shared stage, the address as the mail link, the registry line, proved from the dock button and the bar link (AC-1, AC-2)
+  - [x] The copy pair and the tiles: the copy with its confirmation and its refusal, the four socials in their brand colours, the availability line (AC-3, AC-4, AC-5, AC-6, AC-7)
+  - [x] The ink, the narrow widths and the suites: the fixed ink with its contrast pairs, `#contact` retired, 360px, the focus walk and `e2e/contact.spec.ts` (AC-8, AC-11, AC-12, AC-13)
+  - [x] The values and the clean run: lint, tests, build and the end to end suite all clean, with your own address, name, role, availability line and four links still to swap in, on your call (AC-14, AC-15)
+- [ ] Verify it: `/check verify contact window`
+- [ ] Test it: `/test contact window`
+spec [0008](../specs/0008-contact-window/index.md) · code in `src/windows/contact`, `src/content/types.ts`, `src/index.css`, `e2e/contact.spec.ts`
 
 ## Slice 3: Small screens
 The desktop does not fit on a phone, so the metaphor is reshaped rather than squeezed.

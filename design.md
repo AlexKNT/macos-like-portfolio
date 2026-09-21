@@ -3,7 +3,7 @@ name: macos desktop design system
 source: image
 character: "A quiet desktop that behaves like an operating system: a translucent bar over a photographic wallpaper, windows with a soft grey title bar and three traffic lights, hairline edges instead of heavy shadows, and one accent blue reserved for the thing you can act on. Light and dark are the same desktop with the values swapped, never a dark theme bolted on."
 tokens: "the values live in src/index.css, in one `@theme static` block and one `[data-theme='dark']` block; read them there, they are never retyped here"
-contrast: "the suite in src/lib/tokens.test.ts holds 33 pairs in both modes. Body text 4.5:1, the graphics that carry meaning 3:1, and the glass pairs composited over the darkest and the lightest tone of each wallpaper. A pair that fails fails `npm test`."
+contrast: "the suite in src/lib/tokens.test.ts holds 33 pairs in both modes. Body text 4.5:1, the graphics that carry meaning 3:1, and the glass pairs composited over the darkest and the lightest tone of each wallpaper. The social tiles' pairs are a second list in the same suite, read from the socials in the content layer because both ends of those pairs live outside the token layer. A pair that fails fails `npm test`."
 ---
 
 ## Build mandate
@@ -171,11 +171,18 @@ and bring it to `/architect`.
   surfaces.
 - The compact wallpaper is one image for both modes, a portrait crop. The design folder has no
   dedicated mobile wallpaper, so the crop stands in until one exists.
+- A social tile's surface is the brand colour its own content entry carries, and a brand colour is
+  not a token: it cannot be swapped for a name that follows the mode. Three of the four sit below
+  3:1 against the light window body, so a tile is identified by its own label rather than by its
+  boundary, and that shortfall is recorded here rather than fixed. The label and the icon are both
+  painted in `--color-text-on-brand`, a name declared once and never overridden, and the suite holds
+  it against every social colour in both modes at 4.5:1 from its own list. It sits in its own list
+  because both ends of a tile's pair live outside the token layer.
 
 ## Reference only, not yet migrated
 
 `src/index.css` still carries the window classes ported from the reference build: `#safari`,
-`#photos`, `#contact`, `#home` and `#dock`. They are palette based and light
+`#photos`, `#home` and `#dock`. They are palette based and light
 only, and they are kept so the windows that are still to be built have a starting point. Do not copy
 them as they stand. Each window feature migrates its own rules onto the tokens when it lands, and
 what is left is deleted once every window is built. That is tracked debt, not a second design system.
@@ -191,6 +198,11 @@ and `--color-divider` on the dashed rule above that hint.
 The resume window has landed, so `#resume` is gone: the window is an ordinary body of the shared
 frame, holding a page of its own (`--color-surface-paper`) with the file row and the document on it.
 The page's three names, its ring utility and the fallback the embed carries are recorded above.
+
+The contact window has landed, so `#contact` is gone: it is an ordinary body of the shared frame,
+holding the profile's address as one mail link with the shared copy pair beside it and the four
+socials as tiles painted on their own brand colours. The fixed ink those tiles use, and the reason
+their boundaries are not held at 3:1, are recorded under Exceptions above.
 
 ## Open items
 
