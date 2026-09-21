@@ -18,6 +18,8 @@ npx playwright install chromium           # once per machine, before the first r
 - `projects.spec.ts`: the Finder opening on the Work location, reading a project and walking back, following a link file in a new tab, the two file windows, the missing image state and the layout at 360px.
 - `skills.spec.ts`: the stack printed area by area, a name copied and confirmed on its own row, the second copy moving the confirmation, the reveal under reduced motion, and the layout at 360px.
 - `resume.spec.ts`: the window from the desktop item and from the menu bar link, the file row over the document and what the download control carries, the file that is not served and the request that fails, the ring on the page, the layout at 360px, and the Finder's own resume file still leaving the app.
+- `contact.spec.ts`: the window from the dock and from the menu bar link, the address as a mail link beside the copy pair, the four social tiles and their ink, and the window at 360px.
+- `phone.spec.ts`: the phone shell at 360px: the home surface and its seven tiles, one window filling the work area with Close returning home, a parked window's mark and the tile that brings it back, a file opening over the Finder, the back press and its one history entry, the movement from a tile, and the reflow at 320px.
 
 `playwright.config.ts` at the repo root holds the settings: Chromium only, its own dev server on port 4174 with `--strictPort`, so a run never fights the dev server you have open on 5173. CI gets two retries and the `github` reporter; a local run reuses a server already on that port.
 
@@ -28,6 +30,8 @@ npx playwright install chromium           # once per machine, before the first r
 - A name query matches on a substring, so pass `{ exact: true }` whenever another control shares a prefix. In this app `Resume` also matches `AI Resume Analyzer`, `me.png` also matches `casual-me.png`, and a row's `Download` also matches the embed's `Download Resume.pdf`.
 - Assert the computed value when the point is what the browser actually paints (a focus ring's outline, a custom property read off the document element), because that is the half a unit test cannot judge.
 - A spec that drives the keyboard waits for the surface to be visible first. The desktop renders after the content check resolves, and a tab into an empty document focuses nothing.
+- Below the compact breakpoint a check opens its window from the home surface's own tile (`getByRole('list', { name: 'Home' })`), because a phone renders no dock, no menu bar links and no desktop items. The surface's container is always on the page, so "home is showing" means its list, not the container it lives in.
+- A window that opens on a phone arrives from its tile, so a check that measures a landed box waits for it (`expect.poll`), rather than reading the frame mid movement.
 
 ## Notes for this machine
 

@@ -8,7 +8,7 @@ Governing spec: [`docs/specs/0001-content-data-model/index.md`](../../docs/specs
 
 - `types.ts`: every schema, every id union, every inferred type, and the `LookupFailure` and `OpenTarget` shapes. Read it first.
 - `windows.ts`: `WINDOWS`, the nine windows the desktop can open, keyed by `WindowId`.
-- `shell.ts`: `NAV_LINKS`, `NAV_ICONS`, `DOCK_APPS`.
+- `shell.ts`: `NAV_LINKS`, `NAV_ICONS`, `DOCK_APPS`, and `HOME_APPS`, the tiles a phone's home surface stands on.
 - `theme.ts`: `WALLPAPER`, the image each mode paints plus the compact crop a narrow screen prefers. `#lib/appearance` writes the two paths onto the document element, so no image path is hardcoded in the stylesheet.
 - `desktop.ts`: `DESKTOP_ITEMS`, the four items on the wallpaper, each with the spot it sits in and the target it opens.
 - `locations.ts`: `LOCATIONS`, the Finder sidebar, the projects, and their files.
@@ -21,6 +21,7 @@ Governing spec: [`docs/specs/0001-content-data-model/index.md`](../../docs/specs
 ## Conventions
 
 - One module per family of content. A new collection gets its own file, and its schema plus its id union go in `types.ts`.
+- A list that stands in for windows (`DOCK_APPS`, `HOME_APPS`) takes each entry's name from `WINDOWS`, so a window's word is written down once and a surface cannot drift from the window it opens.
 - The type comes from the schema (`z.infer<typeof thingSchema>`). Never write a type and a schema for the same shape by hand, because they drift.
 - Every entry carries an `id` taken from a literal union in `types.ts`. That union is what makes a reference to something that does not exist fail to compile.
 - `WINDOWS`, `LOCATIONS` and `WALLPAPER` carry a `Record<Key, Value>` annotation, so a missing entry is a typecheck failure. A zod record cannot enforce that, the annotation is what does.
