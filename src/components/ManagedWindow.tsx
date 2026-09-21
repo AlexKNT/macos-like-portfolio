@@ -36,6 +36,15 @@ export function ManagedWindow({ instance }: { readonly instance: WindowInstance 
     target: instance.target,
   }
 
+  /*
+   * A phone paints one window: the focused instance takes the work area's own box, and every other
+   * live one is hidden, so it is out of the tab order and out of the accessibility tree while it
+   * stays alive. That is what lets the desktop's own stacked windows survive a resize into the
+   * compact layout and come back, at their stored geometry and status, when the viewport widens
+   * again. Spec 0009, AC-4.
+   */
+  const isCovered = compact && !isFocused
+
   const window = (
     <Window
       title={instance.title}
@@ -46,7 +55,7 @@ export function ManagedWindow({ instance }: { readonly instance: WindowInstance 
       onMinimise={frame.onMinimise}
       onZoom={frame.onZoom}
       leading={Lead === undefined ? undefined : <Lead {...bodyProps} />}
-      className={`pointer-events-auto absolute ${frame.isMinimised ? 'hidden' : ''}`}
+      className={`pointer-events-auto absolute ${frame.isMinimised || isCovered ? 'hidden' : ''}`}
       style={{
         left: position.x,
         top: position.y,

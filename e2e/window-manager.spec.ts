@@ -328,17 +328,19 @@ test('fills the focused window on a compact screen, and offers no drag', async (
   await page.setViewportSize({ width: 420, height: 800 })
   await page.goto('/')
 
-  const desktop = page.getByRole('region', { name: 'Desktop' })
-  const item = page.getByRole('list', { name: 'Desktop items' }).getByRole('button').first()
+  // A phone has no desktop item list: the home surface's own tile is the way in there.
+  const desktop = page.getByRole('region', { name: 'Home' })
+  const tile = page.getByRole('list', { name: 'Home' }).getByRole('button', { name: 'Projects' })
 
-  await expect(item).toBeVisible()
-  await item.click()
+  await expect(tile).toBeVisible()
+  await tile.click()
 
-  // The first desktop item is a project folder, so the frame is named after that project.
-  const projects = page.getByRole('region', { name: 'Nike Ecommerce Website Application' })
+  // A bare Projects open lands on the work location, so the frame is named after that place.
+  const projects = page.getByRole('region', { name: 'Work' })
 
   await expect(projects).toBeVisible()
-  expect(await boxOf(projects)).toEqual(await boxOf(desktop))
+  // The box is waited for, since a window arriving from its tile is drawn small on the way in.
+  await expect.poll(async () => boxOf(projects)).toEqual(await boxOf(desktop))
 
   // A press on the title bar focuses the window and moves nothing: there is no room on a
   // compact screen to put a window down.

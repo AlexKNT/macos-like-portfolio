@@ -1,4 +1,5 @@
-import type { DockApp, NavIcon, NavLink } from '#content/types'
+import { WINDOWS } from '#content/windows'
+import type { DockApp, HomeApp, NavIcon, NavLink } from '#content/types'
 
 /** The three menu bar links, each naming the window it opens. */
 export const NAV_LINKS: readonly NavLink[] = [
@@ -40,4 +41,22 @@ export const DOCK_APPS: readonly DockApp[] = [
   { id: 'contact', name: 'Contact', windowId: 'contact' },
   { id: 'skills', name: 'Skills', windowId: 'skills' },
   { id: 'archive', name: 'Archive', windowId: 'archive' },
+]
+
+/**
+ * The phone's home surface: one tile for every window the desktop opens by name, in the order a
+ * recruiter meets them (the work first, then the resume and the way to reach you, then the rest).
+ *
+ * The name is the window's own title and the icon is read from `WINDOWS`, so neither is written a
+ * second time. The two file windows have no tile on purpose: they arrive through the Finder, which
+ * asks their body for a place to put them. Spec 0009, AC-2, AC-14.
+ */
+export const HOME_APPS: readonly HomeApp[] = [
+  { id: 'projects', name: WINDOWS.projects.title, windowId: 'projects' },
+  { id: 'resume', name: WINDOWS.resume.title, windowId: 'resume' },
+  { id: 'contact', name: WINDOWS.contact.title, windowId: 'contact' },
+  { id: 'skills', name: WINDOWS.skills.title, windowId: 'skills' },
+  { id: 'articles', name: WINDOWS.articles.title, windowId: 'articles' },
+  { id: 'gallery', name: WINDOWS.gallery.title, windowId: 'gallery' },
+  { id: 'archive', name: WINDOWS.archive.title, windowId: 'archive' },
 ]

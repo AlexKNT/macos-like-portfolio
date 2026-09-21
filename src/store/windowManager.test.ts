@@ -6,9 +6,11 @@ import {
   EMPTY_WINDOW_MANAGER,
   WINDOW_LAYOUT,
   clampPosition,
+  createWindowManagerState,
   focusHopAfter,
   focusedKeyOf,
   hasDockButton,
+  hasHomeTile,
   reduceWindowManager,
   resolveOpenTarget,
   windowGeometry,
@@ -581,7 +583,7 @@ describe('the focus handoff', () => {
   }
 
   it('hands the keyboard back to the window that opened it', () => {
-    expect(focusHopAfter(stacked().instances, 'contact')).toEqual({
+    expect(focusHopAfter(stacked().instances, 'contact', false)).toEqual({
       kind: 'window',
       key: 'projects',
     })
@@ -590,13 +592,16 @@ describe('the focus handoff', () => {
   it('hands it to the window underneath when the opener was not a window', () => {
     const two = open(openProjects(), { kind: 'window', windowId: 'contact' })
 
-    expect(focusHopAfter(two.instances, 'contact')).toEqual({ kind: 'window', key: 'projects' })
+    expect(focusHopAfter(two.instances, 'contact', false)).toEqual({
+      kind: 'window',
+      key: 'projects',
+    })
   })
 
   it('skips an opener that is waiting in the dock', () => {
     const away = withMinimised(stacked(), 'projects')
 
-    expect(focusHopAfter(away.instances, 'contact')).toEqual({
+    expect(focusHopAfter(away.instances, 'contact', false)).toEqual({
       kind: 'dock',
       windowId: 'contact',
     })
@@ -605,14 +610,14 @@ describe('the focus handoff', () => {
   it('skips an opener that has gone', () => {
     const closed = dispatch(stacked(), { type: 'close', key: 'projects' })
 
-    expect(focusHopAfter(closed.instances, 'contact')).toEqual({
+    expect(focusHopAfter(closed.instances, 'contact', false)).toEqual({
       kind: 'dock',
       windowId: 'contact',
     })
   })
 
   it('falls to the dock button the window itself owns when nothing else is left', () => {
-    expect(focusHopAfter(openProjects().instances, 'projects')).toEqual({
+    expect(focusHopAfter(openProjects().instances, 'projects', false)).toEqual({
       kind: 'dock',
       windowId: 'projects',
     })
@@ -621,7 +626,22 @@ describe('the focus handoff', () => {
   it('falls to the desktop for a window that has no dock button', () => {
     const note = open(EMPTY_WINDOW_MANAGER, { kind: 'file', fileId: 'nike-about' })
 
-    expect(focusHopAfter(note.instances, 'textFile:nike-about')).toEqual({ kind: 'desktop' })
+    expect(focusHopAfter(note.instances, 'textFile:nike-about', false)).toEqual({
+      kind: 'desktop',
+    })
+  })
+
+  it('ends at the container on a phone, where there is no dock button to reach', () => {
+    // The two layouts answer this differently: the desktop hands the keyboard to the window's own
+    // dock button, and a phone hands it to the container the home surface lives in, since no dock
+    // button is mounted there to hand it to. Spec 0009, AC-8.
+    const opened = openProjects()
+
+    expect(focusHopAfter(opened.instances, 'projects', false)).toEqual({
+      kind: 'dock',
+      windowId: 'projects',
+    })
+    expect(focusHopAfter(opened.instances, 'projects', true)).toEqual({ kind: 'desktop' })
   })
 })
 
@@ -667,5 +687,133 @@ describe('the compact layout', () => {
     expect(compact.compact).toBe(true)
     expect(compact.instances).toBe(wide.instances)
     expect(dispatch(compact, { type: 'setCompact', compact: true })).toBe(compact)
+  })
+})
+
+describe('the phone shell', () => {
+  /** A phone: the same manager, with the compact layout already recorded. */
+  function phone(): WindowManagerState {
+    return dispatch(EMPTY_WINDOW_MANAGER, { type: 'setCompact', compact: true })
+  }
+
+  /** A box smaller than every window's `minSize`, so a floor would show up in a comparison. */
+  const SNUG = { width: 300, height: 200 }
+
+  it('knows which windows have a tile to come back from', () => {
+    expect(hasHomeTile('projects')).toBe(true)
+    expect(hasHomeTile('resume')).toBe(true)
+    expect(hasHomeTile('archive')).toBe(true)
+    expect(hasHomeTile('textFile')).toBe(false)
+    expect(hasHomeTile('imageFile')).toBe(false)
+  })
+
+  it('is already in the phone layout when it is created that way', () => {
+    expect(createWindowManagerState(true)).toEqual({
+      instances: [],
+      workArea: null,
+      compact: true,
+    })
+    expect(EMPTY_WINDOW_MANAGER.compact).toBe(false)
+  })
+
+  it('leaves one window on screen, closing what the new one covers', () => {
+    const two = open(open(phone(), { kind: 'window', windowId: 'projects' }), {
+      kind: 'window',
+      windowId: 'skills',
+    })
+
+    expect(two.instances.map((instance) => instance.key)).toEqual(['skills'])
+    expect(focusedKeyOf(two.instances)).toBe('skills')
+  })
+
+  it('applies that rule in both branches, including a key that is already open', () => {
+    const two = open(open(phone(), { kind: 'window', windowId: 'projects' }), {
+      kind: 'window',
+      windowId: 'contact',
+    })
+    const again = open(two, { kind: 'window', windowId: 'projects' }, { kind: 'home' })
+
+    expect(again.instances.map((instance) => instance.key)).toEqual(['projects'])
+  })
+
+  it('keeps the window an open came from, so a file opens over the Finder', () => {
+    const finder = open(phone(), { kind: 'window', windowId: 'projects' })
+    const note = open(
+      finder,
+      { kind: 'file', fileId: 'nike-about' },
+      { kind: 'window', key: 'projects' },
+    )
+
+    expect(note.instances.map((instance) => instance.key)).toEqual([
+      'projects',
+      'textFile:nike-about',
+    ])
+    expect(focusedKeyOf(note.instances)).toBe('textFile:nike-about')
+
+    // Closing the file leaves the Finder it came from, which is what Close lands back on.
+    const closed = dispatch(note, { type: 'close', key: 'textFile:nike-about' })
+
+    expect(focusedKeyOf(closed.instances)).toBe('projects')
+  })
+
+  it('never closes a parked window, and brings it back through the one open action', () => {
+    const away = withMinimised(open(phone(), { kind: 'window', windowId: 'skills' }), 'skills')
+    const gallery = open(away, { kind: 'window', windowId: 'gallery' })
+
+    expect(gallery.instances.map((instance) => instance.key)).toEqual(['skills', 'gallery'])
+    expect(only(gallery, 'skills').status).toBe('minimised')
+
+    // A tile press is the open action, so a parked window comes back through the same rule rather
+    // than around it: it returns at its stored geometry and the window it replaces goes.
+    const back = open(gallery, { kind: 'window', windowId: 'skills' }, { kind: 'home' })
+
+    expect(back.instances.map((instance) => instance.key)).toEqual(['skills'])
+    expect(only(back, 'skills').status).toBe('normal')
+    expect(only(back, 'skills').size).toEqual(WINDOW_LAYOUT.skills.defaultSize)
+  })
+
+  it('draws a window as the work area itself, with no floor from its own layout', () => {
+    const opened = open(phone(), { kind: 'window', windowId: 'projects' })
+
+    expect(windowGeometry(only(opened), SNUG, true, true)).toEqual({
+      position: { x: 0, y: 0 },
+      size: SNUG,
+    })
+    // The same box above the breakpoint leaves the window its own size, `minSize` and all.
+    expect(windowGeometry(only(opened), SNUG, false, true)).toEqual({
+      position: only(opened).position,
+      size: only(opened).size,
+    })
+  })
+
+  it('fills a window to a work area smaller than its layout, rather than to the floor', () => {
+    const measured = dispatch(phone(), { type: 'setWorkArea', size: { width: 1200, height: 900 } })
+    const opened = open(measured, { kind: 'window', windowId: 'projects' })
+    const snug = dispatch(opened, { type: 'setWorkArea', size: SNUG })
+    const filled = dispatch(snug, { type: 'zoom', key: 'projects' })
+
+    expect(only(filled, 'projects').size).toEqual(SNUG)
+  })
+
+  it('never rewrites a stored size or spot while the compact layout holds', () => {
+    const measured = dispatch(phone(), { type: 'setWorkArea', size: { width: 1200, height: 900 } })
+    const opened = open(measured, { kind: 'window', windowId: 'projects' })
+    const shrunk = dispatch(opened, { type: 'setWorkArea', size: SNUG })
+
+    expect(only(shrunk, 'projects')).toEqual(only(opened, 'projects'))
+
+    // Widening again puts the desktop back at exactly that geometry.
+    const wide = dispatch(shrunk, { type: 'setCompact', compact: false })
+
+    expect(only(wide, 'projects')).toEqual(only(opened, 'projects'))
+  })
+
+  it('changes nothing about the desktop above the breakpoint', () => {
+    const wide = open(open(EMPTY_WINDOW_MANAGER, { kind: 'window', windowId: 'projects' }), {
+      kind: 'window',
+      windowId: 'contact',
+    })
+
+    expect(wide.instances).toHaveLength(2)
   })
 })

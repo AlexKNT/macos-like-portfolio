@@ -259,9 +259,8 @@ test('keeps the window inside 360px, with the Copy control on its own line and e
   await openFromDock(page)
 
   /*
-   * The window is opened first and the frame narrowed after it, which is the move that matters here:
-   * below the compact breakpoint the dock and the bar's links are both hidden, so a 360px desktop
-   * has no way in yet. What this asserts is what the window does when the width it has shrinks.
+   * The window is opened first and the frame narrowed after it, so what this asserts is what a
+   * window does when the width it has shrinks rather than how it is opened at that width.
    */
   await page.setViewportSize({ width: 360, height: 720 })
 

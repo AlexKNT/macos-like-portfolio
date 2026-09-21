@@ -13,10 +13,12 @@ import type { WindowKey } from '#store/windowManager'
  *
  * The registry holds elements rather than state, which is why it lives beside the manager
  * instead of inside it: the manager's reducer stays pure, and the frame can still find the dock
- * button it minimises to. Spec 0004, AC-6, AC-8.
+ * button it minimises to, or the home tile on a phone it grows from and shrinks into.
+ * Spec 0004, AC-6, AC-8; spec 0009, AC-12.
  */
 export function WindowElementsProvider({ children }: { readonly children: ReactNode }) {
   const dockButtons = useRef<Map<WindowId, HTMLElement>>(new Map())
+  const homeTiles = useRef<Map<WindowId, HTMLElement>>(new Map())
   const frames = useRef<Map<WindowKey, HTMLElement>>(new Map())
   const desktop = useRef<HTMLElement | null>(null)
 
@@ -31,6 +33,15 @@ export function WindowElementsProvider({ children }: { readonly children: ReactN
         dockButtons.current.set(windowId, element)
       },
       dockButtonFor: (windowId) => dockButtons.current.get(windowId) ?? null,
+      registerHomeTile: (windowId, element) => {
+        if (element === null) {
+          homeTiles.current.delete(windowId)
+          return
+        }
+
+        homeTiles.current.set(windowId, element)
+      },
+      homeTileFor: (windowId) => homeTiles.current.get(windowId) ?? null,
       registerFrame: (key, element) => {
         if (element === null) {
           frames.current.delete(key)

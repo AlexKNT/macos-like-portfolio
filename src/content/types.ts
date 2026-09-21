@@ -49,6 +49,19 @@ export const dockAppIdSchema = z.enum([
 /** A dock app. */
 export type DockAppId = z.infer<typeof dockAppIdSchema>
 
+/** The phone home surface's tiles, in the order the surface shows them. */
+export const homeAppIdSchema = z.enum([
+  'projects',
+  'resume',
+  'contact',
+  'skills',
+  'articles',
+  'gallery',
+  'archive',
+])
+/** A tile on the phone's home surface. */
+export type HomeAppId = z.infer<typeof homeAppIdSchema>
+
 /** The Finder sidebar locations. */
 export const locationIdSchema = z.enum(['work', 'about', 'resume', 'trash'])
 /** A Finder location. */
@@ -246,6 +259,21 @@ export const dockAppSchema = z
   .readonly()
 /** A dock app. */
 export type DockApp = z.infer<typeof dockAppSchema>
+
+/**
+ * A tile on the phone's home surface: the name it shows, and the window a press opens. It carries
+ * no icon, because the icon comes from `WINDOWS`, so each window's image is written down once.
+ * Spec 0009, AC-2.
+ */
+export const homeAppSchema = z
+  .strictObject({
+    id: homeAppIdSchema,
+    name: z.string().min(1),
+    windowId: windowIdSchema,
+  })
+  .readonly()
+/** A tile on the phone's home surface. */
+export type HomeApp = z.infer<typeof homeAppSchema>
 
 /* ----------------------------------------------------------------- open target */
 

@@ -2,7 +2,8 @@ import { useCallback, useMemo, useReducer } from 'react'
 import type { ReactNode } from 'react'
 
 import { readMeasureToken } from '#lib/measure'
-import { EMPTY_WINDOW_MANAGER, focusedKeyOf, reduceWindowManager } from '#store/windowManager'
+import { createWindowManagerState, focusedKeyOf, reduceWindowManager } from '#store/windowManager'
+import { readCompactLayout } from '#store/useWorkArea'
 import { WindowElementsProvider } from '#store/WindowElementsProvider'
 import { WindowManagerContext } from '#store/useWindowManager'
 import type { WindowManager } from '#store/useWindowManager'
@@ -20,13 +21,21 @@ import type { OpenTarget } from '#content/types'
  * cascade step, read from the token layer here rather than held in the reducer, so the
  * reducer stays pure and storable.
  *
+ * The layout the page is in is read once, here, before the first render: a phone then paints the
+ * phone shell on its very first frame, rather than mounting the desktop's chrome and swapping it
+ * out once the media query has been observed. Spec 0009, AC-1.
+ *
  * The element registry is mounted with it, below this context, because a tree that can open a
  * window is a tree that has a frame looking for its dock button. The two contexts stay
  * separate: the registry holds elements, and the manager's rules never touch the DOM.
  * Spec 0003, AC-8, AC-11; spec 0004, AC-6.
  */
 export function WindowManagerProvider({ children }: { readonly children: ReactNode }) {
-  const [state, dispatch] = useReducer(reduceWindowManager, EMPTY_WINDOW_MANAGER)
+  const [state, dispatch] = useReducer(
+    reduceWindowManager,
+    readCompactLayout(),
+    createWindowManagerState,
+  )
 
   const open = useCallback(
     (target: OpenTarget, opener: WindowOpener) =>

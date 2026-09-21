@@ -5,10 +5,27 @@ import { useWindowManager } from '#store/useWindowManager'
 
 /**
  * The breakpoint below which the desktop is compact: Tailwind's `sm`, written as the stylesheet
- * writes it, so the dock band leaving and the focused window filling the work area are one
- * moment rather than two.
+ * writes it, so the dock band leaving, the home surface arriving and the focused window filling
+ * the work area are one moment rather than three. It is the only width any module compares, which
+ * is why it is exported rather than repeated. Spec 0009, AC-1.
  */
-const COMPACT_QUERY = '(width < 40rem)'
+export const COMPACT_QUERY = '(width < 40rem)'
+
+/**
+ * Whether the page is below the compact breakpoint right now. It asks the browser one question and
+ * answers it, with no state and no subscription, so the manager can be created already knowing
+ * which shell to render: a phone's first render is the phone shell rather than a frame of the
+ * desktop's own chrome. The observer below reports every change after that. An environment with no
+ * media query at all, which is what a test runner with no stylesheet looks like, is the wide
+ * layout. Spec 0009, AC-1.
+ */
+export function readCompactLayout(): boolean {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return false
+  }
+
+  return window.matchMedia(COMPACT_QUERY).matches
+}
 
 /**
  * Watches the element that defines the work area and reports its content box to the manager:

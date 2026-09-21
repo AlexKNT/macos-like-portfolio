@@ -143,7 +143,11 @@ test('falls back to a solid bar and keeps its width at 360px', async ({ page }) 
   await page.setViewportSize({ width: 360, height: 740 })
   await page.goto('/')
 
-  const bar = page.getByRole('navigation', { name: 'Desktop menu bar' })
+  // Below the breakpoint the shell paints the phone's slim bar, which wears the same translucent
+  // chrome as the menu bar: the stylesheet turns that into a solid surface there, because blur is
+  // the expensive part on a phone. Spec 0002, AC-11; spec 0009, AC-1.
+  const appearance = page.getByRole('button', { name: 'Switch appearance' })
+  const bar = appearance.locator('xpath=../..')
   const surface = await readRootToken(page, '--color-surface')
 
   expect(await bar.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(

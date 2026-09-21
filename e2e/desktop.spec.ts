@@ -191,17 +191,29 @@ test('reaches the dock by keyboard and opens its window with Enter', async ({ pa
   await expect(page.getByRole('region', { name: 'Work' })).toBeVisible()
 })
 
-/** Below the compact breakpoint the dock is not shown and nothing scrolls sideways. */
-test('keeps the shell usable at 360px wide, with no dock and no sideways scroll', async ({
+/** Below the compact breakpoint the phone shell stands in for the desktop's own chrome. */
+test('shows the phone shell at 360px, with the slim bar, the home tiles and no sideways scroll', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 360, height: 720 })
   await page.goto('/')
 
-  await expect(page.getByRole('region', { name: 'Desktop' })).toBeVisible()
-  await expect(page.getByRole('region', { name: 'Dock' })).toBeHidden()
-  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-  await expect(page.getByRole('list', { name: 'Desktop items' })).toBeVisible()
+  const surface = page.getByRole('region', { name: 'Home' })
+  const tiles = surface.getByRole('list', { name: 'Home' })
+
+  await expect(surface).toBeVisible()
+  await expect(surface.getByRole('heading', { level: 1, name: 'Home' })).toBeVisible()
+
+  // The seven tiles are the way in, one per window the desktop opens by name.
+  await expect(tiles.getByRole('button')).toHaveCount(7)
+
+  // The slim bar keeps the mark, the clock and the appearance control, and the wide chrome is
+  // absent from the page rather than hidden by CSS. Spec 0009, AC-1, AC-13.
+  await expect(page.locator('time')).toHaveText(/\d{1,2}:\d{2}/)
+  await expect(page.getByRole('button', { name: 'Switch appearance' })).toBeVisible()
+  await expect(page.getByRole('navigation', { name: 'Desktop menu bar' })).toHaveCount(0)
+  await expect(page.getByRole('region', { name: 'Dock' })).toHaveCount(0)
+  await expect(page.getByRole('list', { name: 'Desktop items' })).toHaveCount(0)
 
   const sideways = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,

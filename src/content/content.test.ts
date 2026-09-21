@@ -16,7 +16,7 @@ import {
   resumeFileAmong,
   targetForPlace,
 } from '#content/reads'
-import { DOCK_APPS, NAV_ICONS, NAV_LINKS } from '#content/shell'
+import { DOCK_APPS, HOME_APPS, NAV_ICONS, NAV_LINKS } from '#content/shell'
 import { TECH_GROUPS } from '#content/techStack'
 import {
   albumIdSchema,
@@ -26,6 +26,7 @@ import {
   desktopItemSchema,
   dockAppIdSchema,
   fileIdSchema,
+  homeAppIdSchema,
   imageFileSchema,
   linkFileSchema,
   locationIdSchema,
@@ -63,6 +64,7 @@ const ARRAY_COLLECTIONS: readonly {
   { name: 'nav links', ids: navLinkIdSchema.options, entries: NAV_LINKS },
   { name: 'nav icons', ids: navIconIdSchema.options, entries: NAV_ICONS },
   { name: 'dock apps', ids: dockAppIdSchema.options, entries: DOCK_APPS },
+  { name: 'home apps', ids: homeAppIdSchema.options, entries: HOME_APPS },
   { name: 'desktop items', ids: desktopItemIdSchema.options, entries: DESKTOP_ITEMS },
   { name: 'socials', ids: socialIdSchema.options, entries: SOCIALS },
   { name: 'articles', ids: articleIdSchema.options, entries: ARTICLES },
@@ -107,6 +109,31 @@ describe('content model', () => {
       expect(WINDOWS[windowId], windowId).toBeDefined()
       expect(WINDOWS[windowId].id, windowId).toBe(windowId)
     }
+  })
+
+  // covers: AC-2, AC-14
+  it('lists the seven windows a phone can open, in the order the surface shows them', () => {
+    // The order is the surface's reading order, so it is written once, here, and never sorted in a
+    // component: the work first, then the resume and the way to reach you, then the rest.
+    expect(HOME_APPS.map((app) => app.id)).toEqual([
+      'projects',
+      'resume',
+      'contact',
+      'skills',
+      'articles',
+      'gallery',
+      'archive',
+    ])
+  })
+
+  // covers: AC-2, AC-14
+  it('gives every tile its window own title, and gives the two file windows no tile', () => {
+    for (const { windowId, name } of HOME_APPS) {
+      expect(WINDOWS[windowId].title, windowId).toBe(name)
+    }
+
+    expect(HOME_APPS.some((app) => app.windowId === 'textFile')).toBe(false)
+    expect(HOME_APPS.some((app) => app.windowId === 'imageFile')).toBe(false)
   })
 
   it('finds an entry by its id, and reports a missing one as a value', () => {

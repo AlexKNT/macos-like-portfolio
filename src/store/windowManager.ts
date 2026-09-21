@@ -1,5 +1,5 @@
 import { findFile, placeName, targetForPlace } from '#content/reads'
-import { DOCK_APPS } from '#content/shell'
+import { DOCK_APPS, HOME_APPS } from '#content/shell'
 import { WINDOWS } from '#content/windows'
 import { err, ok } from '#lib/result'
 import type { Result } from '#lib/result'
@@ -11,7 +11,8 @@ import type { LookupFailure, OpenTarget, Place, WindowId } from '#content/types'
  * without a render and without a browser.
  *
  * Spec 0003 opens the store with the three actions the shell needs (open, focus, close);
- * spec 0004 extends the same module with dragging, minimising, zooming and the work area.
+ * spec 0004 extends the same module with dragging, minimising, zooming and the work area;
+ * spec 0009 adds the phone's own rule, that an open leaves one window on screen.
  */
 
 /* -------------------------------------------------------------------- the model */
@@ -27,6 +28,7 @@ export type WindowOpener =
   | { readonly kind: 'dock' }
   | { readonly kind: 'desktop' }
   | { readonly kind: 'bar' }
+  | { readonly kind: 'home' }
   | { readonly kind: 'window'; readonly key: WindowKey }
 
 /** A spot inside the work area, in pixels from its top left corner. */
@@ -136,6 +138,17 @@ export function hasDockButton(windowId: WindowId): boolean {
   return DOCK_APPS.some((app) => app.windowId === windowId)
 }
 
+/**
+ * Whether a window has a tile on the phone's home surface. It is what decides whether that window
+ * offers Minimise on a phone, for the same reason `hasDockButton` decides it above the breakpoint:
+ * a window with no tile could be put away with no way back to it. The two lists answer the same
+ * question differently, which is the point: the home surface reaches Resume, and the dock does not.
+ * Spec 0009, AC-7.
+ */
+export function hasHomeTile(windowId: WindowId): boolean {
+  return HOME_APPS.some((app) => app.windowId === windowId)
+}
+
 /** The stacking number a new arrival takes: one above everything already open. */
 function nextStackingNumber(instances: readonly WindowInstance[]): number {
   return instances.reduce((highest, instance) => Math.max(highest, instance.z), 0) + 1
@@ -206,7 +219,9 @@ function floorAtMinSize(size: WindowSize, minSize: WindowSize): WindowSize {
 
 /**
  * The size a window takes so it fits a work area that shrank: down to the work area, never
- * below its layout `minSize`. The one rule the compact fill is allowed to ignore. Spec 0004, AC-9.
+ * below its layout `minSize`. It only ever runs above the compact breakpoint: on a phone nothing
+ * is fitted, because the box a window paints is the work area itself and its stored geometry is
+ * left alone. Spec 0004, AC-9; spec 0009, AC-9.
  */
 function shrinkToFit(size: WindowSize, minSize: WindowSize, workArea: WindowSize): WindowSize {
   const largest = floorAtMinSize(workArea, minSize)
@@ -217,16 +232,24 @@ function shrinkToFit(size: WindowSize, minSize: WindowSize, workArea: WindowSize
   }
 }
 
-/** The size a filled window takes: the whole work area, still floored by its layout `minSize`. */
-function filledSize(layout: WindowLayout, workArea: WorkArea): WindowSize {
-  return workArea === null ? layout.defaultSize : floorAtMinSize(workArea, layout.minSize)
+/**
+ * The size a filled window takes: the whole work area, still floored by its layout `minSize`
+ * above the compact breakpoint, and by nothing on a phone, where the work area is the floor and
+ * the ceiling both. Spec 0004, AC-9; spec 0009, AC-9.
+ */
+function filledSize(layout: WindowLayout, workArea: WorkArea, compact: boolean): WindowSize {
+  if (workArea === null) {
+    return layout.defaultSize
+  }
+
+  return compact ? workArea : floorAtMinSize(workArea, layout.minSize)
 }
 
 /**
  * Where a window sits and how big it is on screen: its own geometry, except below the compact
  * breakpoint, where the focused window fills the work area and every other one keeps its box.
  * The stored geometry is left alone, so leaving the compact layout puts the desktop back as
- * the visitor arranged it. Spec 0004, AC-9.
+ * the visitor arranged it. Spec 0004, AC-9; spec 0009, AC-9.
  */
 export function windowGeometry(
   instance: WindowInstance,
@@ -247,6 +270,9 @@ export function windowGeometry(
  * or is minimised is skipped rather than followed, so focus never rests on something that is
  * not there. Pure, so the chain is tested without a DOM; the caller turns the hop into an
  * element. Spec 0004, AC-8.
+ *
+ * A phone has no dock on screen, so its chain stops one step earlier and ends at the container
+ * the home surface lives in, which is focusable without being tabbable. Spec 0009, AC-8.
  */
 export type FocusHop =
   | { readonly kind: 'window'; readonly key: WindowKey }
@@ -254,7 +280,11 @@ export type FocusHop =
   | { readonly kind: 'desktop' }
 
 /** Reads the hop the keyboard takes when `key` leaves the desk. */
-export function focusHopAfter(instances: readonly WindowInstance[], key: WindowKey): FocusHop {
+export function focusHopAfter(
+  instances: readonly WindowInstance[],
+  key: WindowKey,
+  compact: boolean,
+): FocusHop {
   const leaving = instances.find((instance) => instance.key === key)
   const staying = instances.filter(
     (instance) => instance.key !== key && instance.status !== 'minimised',
@@ -275,7 +305,7 @@ export function focusHopAfter(instances: readonly WindowInstance[], key: WindowK
     return { kind: 'window', key: underneath.key }
   }
 
-  if (leaving !== undefined && hasDockButton(leaving.windowId)) {
+  if (!compact && leaving !== undefined && hasDockButton(leaving.windowId)) {
     return { kind: 'dock', windowId: leaving.windowId }
   }
 
@@ -379,12 +409,18 @@ export type WindowManagerState = {
   readonly compact: boolean
 }
 
-/** The manager before the first window opens and before the container is measured. */
-export const EMPTY_WINDOW_MANAGER: WindowManagerState = {
-  instances: [],
-  workArea: null,
-  compact: false,
+/**
+ * The manager before its first render, told which layout the page is in. The layout is read once
+ * from the one media query at the provider's edge and passed in here, so the reducer itself never
+ * asks the browser anything and a phone's very first render is already the phone shell.
+ * Spec 0009, AC-1.
+ */
+export function createWindowManagerState(compact: boolean): WindowManagerState {
+  return { instances: [], workArea: null, compact }
 }
+
+/** The manager before the first window opens and before the container is measured. */
+export const EMPTY_WINDOW_MANAGER: WindowManagerState = createWindowManagerState(false)
 
 /** Every action the manager answers. Spec 0004 extends this union as its strands land. */
 export type WindowManagerAction =
@@ -404,11 +440,34 @@ export type WindowManagerAction =
   | { readonly type: 'setCompact'; readonly compact: boolean }
 
 /**
+ * What a phone paints: one window takes the screen, so an open closes every instance that is
+ * neither parked nor the window the new one came from. A file opened from the Finder therefore
+ * keeps its Finder alive underneath it, a parked window keeps its mark and comes back when its
+ * tile is pressed, and the close and the open are one transition. It lives in the reducer rather
+ * than in a component, so the rule is proved with no DOM. Spec 0009, AC-5, AC-10.
+ */
+function oneWindowOnScreen(
+  instances: readonly WindowInstance[],
+  key: WindowKey,
+  opener: WindowOpener,
+): readonly WindowInstance[] {
+  const comingFrom = opener.kind === 'window' ? opener.key : null
+
+  return instances.filter(
+    (instance) =>
+      instance.status === 'minimised' ||
+      instance.key === key ||
+      (comingFrom !== null && instance.key === comingFrom),
+  )
+}
+
+/**
  * Opens a target, or focuses the window that key already has. A key that is already open
  * takes a fresh stacking number, un-minimises and takes the newly requested target, so a
  * second click on another project moves the Projects window rather than doing nothing. It
  * never adds a second window for one key. A target that opens no window leaves the state
- * alone. Spec 0004, AC-2.
+ * alone. On a phone both of these branches also close what the new window covers.
+ * Spec 0004, AC-2; spec 0009, AC-5.
  */
 function openWindow(
   state: WindowManagerState,
@@ -426,11 +485,13 @@ function openWindow(
   const z = nextStackingNumber(state.instances)
 
   if (state.instances.some((instance) => instance.key === key)) {
+    const revived = state.instances.map((instance): WindowInstance =>
+      instance.key === key ? { ...instance, title, target, status: 'normal', z } : instance,
+    )
+
     return {
       ...state,
-      instances: state.instances.map((instance): WindowInstance =>
-        instance.key === key ? { ...instance, title, target, status: 'normal', z } : instance,
-      ),
+      instances: state.compact ? oneWindowOnScreen(revived, key, opener) : revived,
     }
   }
 
@@ -451,8 +512,9 @@ function openWindow(
     z,
     opener,
   }
+  const opened = [...state.instances, instance]
 
-  return { ...state, instances: [...state.instances, instance] }
+  return { ...state, instances: state.compact ? oneWindowOnScreen(opened, key, opener) : opened }
 }
 
 /**
@@ -523,7 +585,8 @@ function moveWindow(
  * is clamped against the box it now has. A filled window takes the whole work area again, so it
  * follows the container instead of floating over the edge. A measurement of zero is ignored, so
  * the first unmeasured render, and a container that is momentarily hidden, change nothing.
- * Spec 0004, AC-7, AC-9.
+ * A phone keeps every window's stored geometry and derives its box from the work area instead.
+ * Spec 0004, AC-7, AC-9; spec 0009, AC-9.
  */
 function setWorkArea(state: WindowManagerState, size: WindowSize): WindowManagerState {
   if (size.width <= 0 || size.height <= 0) {
@@ -542,15 +605,24 @@ function setWorkArea(state: WindowManagerState, size: WindowSize): WindowManager
   return {
     ...state,
     workArea: size,
-    instances: state.instances.map((instance) => fitInto(instance, size)),
+    instances: state.instances.map((instance) => fitInto(instance, size, state.compact)),
   }
 }
 
-/** One window fitted to a work area that changed: the size rule, then the clamp against it. */
-function fitInto(instance: WindowInstance, workArea: WindowSize): WindowInstance {
+/**
+ * One window fitted to a work area that changed: the size rule, then the clamp against it. On a
+ * phone it is handed back exactly as it was: the box it paints is the work area, derived at
+ * render, so its stored size and spot are what the desktop comes back to.
+ * Spec 0004, AC-9; spec 0009, AC-9.
+ */
+function fitInto(instance: WindowInstance, workArea: WindowSize, compact: boolean): WindowInstance {
+  if (compact) {
+    return instance
+  }
+
   const layout = WINDOW_LAYOUT[instance.windowId]
   const size = instance.filled
-    ? filledSize(layout, workArea)
+    ? filledSize(layout, workArea, false)
     : shrinkToFit(instance.size, layout.minSize, workArea)
 
   return { ...instance, size, position: clampPosition(instance.position, size, workArea) }
@@ -624,7 +696,9 @@ function zoomWindow(state: WindowManagerState, key: WindowKey): WindowManagerSta
   }
 
   const layout = WINDOW_LAYOUT[instance.windowId]
-  const size = instance.filled ? layout.defaultSize : filledSize(layout, state.workArea)
+  const size = instance.filled
+    ? layout.defaultSize
+    : filledSize(layout, state.workArea, state.compact)
 
   return {
     ...state,

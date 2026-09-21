@@ -143,6 +143,33 @@ visible, and no rule removes an outline without putting a ring in its place. Und
 ring and the window edge are redrawn from system colours, and the inner shadow is dropped rather than
 left invisible.
 
+## The phone shell
+
+Below 40rem the desktop cannot fit, so it is reshaped rather than squeezed. The same container stays
+(the one box that owns the work area and holds the window layer), and the chrome inside it changes:
+the menu bar, the greeting, the desktop items and the dock are not rendered, and a slim bar over a
+home surface stands in their place. The ground is the compact crop of the wallpaper.
+
+- The slim bar carries the mark, the appearance control and the clock, on the same translucent chrome
+  the menu bar wears. The stylesheet already turns every glass level into `--color-surface` below the
+  breakpoint, so a phone gets a solid, readable bar rather than a blurred one.
+- The home surface is one heading and one list of seven tiles, in the content's own order: the work,
+  the resume, the way to reach you, then the rest. The heading sits on `--color-scrim` in
+  `--color-desktop-text`, the way the greeting does, and each tile is that same scrim wash at least
+  `--spacing-touch` tall, with its window's icon, its window's name, and the dock's own mark under it
+  (filled while the window is on screen, the same mark quieter while it is parked, nothing when it is
+  not open). A tile's ink is the wallpaper ink, so its pointer state is the hover wash rather than a
+  step up the surface ladder: a step up would leave white on white.
+- One window is on screen at a time, and it is exactly the work area, so nothing on a phone is ever
+  wider than the screen. A phone never rewrites a window's stored size or spot, so the desktop comes
+  back as the visitor arranged it. Zoom is off there (the window already fills the work area, so the
+  green light renders disabled with no handler), Minimise is offered for the seven windows that have
+  a tile, and a drag is not offered at all.
+- A window arrives from the tile that opened it and leaves into it, its own tile or the tile of the
+  window it came from, so a file opened from the Finder grows from the Finder's tile. Both movements
+  are timed from the motion tokens, so reduced motion needs no second path: the window is simply
+  there.
+
 ## The rule components follow
 
 Read semantic tokens only. A palette value appears inside a token definition and nowhere else, which

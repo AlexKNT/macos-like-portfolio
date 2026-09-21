@@ -1,44 +1,7 @@
-import { useEffect, useState } from 'react'
-
+import { Clock } from '#components/Clock'
 import { MenuBarIcon } from '#components/MenuBarIcon'
 import { NAV_ICONS, NAV_LINKS } from '#content/shell'
 import { useWindowManager } from '#store/useWindowManager'
-
-const CLOCK_FORMAT = new Intl.DateTimeFormat(undefined, {
-  hour: 'numeric',
-  minute: '2-digit',
-})
-
-/** Milliseconds left in the current minute, so the clock can wake on the boundary. */
-function msUntilNextMinute(from: Date): number {
-  return 60_000 - (from.getSeconds() * 1_000 + from.getMilliseconds())
-}
-
-/**
- * Tracks the current moment, re-rendering once the clock minute rolls over.
- * Returns the latest moment for the caller to format.
- */
-function useCurrentMinute(): Date {
-  const [now, setNow] = useState(() => new Date())
-
-  useEffect(() => {
-    let timerId = 0
-
-    const scheduleNext = (from: Date) => {
-      timerId = window.setTimeout(() => {
-        const next = new Date()
-        setNow(next)
-        scheduleNext(next)
-      }, msUntilNextMinute(from))
-    }
-
-    scheduleNext(new Date())
-
-    return () => window.clearTimeout(timerId)
-  }, [])
-
-  return now
-}
 
 /**
  * The menu bar across the top of the desktop: the logo and the window links on the left,
@@ -48,10 +11,13 @@ function useCurrentMinute(): Date {
  * action, so a link opens its window and a second press on the same link focuses the window
  * that is already open rather than opening another. Every surface it paints comes from a
  * semantic token, so it follows the mode without a rule of its own, and the pointer states
- * come from the shared interaction utilities. Spec 0002, AC-7. Spec 0003, AC-4.
+ * come from the shared interaction utilities.
+ *
+ * It is mounted above the compact breakpoint only: on a phone the slim bar and the home surface
+ * stand in for it, and this bar is not in the page at all. Spec 0002, AC-7. Spec 0003, AC-4.
+ * Spec 0009, AC-1.
  */
 export function Navbar() {
-  const now = useCurrentMinute()
   const { open } = useWindowManager()
 
   return (
@@ -79,9 +45,7 @@ export function Navbar() {
         {NAV_ICONS.map((icon) => (
           <MenuBarIcon key={icon.id} icon={icon} onOpen={open} />
         ))}
-        <time dateTime={now.toISOString()} className="text-sm font-medium text-text">
-          {CLOCK_FORMAT.format(now)}
-        </time>
+        <Clock />
       </div>
     </nav>
   )

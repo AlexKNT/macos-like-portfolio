@@ -41,13 +41,33 @@ function rowDownloadOf(page: Page): Locator {
   return contentOf(page).getByRole('link', { name: DOWNLOAD_LABEL }).first()
 }
 
-/** Opens the window from the desktop item, which is the way in at every width. */
+/** Opens the window from the desktop item, which is the way in above the breakpoint. */
 async function openFromDesktop(page: Page): Promise<void> {
   const items = page.getByRole('list', { name: 'Desktop items' })
 
   await expect(items).toBeVisible()
   await items.getByRole('button', { name: RESUME, exact: true }).click()
   await expect(frameOf(page)).toBeVisible()
+}
+
+/** Opens the window from the phone's home tile, which is the way in below the breakpoint. */
+async function openFromTile(page: Page): Promise<void> {
+  const tiles = page.getByRole('list', { name: 'Home' })
+
+  await expect(tiles).toBeVisible()
+  await tiles.getByRole('button', { name: RESUME, exact: true }).click()
+
+  const frame = frameOf(page)
+
+  await expect(frame).toBeVisible()
+
+  // A window opening on a phone arrives from its tile, so the box it lands on is waited for: a
+  // measurement taken mid movement is the frame on its way in rather than the one that landed.
+  const surface = page.getByRole('region', { name: 'Home' })
+
+  await expect
+    .poll(async () => (await frame.boundingBox())?.height)
+    .toBe((await surface.boundingBox())?.height)
 }
 
 test('opens from the desktop and sets the file row over the document', async ({ page }) => {
@@ -182,7 +202,7 @@ test('shows its own line when the request for the file fails outright', async ({
 test('keeps the window inside 360px, with the download control touch sized', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 720 })
   await page.goto('/')
-  await openFromDesktop(page)
+  await openFromTile(page)
 
   const frame = frameOf(page)
   const content = contentOf(page)

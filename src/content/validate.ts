@@ -5,7 +5,7 @@ import { DESKTOP_ITEMS } from '#content/desktop'
 import { ALBUMS } from '#content/gallery'
 import { LOCATIONS } from '#content/locations'
 import { PROFILE, SOCIALS } from '#content/profile'
-import { DOCK_APPS, NAV_ICONS, NAV_LINKS } from '#content/shell'
+import { DOCK_APPS, HOME_APPS, NAV_ICONS, NAV_LINKS } from '#content/shell'
 import { TECH_GROUPS } from '#content/techStack'
 import { WALLPAPER } from '#content/theme'
 import {
@@ -13,6 +13,7 @@ import {
   articleSchema,
   desktopItemSchema,
   dockAppSchema,
+  homeAppSchema,
   locationsSchema,
   navIconSchema,
   navLinkSchema,
@@ -62,6 +63,7 @@ const CONTENT_CHECKS: readonly ContentCheck[] = [
   { collection: 'nav links', schema: z.array(navLinkSchema), value: NAV_LINKS },
   { collection: 'nav icons', schema: z.array(navIconSchema), value: NAV_ICONS },
   { collection: 'dock apps', schema: z.array(dockAppSchema), value: DOCK_APPS },
+  { collection: 'home apps', schema: z.array(homeAppSchema), value: HOME_APPS },
   { collection: 'desktop items', schema: z.array(desktopItemSchema), value: DESKTOP_ITEMS },
   { collection: 'locations', schema: locationsSchema, value: LOCATIONS },
   { collection: 'profile', schema: profileSchema, value: PROFILE },

@@ -155,14 +155,23 @@ test('keeps the Finder inside a 360px window, with the sidebar as one line of ic
   await page.setViewportSize({ width: 360, height: 720 })
   await page.goto('/')
 
-  const items = page.getByRole('list', { name: 'Desktop items' })
+  // On a phone the home tile is the way in: the desktop's own item list is not rendered there.
+  const tiles = page.getByRole('list', { name: 'Home' })
 
-  await expect(items).toBeVisible()
-  await items.getByRole('button', { name: AI_RESUME }).click()
+  await expect(tiles).toBeVisible()
+  await tiles.getByRole('button', { name: 'Projects' }).click()
 
-  const finder = frameOf(page, AI_RESUME)
+  const finder = frameOf(page, WORK)
 
   await expect(finder).toBeVisible()
+
+  // The window fills the phone, and a project is reached from the sidebar. The frame is renamed by
+  // the place it shows, so every locator below asks for it by the name it carries now.
+  await sidebarOf(page, WORK).getByRole('button', { name: AI_RESUME }).click()
+
+  const project = frameOf(page, AI_RESUME)
+
+  await expect(contentOf(page, AI_RESUME).getByRole('heading', { level: 2 })).toHaveText(AI_RESUME)
 
   // The sidebar answers with its own width rather than the viewport's: it is one row of icons
   // above the content here, and the grid keeps the window's full width under it.
@@ -172,7 +181,7 @@ test('keeps the Finder inside a 360px window, with the sidebar as one line of ic
 
   expect(direction).toBe('row')
   expect((await boxOf(contentOf(page, AI_RESUME).getByRole('list'))).width).toBeGreaterThan(
-    (await boxOf(finder)).width * 0.6,
+    (await boxOf(project)).width * 0.6,
   )
 
   // A long name wraps instead of clipping, and nothing inside the window scrolls sideways.
@@ -187,5 +196,5 @@ test('keeps the Finder inside a 360px window, with the sidebar as one line of ic
 
   expect(lines).toBeGreaterThan(1)
 
-  expect(await finder.evaluate((element) => element.scrollWidth - element.clientWidth)).toBe(0)
+  expect(await project.evaluate((element) => element.scrollWidth - element.clientWidth)).toBe(0)
 })

@@ -1,11 +1,12 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { App } from './App'
 import { DESKTOP_ITEMS } from '#content/desktop'
 import { PROFILE } from '#content/profile'
 import { DOCK_APPS } from '#content/shell'
+import { restoreLayout, usePhoneLayout } from './test/layout'
 
 /**
  * The desktop shell as a visitor meets it: the greeting, the desktop items, the menu bar, the
@@ -91,5 +92,64 @@ describe('the desktop shell', () => {
 
     await user.click(within(items).getByRole('button', { name: resume?.label ?? '' }))
     expect(windowsNamed('Resume')).toHaveLength(1)
+  })
+})
+
+/**
+ * The phone shell as a visitor on a phone meets it: the slim bar and the home surface stand in for
+ * the menu bar, the greeting, the desktop items and the dock, and none of those four is mounted.
+ * Spec 0009, AC-1, AC-2, AC-3, AC-13.
+ */
+describe('the phone shell', () => {
+  beforeEach(() => {
+    usePhoneLayout()
+  })
+
+  afterEach(() => {
+    restoreLayout()
+  })
+
+  it('stands the home surface and the slim bar in for the wide chrome, which is absent', () => {
+    render(<App />)
+
+    expect(screen.getByRole('region', { name: 'Home' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Home' })).toBeInTheDocument()
+    expect(screen.getByRole('list', { name: 'Home' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Switch appearance' })).toBeInTheDocument()
+
+    // Absent from the page rather than hidden by CSS.
+    expect(screen.queryByRole('navigation', { name: 'Desktop menu bar' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Dock' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('list', { name: 'Desktop items' })).not.toBeInTheDocument()
+    expect(screen.queryByText(PROFILE.greeting.lead)).not.toBeInTheDocument()
+  })
+
+  it('opens the window a tile names, focuses it, and leaves the home surface out of reach', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const tiles = screen.getByRole('list', { name: 'Home' })
+
+    await user.click(within(tiles).getByRole('button', { name: 'Projects' }))
+
+    // A bare Projects open lands on the work location (spec 0005, AC-2), so the frame is named for
+    // the place it shows, and the surface the visitor came from is out of the tab order.
+    expect(windowsNamed('Work')).toHaveLength(1)
+    expect(tiles.parentElement?.className).toContain('invisible')
+  })
+
+  it('returns to the home surface when the window closes, with the keyboard on it', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(
+      within(screen.getByRole('list', { name: 'Home' })).getByRole('button', { name: 'Projects' }),
+    )
+    await user.click(
+      within(windowsNamed('Work')[0] as HTMLElement).getByRole('button', { name: 'Close Work' }),
+    )
+
+    expect(windowsNamed('Work')).toHaveLength(0)
+    expect(screen.getByRole('region', { name: 'Home' }).className).not.toContain('invisible')
   })
 })
