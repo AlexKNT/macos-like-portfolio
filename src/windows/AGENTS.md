@@ -2,7 +2,7 @@
 
 The window bodies: what a window shows once the shell has opened it. A body reads the target it was handed, reads the content layer, and paints inside a frame the shell has already placed. Nothing here positions, sizes or moves a window, and nothing here decides which window opens: that is `src/store` and `src/components`.
 
-Governing specs: [`0005-projects-window`](../../docs/specs/0005-projects-window/index.md) for the Finder and the two file windows, [`0003-desktop-shell`](../../docs/specs/0003-desktop-shell/index.md) for the registry it introduced, [`0006-content-window-bodies`](../../docs/specs/0006-content-window-bodies/index.md) for the standard every body is built to, and [`0007-resume-window`](../../docs/specs/0007-resume-window/index.md) for the document window and the page it paints on.
+Governing specs: [`0005-projects-window`](../../docs/specs/0005-projects-window/index.md) for the Finder and the two file windows, [`0003-desktop-shell`](../../docs/specs/0003-desktop-shell/index.md) for the registry it introduced, [`0006-content-window-bodies`](../../docs/specs/0006-content-window-bodies/index.md) for the standard every body is built to, [`0007-resume-window`](../../docs/specs/0007-resume-window/index.md) for the document window and the page it paints on, and [`0008-contact-window`](../../docs/specs/0008-contact-window/index.md) for the address, the copy pair and the social tiles.
 
 ## Files
 
@@ -14,6 +14,7 @@ Governing specs: [`0005-projects-window`](../../docs/specs/0005-projects-window/
 - `projects/`: the Finder (`ProjectsWindow`, `FinderSidebar`, `FinderGrid`, `ProjectDetail`, `PitchContent`), the window's own state (`projectHistory`, `useProjectHistory`, `ProjectHistoryScope`, `ProjectBackButton`), the two file bodies (`TextFileBody`, `ImageFileBody`), and the Finder's own words (`quietLines`).
 - `skills/`: the terminal window (`SkillsWindow`, `TechStack`, `TechGroupRow`, `outcomeForRow`, `skillsLines`).
 - `resume/`: the document window (`ResumeWindow`, `useResumeFile`, `resumeLines`), the first body with an async read: its hook owns the state and the check lives at the edge.
+- `contact/`: the contact window (`ContactWindow`, `SocialTile`, `contactLines`) and the mail link it builds (`mailLink`).
 - `projects/fileFromTarget.ts`: the file a target names, or `null` when it names none or names one that is not there. A file window's target carries the file's id rather than the file itself, so the file is looked up when the body renders and there is one truth about what it holds.
 
 ## Conventions
