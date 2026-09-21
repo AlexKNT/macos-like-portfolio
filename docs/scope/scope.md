@@ -212,7 +212,7 @@ A browser looking window that links out to posts you wrote elsewhere, so the wri
   - [x] The quiet and the missing: the empty line through the shared `QuietLine`, and a cover that is not there keeping its row, its box and its alternative text (AC-7, AC-8)
   - [x] The movement, the narrow pass and the suites: the reveal on every open, the 380 and 360 pixel passes, `#safari` retired, and the unit and end to end suites (AC-9, AC-10)
   - [ ] Your own posts: the three placeholder posts, their ids and their covers give way to your own writing (deliberately outside the acceptance criteria, so a post you have not written yet does not fail the verification)
-- [ ] Verify it: `/check verify articles window`
+- [x] Verify it: `/check verify articles window`
 - [ ] Test it: `/test articles window`
 spec [0011](../specs/0011-articles-window/index.md) · code in `src/windows/articles`
 
