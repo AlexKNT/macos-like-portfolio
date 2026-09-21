@@ -293,7 +293,7 @@ Ordered as a Tracer Bullet: one thin thread from the token list through the mode
 - [ ] The compact wallpaper is one image for both modes. If the dark mobile look needs its own, add a fourth entry to the content shape.
 - [ ] `/images/wallpaper-dark.png` and `/images/wallpaper-compact.png` are produced from the designs and are yours to make. The build cannot pass AC-8 without them.
 - [ ] If a measurement ever shows the self hosted faces need a preload, a small Vite `transformIndexHtml` plugin can inject the two links, since the file names are hashed and cannot be written by hand.
-- [ ] `docs/specs/0001-content-data-model.md` is the older single file version of the directory spec beside it and is untracked. Delete it, so the numbering has one shape per number.
+- [x] `docs/specs/0001-content-data-model.md`, the older single file shape beside the directory spec, was deleted on 2026-09-21, so the numbering has one shape per number. (It was tracked, not untracked as this line first read.)
 - [ ] The `Resume` window is the reason `--color-surface-paper` exists. When row 10 builds it, confirm the paper surface is the right call rather than a light body in both modes.
 
 ## Rationale

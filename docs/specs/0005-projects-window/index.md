@@ -231,7 +231,7 @@ The project builds by Tracer Bullet, so the order is one thin thread through eve
 ## Follow-up
 
 - [ ] Spec 0004's resolver table still says a `location` or `project` target titles the window `Projects`; this spec changes that to the place's own name, so that row needs correcting when spec 0004 is next touched.
-- [ ] The flat `docs/specs/0001-content-data-model.md` still sits beside the directory it duplicates and reports the older status. It is a stale copy of spec 0001 and should be deleted or superseded by the engineer.
+- [x] The flat `docs/specs/0001-content-data-model.md` duplicate was deleted on 2026-09-21, so the directory spec beside it is the only spec 0001 and the numbering has one shape per number.
 - [ ] The About location points at absent assets (`adrian.jpg`, `adrian-2.jpg`, `adrian-3.jpeg`), so the image windows it opens will show this feature's missing asset line until the real portraits are added.
 - [ ] The three source links are placeholder repository paths. They need the real repository URLs before the site is shared with a recruiter.
 
