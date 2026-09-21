@@ -61,6 +61,15 @@
   --color-focus-inner: #ffffff;
   --color-focus-outer: #1e3a8a;
 
+  /* page: what a document window paints on `--color-surface-paper`, which is a page in both
+     modes. These three are declared once, here, and never overridden below: an ink that flipped
+     would have to be read back against a surface that does not. The ring on the page is the ink
+     over the paper, so there is no fourth name for it. Both modes are held in
+     `src/lib/tokens.test.ts`. Spec 0007, AC-8. */
+  --color-text-on-paper: #1f2937;
+  --color-link-on-paper: #005dd6;
+  --color-divider-on-paper: #c9ced6;
+
   /* status: the four lights and the terminal green are the same in both modes, so
      they are stated once, here, and never overridden below */
   --color-success: #0f7a3d;
@@ -224,6 +233,18 @@
 }
 
 /*
+ * The ring on a page. A document window paints a surface that stays white in both modes, so the
+ * app wide ring's dark values would wash out on it: this one is drawn from the page's own ink and
+ * paper instead, which is the same shape in one place rather than a rule per body. Compose it as
+ * `focus-visible:page-focus`, and add nothing to it from a body. Spec 0007, AC-8.
+ */
+@utility page-focus {
+  outline: 2px solid var(--color-text-on-paper);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--color-surface-paper);
+}
+
+/*
  * The interaction states, one definition each, built from tokens. Hover and press are
  * a step of the surface ladder; selected is the quiet accent pair; disabled keeps its
  * own guard inside the utility, so listing the class is safe on an enabled control.
@@ -335,6 +356,7 @@
   }
 
   .interactive-focus,
+  .page-focus,
   :focus-visible {
     outline-color: CanvasText;
     box-shadow: none;
@@ -550,16 +572,6 @@
             @apply row-start-4 row-span-2 col-start-1 col-span-2;
           }
         }
-      }
-    }
-  }
-
-  #resume {
-    @apply w-fit h-fit absolute top-16 left-7/12 bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
-
-    #window-header {
-      h2 {
-        @apply font-bold text-sm text-center flex-1;
       }
     }
   }

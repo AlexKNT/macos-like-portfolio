@@ -31,7 +31,8 @@ Direction rules that follow from that:
 
 Six families, each a set of semantic names. A name says what the colour is for, never what it looks
 like, and the palette value appears once, in the token definition. Both modes are declared, so a
-component never holds a mode.
+component never holds a mode. The page set is the one family declared once and never overridden,
+because the surface it paints on is white in both modes.
 
 | Family | Names | What each name is for |
 |---|---|---|
@@ -40,6 +41,7 @@ component never holds a mode.
 | text | `--color-text`, `--color-text-muted`, `--color-text-subtle`, `--color-text-on-accent`, `--color-desktop-text` | body text, secondary text, the quietest label, text on an accent fill, and a label that sits on the wallpaper |
 | border | `--color-border`, `--color-border-strong`, `--color-divider` | a hairline that dresses a surface, the boundary of a control, and the dashed rule |
 | accent | `--color-accent`, `--color-accent-quiet-bg`, `--color-accent-quiet-fg`, `--color-link`, `--color-focus-inner`, `--color-focus-outer` | the action colour, the quiet pair a selected row uses, links, and the two ring layers |
+| page | `--color-text-on-paper`, `--color-link-on-paper`, `--color-divider-on-paper` | the ink, the action colour and the hairline a document window paints on `--color-surface-paper`; declared once and never overridden, so the ring on the page is the ink over the paper and needs no fourth name |
 | status | `--color-success`, `--color-warning`, `--color-danger`, `--color-info`, `--color-traffic-close`, `--color-traffic-minimise`, `--color-traffic-zoom` | the four states, and the three window lights |
 
 The three translucent levels are named utilities rather than loose colours, so a tint and its blur
@@ -155,8 +157,12 @@ and bring it to `/architect`.
   the suite does not hold at 3:1: no amber and green clear that bar against both a light and a dark
   title bar. Each light keeps its own accessible name, so nothing depends on seeing the colour. The
   suite still asks that each light is distinguishable from the bar it sits on.
-- `--color-surface-paper` is white in both modes: a document window is a page. Its ink is an open item
-  below, because `--color-text` flips and a page does not.
+- `--color-surface-paper` is white in both modes: a document window is a page. Its ink does not
+  follow the mode either, which is what the page set is for: `--color-text-on-paper`,
+  `--color-link-on-paper` and `--color-divider-on-paper` are declared once in the theme block, are
+  never overridden in `[data-theme='dark']`, and are held in both modes by the contrast suite. The
+  ring on the page is the ink over the paper, so the paper ring is the page's own utility rather
+  than the app wide one, whose dark values would wash out on white.
 - `--color-desktop-text` is white in both modes, and it always sits on `--color-scrim` or on the hover
   wash, never directly on the wallpaper. That is the pair the suite composites over both wallpaper
   tones.
@@ -169,7 +175,7 @@ and bring it to `/architect`.
 ## Reference only, not yet migrated
 
 `src/index.css` still carries the window classes ported from the reference build: `#safari`,
-`#photos`, `#contact`, `#resume`, `#home` and `#dock`. They are palette based and light
+`#photos`, `#contact`, `#home` and `#dock`. They are palette based and light
 only, and they are kept so the windows that are still to be built have a starting point. Do not copy
 them as they stand. Each window feature migrates its own rules onto the tokens when it lands, and
 what is left is deleted once every window is built. That is tracked debt, not a second design system.
@@ -182,11 +188,19 @@ The skills window has landed too, so `#terminal` is gone: it prints in `--font-r
 own surface, with `--color-success` on the mark, `--color-text-muted` on the prompt line and the hint,
 and `--color-divider` on the dashed rule above that hint.
 
+The resume window has landed, so `#resume` is gone: the window is an ordinary body of the shared
+frame, holding a page of its own (`--color-surface-paper`) with the file row and the document on it.
+The page's three names, its ring utility and the fallback the embed carries are recorded above.
+
 ## Open items
 
-- The resume window is the reason `--color-surface-paper` exists. When it lands, decide what ink a
-  page uses in dark mode, and add that pair to the contrast suite. Until then the paper pairs are
-  checked in light mode only, and the token carries a note in the stylesheet.
+- The page set has no pointer or press state of its own: the download control shifts to the page ink
+  under the pointer rather than to a wash, because every state utility is built from tokens that
+  flip. A surface for the page is the open question, and it belongs to a spec.
+- A failure on the page shows the shared quiet line, whose surface and ink both flip, so in dark
+  mode it reads as a dark chip on the white page. That is coherent and measured; a page variant of
+  the line would be a child of spec 0006, since `QuietLine` is the only mechanism for a missing
+  thing.
 - The dock's focus ring and the menu bar's icons get their pairs checked when the desktop shell
   builds them: the ring on the translucent panel is the one pair the suite cannot judge until the
   panel has a control on it.

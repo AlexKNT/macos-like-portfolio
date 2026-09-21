@@ -10,8 +10,10 @@ import { findById, openTargetFor } from '#content/reads'
 import {
   PROJECT_FOLDERS,
   findPlace,
+  findResumeFile,
   placeName,
   placeOfTarget,
+  resumeFileAmong,
   targetForPlace,
 } from '#content/reads'
 import { DOCK_APPS, NAV_ICONS, NAV_LINKS } from '#content/shell'
@@ -37,7 +39,7 @@ import {
   textFileSchema,
   windowIdSchema,
 } from '#content/types'
-import type { FileEntry, Place } from '#content/types'
+import type { FileEntry, Place, TextFile } from '#content/types'
 import { assertCollectionIsValid, assertContentIsValid } from '#content/validate'
 import { WINDOWS } from '#content/windows'
 
@@ -139,6 +141,28 @@ describe('content model', () => {
         expect(target, entry.id).toEqual({ kind: 'file', fileId: entry.id })
       }
     }
+  })
+
+  it('gives the Resume window the pdf the resume location holds, and nothing else', () => {
+    const found = findResumeFile()
+    const held = LOCATIONS.resume.children.find((child) => child.kind === 'pdf')
+
+    expect(found.ok).toBe(true)
+    expect(found.ok ? found.value : undefined).toBe(held)
+  })
+
+  it('answers notFound, naming the collection and the id, when the tree holds no resume pdf', () => {
+    const absent = { kind: 'notFound', collection: 'files', id: 'resume-pdf' } as const
+    const textFile = treeFileEntries().find((file): file is TextFile => file.kind === 'text')
+
+    expect(textFile).toBeDefined()
+    expect(resumeFileAmong([])).toEqual({ ok: false, error: absent })
+    expect(resumeFileAmong(LOCATIONS.work.children)).toEqual({ ok: false, error: absent })
+    // The id is right and the kind is not: the reader still answers that it did not find the file.
+    expect(resumeFileAmong([{ ...textFile!, id: 'resume-pdf' }])).toEqual({
+      ok: false,
+      error: absent,
+    })
   })
 
   it('accepts an album with no photos', () => {

@@ -3,8 +3,10 @@ import { err, ok } from '#lib/result'
 import type { Result } from '#lib/result'
 import type {
   FileEntry,
+  FileId,
   LookupFailure,
   OpenTarget,
+  PdfFile,
   Place,
   ProjectFolder,
   ProjectId,
@@ -68,6 +70,43 @@ export const TREE_FILES: readonly FileEntry[] = Object.values(LOCATIONS).flatMap
  */
 export function findFile(fileId: string): Result<FileEntry, LookupFailure> {
   return findById(TREE_FILES, fileId, 'files')
+}
+
+/* --------------------------------------------------------------- the resume file */
+
+/**
+ * The id the resume file carries in the tree. It is typed as a `FileId` so a rename in the id
+ * union breaks the build rather than turning the window into a quiet line at runtime.
+ * Spec 0007, AC-1.
+ */
+const RESUME_FILE_ID: FileId = 'resume-pdf'
+
+/**
+ * The resume file among the entries a location holds, or a `notFound` failure under `files`
+ * carrying the id it looked for. It is split out of `findResumeFile` so both failure branches can
+ * be driven with a tree the suite makes up rather than only with the one the app ships, the way
+ * `findById` takes its collection as an argument. Spec 0007, AC-1, AC-4.
+ */
+export function resumeFileAmong(entries: readonly TreeEntry[]): Result<PdfFile, LookupFailure> {
+  const found = findById(entries, RESUME_FILE_ID, 'files')
+
+  if (!found.ok) {
+    return err(found.error)
+  }
+
+  return found.value.kind === 'pdf'
+    ? ok(found.value)
+    : err({ kind: 'notFound', collection: 'files', id: RESUME_FILE_ID })
+}
+
+/**
+ * The resume file, which is the one entry the Resume window reads. It hands the entry back, or a
+ * `notFound` failure when the resume location holds no entry under that id, or holds one that is
+ * not a pdf. It never throws, so the window shows the `absent` state instead of a broken frame,
+ * and no body walks the tree itself. Spec 0007, AC-1, AC-4.
+ */
+export function findResumeFile(): Result<PdfFile, LookupFailure> {
+  return resumeFileAmong(LOCATIONS.resume.children)
 }
 
 /* ------------------------------------------------------------------- the places */

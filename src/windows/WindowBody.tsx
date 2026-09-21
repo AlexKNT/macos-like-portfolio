@@ -4,6 +4,7 @@ import { ProjectBackButton } from '#windows/projects/ProjectBackButton'
 import { ProjectHistoryScope } from '#windows/projects/ProjectHistoryScope'
 import { ProjectsWindow } from '#windows/projects/ProjectsWindow'
 import { TextFileBody } from '#windows/projects/TextFileBody'
+import { ResumeWindow } from '#windows/resume/ResumeWindow'
 import { SkillsWindow } from '#windows/skills/SkillsWindow'
 import type { OpenTarget, WindowId } from '#content/types'
 import type { WindowKey } from '#store/windowManager'
@@ -51,7 +52,7 @@ export const WINDOW_BODIES: Record<WindowId, WindowBodyEntry> = {
   articles: { Body: Placeholder },
   gallery: { Body: Placeholder },
   skills: { Body: SkillsWindow },
-  resume: { Body: Placeholder },
+  resume: { Body: ResumeWindow },
   contact: { Body: Placeholder },
   archive: { Body: Placeholder },
   textFile: { Body: TextFileBody },

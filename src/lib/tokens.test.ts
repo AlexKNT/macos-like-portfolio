@@ -131,29 +131,27 @@ const PAIRS: readonly Pair[] = [
     minimum: 4.5,
   },
 
-  // the paper is a page, and it stays light in both modes, so its ink is checked where
-  // the app paints it today: in light mode. A window that paints on the paper brings its
-  // own ink, and that decision belongs to the window (see design.md, Open items)
+  // The page is a document window's surface, and it is white in both modes, so its ink cannot
+  // follow the mode either: the three page names are declared once, in the theme block, and never
+  // overridden below. The ring on the page is the ink over the paper, so it needs no fourth name.
+  // Spec 0007, AC-8.
   {
-    name: 'text on surface-paper',
-    foreground: '--color-text',
+    name: 'page text',
+    foreground: '--color-text-on-paper',
     background: '--color-surface-paper',
     minimum: 4.5,
-    modes: ['light'],
   },
   {
-    name: 'quiet text on surface-paper',
-    foreground: '--color-text-subtle',
+    name: 'page action',
+    foreground: '--color-link-on-paper',
     background: '--color-surface-paper',
     minimum: 4.5,
-    modes: ['light'],
   },
   {
-    name: 'link on surface-paper',
-    foreground: '--color-link',
+    name: 'ring on the page',
+    foreground: '--color-text-on-paper',
     background: '--color-surface-paper',
-    minimum: 4.5,
-    modes: ['light'],
+    minimum: 3,
   },
 
   // the accent
@@ -416,6 +414,25 @@ describe('the token layer', () => {
     )
 
     expect(unreadable).toEqual([])
+  })
+
+  // covers: AC-8
+  it('keeps the page ink fixed, so a page does not follow the mode', () => {
+    const page = ['--color-text-on-paper', '--color-link-on-paper', '--color-divider-on-paper']
+    const overridden = darkOverrides(STYLESHEET)
+
+    expect(
+      page.filter((name) => !LAYER.light[name]),
+      'page names the theme block does not declare',
+    ).toEqual([])
+    expect(
+      page.filter((name) => overridden.includes(name)),
+      'page names the dark block overrides',
+    ).toEqual([])
+    expect(
+      MODE_DEPENDENT.filter((name) => page.includes(name)),
+      'page names listed as mode dependent',
+    ).toEqual([])
   })
 
   it('keeps every window shadow visible on the window surface, in both modes', () => {
