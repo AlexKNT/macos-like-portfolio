@@ -18,8 +18,8 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 5 | Design system & window chrome | Foundation | done |
 | 6 | Desktop shell | Slice 1 | done |
 | 7 | Window manager | Slice 1 | in-progress |
-| 8 | Projects window (Finder style) | Slice 1 | in-progress |
-| 9 | Skills window (Terminal style) | Slice 2 | in-progress |
+| 8 | Projects window (Finder style) | Slice 1 | done |
+| 9 | Skills window (Terminal style) | Slice 2 | done |
 | 10 | Resume window | Slice 2 | done |
 | 11 | Contact window | Slice 2 | planned |
 | 12 | Mobile app switcher shell | Slice 3 | planned |

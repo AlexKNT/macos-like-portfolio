@@ -1,7 +1,7 @@
 # 0006. Adopt one body logic for every content window
 
 **Date**: 2026-09-20
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 
