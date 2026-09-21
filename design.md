@@ -209,7 +209,7 @@ and bring it to `/architect`.
 ## Reference only, not yet migrated
 
 `src/index.css` still carries the window classes ported from the reference build: `#safari`,
-`#photos`, `#home` and `#dock`. They are palette based and light
+`#home` and `#dock`. They are palette based and light
 only, and they are kept so the windows that are still to be built have a starting point. Do not copy
 them as they stand. Each window feature migrates its own rules onto the tokens when it lands, and
 what is left is deleted once every window is built. That is tracked debt, not a second design system.
@@ -230,6 +230,13 @@ The contact window has landed, so `#contact` is gone: it is an ordinary body of 
 holding the profile's address as one mail link with the shared copy pair beside it and the four
 socials as tiles painted on their own brand colours. The fixed ink those tiles use, and the reason
 their boundaries are not held at 3:1, are recorded under Exceptions above.
+
+The gallery window has landed, so `#photos` is gone: it is an ordinary body of the shared frame on
+the album sidebar's own sunken surface, with the photos as a named list of square tiles that flow to
+as many columns as the width allows. A photo opens into a viewer inside the same window rather than
+into an overlay over the desktop, so the frame, the one region rule and the focus rules all hold. No
+new token and no animation arrived with it: the tiles, the marked album row and the viewer's Close
+control use the state utilities every other control already uses.
 
 ## Open items
 
