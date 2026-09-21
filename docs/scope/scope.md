@@ -20,7 +20,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 7 | Window manager | Slice 1 | in-progress |
 | 8 | Projects window (Finder style) | Slice 1 | in-progress |
 | 9 | Skills window (Terminal style) | Slice 2 | in-progress |
-| 10 | Resume window | Slice 2 | in-progress |
+| 10 | Resume window | Slice 2 | done |
 | 11 | Contact window | Slice 2 | planned |
 | 12 | Mobile app switcher shell | Slice 3 | planned |
 | 13 | Gallery window (Photos style) | Slice 4 | planned |
@@ -139,18 +139,18 @@ Your stack printed in a terminal, grouped by area, so a recruiter can scan what 
 - [x] Test it: `/test skills window`
 spec [0006](../specs/0006-content-window-bodies/index.md) · code in `src/windows/WindowStage.tsx`, `src/windows/skills`, `src/windows/copyLines.ts`, `src/windows/useCopyText.ts`, `src/windows/useLineReveal.ts`, `src/lib/clipboard.ts`, `e2e/skills.spec.ts`
 
-### 10. Resume window · in-progress
+### 10. Resume window · done
 Your resume, readable and downloadable inside the desktop, since recruiters look for it first.
 **Done when:** a visitor can read the resume and download the file, and a missing file shows a clear message instead of a broken window.
 - [x] Design it (spec): `/architect resume window`
-- [ ] Build it: `/develop resume window`
-  - [ ] The reader and the check: `findResumeFile`, `checkFileIsServed`, and both suites (AC-1, AC-4)
-  - [ ] The thin thread: the body, the hook, the registry line, the file row and the download anchor, proved from the desktop icon and the menu bar link (AC-1, AC-2, AC-6, AC-7)
-  - [ ] The states: the five state union, the words module, the quiet line per failure and the live region's words (AC-3, AC-4)
-  - [ ] The second net and the page: the embed's own fallback, the three page tokens, the ring on the page, the contrast pairs and `#resume` retired (AC-5, AC-7, AC-8)
-  - [ ] Narrow widths and the suite: the row at 360px and `e2e/resume.spec.ts` (AC-9, AC-10)
-- [ ] Verify it: `/check verify resume window`
-- [ ] Test it: `/test resume window`
+- [x] Build it: `/develop resume window`
+  - [x] The reader and the check: `findResumeFile`, `checkFileIsServed`, and both suites (AC-1, AC-4)
+  - [x] The thin thread: the body, the hook, the registry line, the file row and the download anchor, proved from the desktop icon and the menu bar link (AC-1, AC-2, AC-6, AC-7)
+  - [x] The states: the five state union, the words module, the quiet line per failure and the live region's words (AC-3, AC-4)
+  - [x] The second net and the page: the embed's own fallback, the three page tokens, the ring on the page, the contrast pairs and `#resume` retired (AC-5, AC-7, AC-8)
+  - [x] Narrow widths and the suite: the row at 360px and `e2e/resume.spec.ts` (AC-9, AC-10)
+- [x] Verify it: `/check verify resume window`
+- [x] Test it: `/test resume window`
 spec [0007](../specs/0007-resume-window/index.md) · code in `src/windows/resume`, `src/lib/files.ts`, `src/content/reads.ts`
 
 ### 11. Contact window · planned · needs a decision

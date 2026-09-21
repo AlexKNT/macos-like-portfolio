@@ -1,7 +1,7 @@
 # 0007. Adopt the browser's own PDF viewer for the Resume window
 
 **Date**: 2026-09-21
-**Status**: Proposed
+**Status**: Accepted
 
 ## Summary
 
