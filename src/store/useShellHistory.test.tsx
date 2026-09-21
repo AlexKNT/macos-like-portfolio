@@ -7,7 +7,7 @@ import { historyStepFor, useShellHistory } from '#store/useShellHistory'
 import { WindowManagerProvider } from '#store/WindowManagerProvider'
 import { useWindowElements } from '#store/useWindowElements'
 import { useWindowManager } from '#store/useWindowManager'
-import { restoreLayout, usePhoneLayout } from '../test/layout'
+import { phoneLayout, restoreLayout } from '../test/layout'
 import type { WindowInstance } from '#store/windowManager'
 
 /**
@@ -98,7 +98,7 @@ describe('the entry the shell owes', () => {
 
 describe('the phone history entry', () => {
   beforeEach(() => {
-    usePhoneLayout()
+    phoneLayout()
   })
 
   afterEach(() => {

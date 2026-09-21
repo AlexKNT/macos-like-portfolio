@@ -6,7 +6,7 @@ import { App } from './App'
 import { DESKTOP_ITEMS } from '#content/desktop'
 import { PROFILE } from '#content/profile'
 import { DOCK_APPS } from '#content/shell'
-import { restoreLayout, usePhoneLayout } from './test/layout'
+import { phoneLayout, restoreLayout } from './test/layout'
 
 /**
  * The desktop shell as a visitor meets it: the greeting, the desktop items, the menu bar, the
@@ -102,7 +102,7 @@ describe('the desktop shell', () => {
  */
 describe('the phone shell', () => {
   beforeEach(() => {
-    usePhoneLayout()
+    phoneLayout()
   })
 
   afterEach(() => {

@@ -9,6 +9,7 @@ import { WindowLayer } from '#components/WindowLayer'
 import { WINDOW_LAYOUT } from '#store/windowManager'
 import { WindowManagerProvider } from '#store/WindowManagerProvider'
 import { useWindowManager } from '#store/useWindowManager'
+import { phoneLayout, restoreLayout } from '../test/layout'
 import type { FileId, WindowId } from '#content/types'
 
 /**
@@ -303,6 +304,67 @@ describe('the lights', () => {
 
     expect(within(frame).getByRole('button', { name: 'Minimise Nike Project.txt' })).toBeDisabled()
     expect(within(frame).getByRole('button', { name: 'Close Nike Project.txt' })).toBeEnabled()
+  })
+})
+
+/**
+ * The same frame below the compact breakpoint, where one window takes the screen and the lights
+ * follow a different list: Zoom has nothing left to fill, and Minimise is offered for the windows
+ * the home surface has a tile for, which is one more than the dock reaches.
+ * Spec 0009, AC-4, AC-7.
+ */
+
+/** A phone stand in: a work area, one window, and optionally a second opened by the first. */
+function PhoneShell({ windowId, also }: { readonly windowId: WindowId; readonly also?: WindowId }) {
+  const { open, setWorkArea } = useWindowManager()
+
+  useEffect(() => {
+    setWorkArea(AREA)
+    open({ kind: 'window', windowId }, { kind: 'home' })
+
+    if (also !== undefined) {
+      open({ kind: 'window', windowId: also }, { kind: 'window', key: windowId })
+    }
+  }, [open, setWorkArea, windowId, also])
+
+  return <WindowLayer />
+}
+
+/** A phone, with the media query already answering the compact question before the first render. */
+function setupPhone(windowId: WindowId, also?: WindowId): void {
+  phoneLayout()
+
+  render(
+    <WindowManagerProvider>
+      <PhoneShell windowId={windowId} also={also} />
+    </WindowManagerProvider>,
+  )
+}
+
+describe('a window on a phone', () => {
+  afterEach(() => {
+    restoreLayout()
+  })
+
+  // covers: AC-4
+  it('paints the focused window alone, hiding the one it covers while keeping it alive', () => {
+    setupPhone('projects', 'contact')
+
+    const covered = screen.getByRole('region', { name: 'Work' })
+    const focused = screen.getByRole('region', { name: 'Contact' })
+
+    expect(covered.classList.contains('hidden')).toBe(true)
+    expect(focused.classList.contains('hidden')).toBe(false)
+  })
+
+  // covers: AC-7
+  it('offers Zoom disabled, and Minimise for a window the home surface has a tile for', () => {
+    setupPhone('resume')
+
+    // Resume has a tile and no dock button, so a phone is the surface that offers it Minimise, and
+    // a window that already holds the work area has nothing left for the green light to fill.
+    expect(screen.getByRole('button', { name: 'Minimise Resume' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Zoom Resume' })).toBeDisabled()
   })
 })
 

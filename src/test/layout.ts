@@ -4,9 +4,10 @@ const REAL_MATCH_MEDIA = window.matchMedia
 /**
  * Answers the compact question the way a phone answers it, so a tree rendered afterwards is created
  * already in the phone shell instead of swapping to it after its first render. Every other query
- * answers false. Spec 0009, AC-1.
+ * answers false. It is a plain helper rather than a hook, so no module reads it as one.
+ * Spec 0009, AC-1.
  */
-export function usePhoneLayout(): void {
+export function phoneLayout(): void {
   Object.defineProperty(window, 'matchMedia', {
     configurable: true,
     writable: true,

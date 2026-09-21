@@ -8,7 +8,7 @@ import { WindowLayer } from '#components/WindowLayer'
 import { HOME_APPS } from '#content/shell'
 import { WindowManagerProvider } from '#store/WindowManagerProvider'
 import { useWindowManager } from '#store/useWindowManager'
-import { restoreLayout, usePhoneLayout } from '../test/layout'
+import { phoneLayout, restoreLayout } from '../test/layout'
 import type { WindowInstance } from '#store/windowManager'
 
 /**
@@ -64,7 +64,7 @@ function setup() {
 }
 
 beforeEach(() => {
-  usePhoneLayout()
+  phoneLayout()
 })
 
 afterEach(() => {

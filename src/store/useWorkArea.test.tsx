@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { WindowManagerProvider } from '#store/WindowManagerProvider'
 import { useWindowManager } from '#store/useWindowManager'
-import { useWorkArea } from '#store/useWorkArea'
+import { COMPACT_QUERY, readCompactLayout, useWorkArea } from '#store/useWorkArea'
 
 /**
  * Watching the box windows are placed inside: the desktop container's own content box,
@@ -146,5 +146,79 @@ describe('the work area watcher', () => {
     setup(false)
 
     expect(TestResizeObserver.created).toHaveLength(0)
+  })
+})
+
+/**
+ * The one breakpoint, read once before the manager exists. It is what makes a phone's first render
+ * the phone shell rather than a frame of the desktop's own chrome, and it is the only width any
+ * module compares, so these checks pin both the answer and the query it comes from.
+ * Spec 0009, AC-1.
+ */
+
+/** The environment's own media query, put back after each check. */
+const REAL_MATCH_MEDIA = window.matchMedia
+
+/** Puts a media query in place that answers only the compact query the way a phone does. */
+function stubMediaQuery(matches: boolean): readonly string[] {
+  const asked: string[] = []
+
+  Object.defineProperty(window, 'matchMedia', {
+    configurable: true,
+    writable: true,
+    value: (query: string): MediaQueryList => {
+      asked.push(query)
+
+      return {
+        matches,
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+      } as unknown as MediaQueryList
+    },
+  })
+
+  return asked
+}
+
+afterEach(() => {
+  Object.defineProperty(window, 'matchMedia', {
+    configurable: true,
+    writable: true,
+    value: REAL_MATCH_MEDIA,
+  })
+})
+
+describe('the compact breakpoint read', () => {
+  // covers: AC-1
+  it('asks the one query the stylesheet and Tailwind already turn at, and answers it', () => {
+    const asked = stubMediaQuery(true)
+
+    expect(readCompactLayout()).toBe(true)
+    expect(COMPACT_QUERY).toBe('(width < 40rem)')
+    expect(asked).toEqual([COMPACT_QUERY])
+  })
+
+  // covers: AC-1
+  it('answers the wide layout when the query does not match', () => {
+    stubMediaQuery(false)
+
+    expect(readCompactLayout()).toBe(false)
+  })
+
+  // covers: AC-1
+  it('answers the wide layout where the platform cannot be asked at all', () => {
+    // What a test runner with no stylesheet looks like, and a platform with no media query.
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      writable: true,
+      value: undefined,
+    })
+
+    expect(readCompactLayout()).toBe(false)
   })
 })
