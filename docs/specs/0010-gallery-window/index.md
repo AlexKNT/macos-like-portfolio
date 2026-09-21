@@ -1,7 +1,7 @@
 # 0010. Adopt a Photos style gallery window
 
 **Date**: 2026-09-21
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 
