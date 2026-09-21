@@ -22,7 +22,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 9 | Skills window (Terminal style) | Slice 2 | done |
 | 10 | Resume window | Slice 2 | done |
 | 11 | Contact window | Slice 2 | in-progress |
-| 12 | Mobile app switcher shell | Slice 3 | in-progress |
+| 12 | Mobile app switcher shell | Slice 3 | done |
 | 13 | Gallery window (Photos style) | Slice 4 | planned |
 | 14 | Articles window (Safari style) | Slice 4 | planned |
 | 15 | Archive window (Trash style) | Slice 4 | planned |
@@ -170,7 +170,7 @@ spec [0008](../specs/0008-contact-window/index.md) · code in `src/windows/conta
 ## Slice 3: Small screens
 The desktop does not fit on a phone, so the metaphor is reshaped rather than squeezed.
 
-### 12. Mobile app switcher shell · in-progress
+### 12. Mobile app switcher shell · done
 On a phone the menu bar and the dock become a compact switcher that opens one window at a time, filling the screen.
 **Done when:** on a small screen one window fills the viewport, the switcher lists every window, and nothing scrolls sideways.
 - [x] Design it (spec): `/architect mobile app switcher shell`

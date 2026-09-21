@@ -1,7 +1,7 @@
 # 0009. A phone home surface that opens one window at a time
 
 **Date**: 2026-09-21
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 
