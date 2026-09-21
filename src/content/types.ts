@@ -85,7 +85,7 @@ export const fileIdSchema = z.enum([
 export type FileId = z.infer<typeof fileIdSchema>
 
 /** The socials the contact window shows. */
-export const socialIdSchema = z.enum(['github', 'platform', 'twitter', 'linkedin'])
+export const socialIdSchema = z.enum(['github', 'site', 'twitter', 'linkedin'])
 /** A social entry. */
 export type SocialId = z.infer<typeof socialIdSchema>
 
@@ -422,13 +422,20 @@ export const greetingSchema = z
 /** The desktop greeting. */
 export type Greeting = z.infer<typeof greetingSchema>
 
-/** The profile the About window and the contact window read. */
+/**
+ * The profile the About window and the contact window read.
+ *
+ * `availability` is the one field the contact window adds: an optional line saying whether this
+ * person is taking work, so a profile that is not offering any shows nothing rather than an empty
+ * promise. Spec 0008, AC-9.
+ */
 export const profileSchema = z
   .strictObject({
     id: z.literal('profile'),
     name: z.string().min(1),
     role: z.string().min(1),
     tagline: z.string().min(1).optional(),
+    availability: z.string().min(1).optional(),
     greeting: greetingSchema,
     bio: z.array(z.string().min(1)).readonly(),
     email: z.email(),

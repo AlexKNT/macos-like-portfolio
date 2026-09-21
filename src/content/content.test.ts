@@ -32,6 +32,7 @@ import {
   navIconIdSchema,
   navLinkIdSchema,
   photoIdSchema,
+  profileSchema,
   projectFolderSchema,
   projectIdSchema,
   socialIdSchema,
@@ -361,6 +362,17 @@ describe('content model', () => {
   it('carries both lines of the desktop greeting', () => {
     expect(PROFILE.greeting.lead.trim().length).toBeGreaterThan(0)
     expect(PROFILE.greeting.display.trim().length).toBeGreaterThan(0)
+  })
+
+  it('takes a profile with an availability line and one without it', () => {
+    const offering = { ...PROFILE, availability: 'Open to new work from October' }
+
+    // The field is optional, so both a profile that offers work and one that says nothing at all
+    // are valid content: the contact window shows the line only when it is there. Spec 0008, AC-9.
+    expect(profileSchema.safeParse(offering).success).toBe(true)
+    expect(profileSchema.safeParse(PROFILE).success).toBe(true)
+    expect(PROFILE.availability).toBeUndefined()
+    expect(profileSchema.safeParse({ ...PROFILE, availability: '' }).success).toBe(false)
   })
 })
 

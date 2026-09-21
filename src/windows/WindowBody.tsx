@@ -1,4 +1,5 @@
 import { Placeholder } from '#windows/Placeholder'
+import { ContactWindow } from '#windows/contact/ContactWindow'
 import { ImageFileBody } from '#windows/projects/ImageFileBody'
 import { ProjectBackButton } from '#windows/projects/ProjectBackButton'
 import { ProjectHistoryScope } from '#windows/projects/ProjectHistoryScope'
@@ -53,7 +54,7 @@ export const WINDOW_BODIES: Record<WindowId, WindowBodyEntry> = {
   gallery: { Body: Placeholder },
   skills: { Body: SkillsWindow },
   resume: { Body: ResumeWindow },
-  contact: { Body: Placeholder },
+  contact: { Body: ContactWindow },
   archive: { Body: Placeholder },
   textFile: { Body: TextFileBody },
   imageFile: { Body: ImageFileBody },

@@ -3,6 +3,10 @@ import type { Profile, Social } from '#content/types'
 /**
  * The profile the About window and the contact window read: name, role, bio, avatar
  * and address in one place, so none of them is repeated across the content.
+ *
+ * `availability` is deliberately unset here: the contact window shows that line only when this
+ * profile carries one, so leaving it out is a state the window is built for, not a gap.
+ * Spec 0008, AC-9, AC-14.
  */
 export const PROFILE: Profile = {
   id: 'profile',
@@ -36,8 +40,8 @@ export const SOCIALS: readonly Social[] = [
     href: 'https://github.com/JavaScript-Mastery-Pro',
   },
   {
-    id: 'platform',
-    label: 'Platform',
+    id: 'site',
+    label: 'Website',
     icon: '/icons/atom.svg',
     color: '#4bcb63',
     href: 'https://jsmastery.com/',

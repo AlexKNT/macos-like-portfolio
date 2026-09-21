@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 
 import { describe, expect, it } from 'vitest'
 
+import { SOCIALS } from '#content/profile'
 import { composite, contrastRatio, parseColour, roundRatio } from '#lib/contrast'
 import { darkOverrides, readTokenLayer, token } from '#lib/tokens'
 
@@ -312,6 +313,13 @@ const LIGHT_PAIRS: readonly Pair[] = [
 ]
 
 /**
+ * The brand ink, which is the one name the contact window adds: the label and the masked icon of a
+ * social tile are painted in it. It is declared once in the theme block and never overridden, so a
+ * tile does not follow the mode while the surface it sits on does. Spec 0008, AC-8.
+ */
+const BRAND_INK = '--color-text-on-brand'
+
+/**
  * The tokens whose value has to change with the mode. A token missing from either block
  * is a token that stops following the visitor, so the list is explicit and checked.
  */
@@ -433,6 +441,52 @@ describe('the token layer', () => {
       MODE_DEPENDENT.filter((name) => page.includes(name)),
       'page names listed as mode dependent',
     ).toEqual([])
+  })
+
+  /*
+   * The brand tiles. Both ends of these pairs live outside the token layer: the surface is the brand
+   * colour its own content entry carries, and the ink is the one fixed name the contact window adds.
+   * They therefore cannot join `PAIRS`, which names a token on both sides, so the list is built here
+   * from the socials themselves and the existing pairs are left exactly as they were.
+   * Spec 0008, AC-8.
+   */
+  // covers: AC-8
+  it('holds the brand ink against every social colour, in both modes', () => {
+    const failures: string[] = []
+
+    // A list that read no socials would pass silently, so the content is checked to be there.
+    expect(SOCIALS.length).toBeGreaterThan(0)
+
+    for (const mode of BOTH_MODES) {
+      for (const social of SOCIALS) {
+        const surface = parseColour(social.color)
+
+        if (!surface) {
+          failures.push(`${social.label} carries "${social.color}", which is not a colour`)
+          continue
+        }
+
+        const ratio = roundRatio(contrastRatio(token(LAYER, mode, BRAND_INK), surface))
+
+        if (ratio < 4.5) {
+          failures.push(`${mode}: the label on the ${social.label} tile is ${ratio}:1, below 4.5:1`)
+        }
+      }
+    }
+
+    expect(failures).toEqual([])
+  })
+
+  // covers: AC-8
+  it('keeps the brand ink fixed, so a tile does not follow the mode', () => {
+    expect(LAYER.light[BRAND_INK], 'the theme block declares no brand ink').toBeDefined()
+    expect(
+      darkOverrides(STYLESHEET).includes(BRAND_INK),
+      'the dark block overrides the brand ink',
+    ).toBe(false)
+    expect(MODE_DEPENDENT.includes(BRAND_INK), 'the brand ink is listed as mode dependent').toBe(
+      false,
+    )
   })
 
   it('keeps every window shadow visible on the window surface, in both modes', () => {
