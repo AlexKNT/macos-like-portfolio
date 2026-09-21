@@ -33,6 +33,8 @@ Rows 8 to 15 are still to come, so the window bodies behind the dock are placeho
 - [x] with a window open, minimise it from its yellow light → the dock button shows the quieter indicator → AC-6
 - [x] narrow the window to 360px → the dock is gone, the greeting and the desktop icons stay, and nothing scrolls sideways → AC-10
 - [x] narrow to 360px and activate a desktop icon → the window opens and fills the work area → AC-10
+
+  **Superseded in part by [spec 0009](../0009-mobile-app-switcher-shell/index.md)**: both 360px steps above passed while the desktop was the only shell. A phone now mounts the slim bar and the home surface in place of the greeting and the desktop items, so read them as: the dock is still gone, nothing scrolls sideways, and the window opens from a home tile instead of a desktop icon.
 - [x] widen back to desktop width → the dock returns and its indicators match what is actually open → AC-6
 - [x] set the OS to reduce motion, reload and move the pointer across the dock → no magnify at all, and the dock still opens windows → AC-7
 - [x] turn on forced colours → the bar, the desktop icons and the dock buttons stay visible, and the focus ring is still drawn → AC-9
@@ -89,6 +91,8 @@ Exercise these, then tick them. This run already ran the ones marked **ran green
 - [x] with a window open, Tab from the top of the page → 3 bar links, 2 acting icons, 4 desktop items, the window's lights, then the six dock buttons, each with the two layer ring → AC-9
 - [x] set the OS to reduce motion, reload, and sweep the dock → no magnify at all, and the dock still opens and focuses windows → AC-7
 - [x] at 360px wide, activate a desktop icon → the window opens, the page still does not scroll sideways, and the bar keeps only its logo → AC-3, AC-10
+
+  **Superseded in part by [spec 0009](../0009-mobile-app-switcher-shell/index.md)**: a phone renders no desktop icon and no menu bar links, so the way in there is a home tile, and the bar's logo sits in the slim bar.
 - [x] turn on forced colours → the bar, the desktop icons and the dock buttons stay visible and the ring is still drawn → AC-9
 
 ### Commands

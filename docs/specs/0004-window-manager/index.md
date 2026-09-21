@@ -1,7 +1,7 @@
 # 0004. Adopt one window manager for every window
 
 **Date**: 2026-09-20
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 
@@ -113,6 +113,8 @@ Every action returns the same shape (the new instances, and the focused key), so
 | `{ kind: 'file'; fileId }` | `textFile` for a text file, `imageFile` for an image | `` `${windowId}:${fileId}` `` | the file's `name` | Two notes from two places sit side by side, because the key carries the item. |
 | `{ kind: 'external'; href }` | none | none | none | A new tab through `window.open` with `noopener`, no instance, the focused key unchanged. |
 
+**Superseded by [spec 0005](../0005-projects-window/index.md)**: a `location` or a `project` target is titled with the place's own name (`placeName(target)`), so the window a place shows is named by the place rather than by the app that shows it. The two rows above predate that.
+
 The window id for a file target comes from the file's own `kind` in the content layer, and its title from the entry's `name`, which every file kind carries.
 
 **Value sourcing** (every value each action produces, computes or displays names where it comes from):
@@ -140,7 +142,7 @@ The window id for a file target comes from the file's own `kind` in the content 
 
 - One instance per key. A second open of the same key never adds an instance.
 - A window's position always keeps the whole window inside the work area, so no window can be lost off screen.
-- A window's size is never below its layout `minSize` and never above the work area.
+- A window's size is never below its layout `minSize` and never above the work area. **Superseded in part by [spec 0009](../0009-mobile-app-switcher-shell/index.md)**: on a phone the focused window takes the work area exactly, so its width can sit below `minSize`, which is the one size rule AC-9 above names as ignoring it.
 - Stacking numbers only grow, and the focused window always has the largest one among the windows that are not minimised.
 - At most one window is focused, and after any action either a window, a dock button, or the desktop holds focus, never nothing.
 - A minimised window is out of the tab order, out of the stacking order, and skipped by the handoff chain.
@@ -208,7 +210,7 @@ Ordered as a Tracer Bullet: thin thread first, then one strand at a time. Task 1
 
 - GSAP arrives as a dependency, and this feature is the first to use it for timelines rather than a single transform.
 - The window key format (`projects` and `textFile:nike-about`) becomes the convention later windows follow.
-- `minSize` has no resize handle to serve yet, so its only job today is the shrink to fit rule and the compact fill.
+- `minSize` has no resize handle to serve yet, so its only job today is the shrink to fit rule and the compact fill. **Superseded in part by [spec 0009](../0009-mobile-app-switcher-shell/index.md)**: the compact fill ignores `minSize`, so its jobs today are the shrink to fit rule and the desktop fill.
 
 ## Follow-up
 

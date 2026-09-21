@@ -17,7 +17,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 4 | Content data model | Foundation | done |
 | 5 | Design system & window chrome | Foundation | done |
 | 6 | Desktop shell | Slice 1 | done |
-| 7 | Window manager | Slice 1 | in-progress |
+| 7 | Window manager | Slice 1 | done |
 | 8 | Projects window (Finder style) | Slice 1 | done |
 | 9 | Skills window (Terminal style) | Slice 2 | done |
 | 10 | Resume window | Slice 2 | done |
@@ -94,7 +94,7 @@ The menu bar, the dock, and the wallpaper: the first thing a visitor sees, and t
 - [x] Test it: `/test desktop shell`
 spec [0003](../specs/0003-desktop-shell/index.md) · code in `src/store`, `src/components`, `src/windows`, `src/content/desktop.ts`, `src/lib/measure.ts`, `src/index.css`
 
-### 7. Window manager · in-progress
+### 7. Window manager · done
 The shared behavior for every window: focus and stacking order, dragging, minimize and maximize, and closing. This is the thread the whole desktop runs on, so it comes before any single window.
 **Done when:** opening from the dock focuses the window, dragging moves it, the focused window sits above the rest, minimize and close animate, and each of those actions has a keyboard path.
 - [x] Design it (spec): `/architect window manager`

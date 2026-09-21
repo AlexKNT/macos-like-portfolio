@@ -172,10 +172,10 @@ No entity is added to the manager. `WindowInstance`, `WindowStatus` and `WindowL
 
 ## Follow-up
 
-- [ ] Reconcile the specs this decision amends: spec 0004's compact rule (the layout minimum no longer applies on a phone) and spec 0003's AC-10 with its 360px verify steps (the greeting and the desktop items are no longer rendered there).
+- [x] Reconcile the specs this decision amends: spec 0004's compact rule (the layout minimum no longer applies on a phone) and spec 0003's AC-10 with its 360px verify steps (the greeting and the desktop items are no longer rendered there).
 - [ ] Rewrite the window manager's own compact fill check (420px), which opens a window through the desktop item list that a phone no longer renders.
 - [ ] Review the shell's one invented word, the surface name (`Home` throughout this spec), and the seven tiles' order (`projects`, `resume`, `contact`, `skills`, `articles`, `gallery`, `archive`, chosen so a recruiter meets the work, the resume and the way to reach you first).
-- [ ] `src/components/` has no `AGENTS.md`. This feature adds four modules and a words file there, which is the moment for `/audit` or `/sync` to draft one.
+- [x] `src/components/` has no `AGENTS.md`. This feature adds four modules and a words file there, which is the moment for `/audit` or `/sync` to draft one.
 - [ ] The exit movement borrows `--window-dock-shrink`. If a second borrowed measure appears, rename it to a window measure and update the suite with it.
 - [ ] Listing the two file windows on the phone surface would need an empty state in each file body. That is a separate decision, not this one.
 
