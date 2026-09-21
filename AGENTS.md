@@ -95,6 +95,7 @@ Declined: Tailwind layouts and animations (josiahsiegel), Advanced TypeScript ty
 - [src/store/AGENTS.md](src/store/AGENTS.md): the window manager, its pure reducer, its actions and the React edge that holds them
 - [src/test/AGENTS.md](src/test/AGENTS.md): the shared test helpers and the setup file Vitest loads
 - [src/windows/AGENTS.md](src/windows/AGENTS.md): the window body registry every window registers in
+- [src/windows/gallery/AGENTS.md](src/windows/gallery/AGENTS.md): the photos window, its album state and its viewer
 - [e2e/AGENTS.md](e2e/AGENTS.md): the Playwright suite, one spec per desktop surface
 
 _Drafted by /audit from the repo, worth a quick human pass. Edit freely: once a line stops matching this draft, later runs treat it as curated and will flag rather than overwrite it._

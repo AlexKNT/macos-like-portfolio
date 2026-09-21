@@ -2,7 +2,7 @@
 
 The window bodies: what a window shows once the shell has opened it. A body reads the target it was handed, reads the content layer, and paints inside a frame the shell has already placed. Nothing here positions, sizes or moves a window, and nothing here decides which window opens: that is `src/store` and `src/components`.
 
-Governing specs: [`0005-projects-window`](../../docs/specs/0005-projects-window/index.md) for the Finder and the two file windows, [`0003-desktop-shell`](../../docs/specs/0003-desktop-shell/index.md) for the registry it introduced, [`0006-content-window-bodies`](../../docs/specs/0006-content-window-bodies/index.md) for the standard every body is built to, [`0007-resume-window`](../../docs/specs/0007-resume-window/index.md) for the document window and the page it paints on, and [`0008-contact-window`](../../docs/specs/0008-contact-window/index.md) for the address, the copy pair and the social tiles.
+Governing specs: [`0005-projects-window`](../../docs/specs/0005-projects-window/index.md) for the Finder and the two file windows, [`0003-desktop-shell`](../../docs/specs/0003-desktop-shell/index.md) for the registry it introduced, [`0006-content-window-bodies`](../../docs/specs/0006-content-window-bodies/index.md) for the standard every body is built to, [`0007-resume-window`](../../docs/specs/0007-resume-window/index.md) for the document window and the page it paints on, [`0008-contact-window`](../../docs/specs/0008-contact-window/index.md) for the address, the copy pair and the social tiles, and [`0010-gallery-window`](../../docs/specs/0010-gallery-window/index.md) for the album sidebar, the grid and the viewer a window can hold inside itself.
 
 ## Files
 
@@ -15,6 +15,7 @@ Governing specs: [`0005-projects-window`](../../docs/specs/0005-projects-window/
 - `skills/`: the terminal window (`SkillsWindow`, `TechStack`, `TechGroupRow`, `outcomeForRow`, `skillsLines`).
 - `resume/`: the document window (`ResumeWindow`, `useResumeFile`, `resumeLines`), the first body with an async read: its hook owns the state and the check lives at the edge.
 - `contact/`: the contact window (`ContactWindow`, `SocialTile`, `contactLines`) and the mail link it builds (`mailLink`).
+- `gallery/`: the photos window (`GalleryWindow`, `AlbumSidebar`, `PhotoGrid`, `PhotoTile`, `PhotoViewer`), its own state (`galleryState`, `useGalleryState`) and its own words (`galleryLines`). The folder keeps its own context file: [`gallery/AGENTS.md`](gallery/AGENTS.md).
 - `projects/fileFromTarget.ts`: the file a target names, or `null` when it names none or names one that is not there. A file window's target carries the file's id rather than the file itself, so the file is looked up when the body renders and there is one truth about what it holds.
 
 ## Conventions
@@ -24,11 +25,12 @@ Governing specs: [`0005-projects-window`](../../docs/specs/0005-projects-window/
 - The target names what to show, so a window on a place and a window on a file are one mechanism. `Place` is a member of `openTargetSchema`, which is why the Finder looks the same whether a desktop icon, a dock button or a menu bar link sent the visitor there.
 - React reserves `key`, so the instance key travels as `windowKey`. A body that changes what its own window shows calls `open(target, { kind: 'window', key: windowKey })`: the same instance with a new target. That is how the Back control works, and why a second open never makes a second window.
 - Window state the manager does not own (the Finder's place history) lives in the window, in a component registered as the entry's `Scope`, wrapped around the frame so the title bar reads that state through one provider. Nothing about it is stored twice: the place showing is the instance's target.
-- A window frame is already a named `region`, so a body's content area is a named `group`. Two nested regions carrying one name break every role and name query and read as a stutter in a screen reader's landmark list.
+- A window frame is already a named `region`, so a body's content area is a named `group`. Two nested regions carrying one name break every role and name query and read as a stutter in a screen reader's landmark list. The registry baseline counts a body's named `group`s, so a further named container inside a body is a `figure` named by the thing it shows, never a second `group` or a nested landmark.
+- The frame owns Escape and the arrow keys, which close and move the window. A body that shows something Escape should close first answers those keys on its own element and stops them there, or the window closes out from under it.
 - A body renders exactly one `WindowStage`, which is what carries the container query, the content area's padding and the one polite live region. A body adds content and words only, never a second padding or a live region of its own, and the registry baseline test holds it.
 - Anything outside the page (a file the site serves, the clipboard) goes through one function at the edge that returns a `Result` rather than throwing, with a hook beside the body owning the state it produces. The body itself holds no path, no request and no browser API.
 - A body that paints on `--color-surface-paper` stays on the page set (`design.md`), because the paper is white in both modes while the ordinary tokens flip.
-- Every literal a visitor reads lives in one pure words module for that window (`quietLines.ts`, `skillsLines.ts`, `resumeLines.ts`, `copyLines.ts`), each function named for the state it describes rather than for where it appears on screen.
+- Every literal a visitor reads lives in one pure words module for that window (`quietLines.ts`, `skillsLines.ts`, `resumeLines.ts`, `copyLines.ts`, `contactLines.ts`, `galleryLines.ts`), each function named for the state it describes rather than for where it appears on screen.
 - Import through the aliases (`#content`, `#lib`, `#store`, `#windows`), keep one job per module, export names only, and give every exported thing a short comment saying what it does.
 - The accessibility bar holds here as it does everywhere: a control is a button with an accessible name, an image keeps its `alt` text even when its asset never loads, and a state that replaces content is text a screen reader can read.
 
