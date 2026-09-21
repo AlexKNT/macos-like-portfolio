@@ -180,7 +180,7 @@ On a phone the menu bar and the dock become a compact switcher that opens one wi
   - [x] The surface completed: the heading, the named list, the tiles' marks and the appearance control (AC-2, AC-6, AC-14)
   - [x] The lights, the file over the Finder and the movement (AC-3, AC-6, AC-7, AC-8, AC-10, AC-12)
   - [x] The history, the suites and the records (AC-11, AC-15)
-- [ ] Verify it: `/check verify mobile app switcher shell`
+- [x] Verify it: `/check verify mobile app switcher shell`
 - [ ] Test it: `/test mobile app switcher shell`
 spec [0009](../specs/0009-mobile-app-switcher-shell/index.md) · code in `src/components/HomeSurface.tsx`, `src/components/HomeTile.tsx`, `src/components/PhoneBar.tsx`, `src/components/Clock.tsx`, `src/store/useShellHistory.ts`, `src/store/windowManager.ts`
 
