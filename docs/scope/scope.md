@@ -23,7 +23,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 10 | Resume window | Slice 2 | done |
 | 11 | Contact window | Slice 2 | done |
 | 12 | Mobile app switcher shell | Slice 3 | done |
-| 13 | Gallery window (Photos style) | Slice 4 | in-progress |
+| 13 | Gallery window (Photos style) | Slice 4 | done |
 | 14 | Articles window (Safari style) | Slice 4 | planned |
 | 15 | Archive window (Trash style) | Slice 4 | planned |
 | 16 | Light and dark appearance | Slice 5 | planned |
@@ -187,7 +187,7 @@ spec [0009](../specs/0009-mobile-app-switcher-shell/index.md) · code in `src/co
 ## Slice 4: The extra windows
 Kept for after the core windows, since the seed data for them is already waiting.
 
-### 13. Gallery window (Photos style) · in-progress
+### 13. Gallery window (Photos style) · done
 Images with an album sidebar, for photos and visuals that do not belong in a project case study.
 **Done when:** the sidebar filters the grid, images load lazily with alt text, and the layout holds at narrow widths.
 - [x] Design it (spec): `/architect gallery window`
@@ -198,7 +198,7 @@ Images with an album sidebar, for photos and visuals that do not belong in a pro
   - [x] The quiet states: the empty album line, and the missing asset held as the tile's own state and the viewer's own state (AC-8, AC-9)
   - [x] The loading, the layout and the suites: lazy loading, the token pass, `#photos` retired, 360px, the unit suites and `e2e/gallery.spec.ts` (AC-10, AC-11, AC-12, AC-13)
 - [x] Verify it: `/check verify gallery window`
-- [ ] Test it: `/test gallery window`
+- [x] Test it: `/test gallery window`
 spec [0010](../specs/0010-gallery-window/index.md) · code in `src/windows/gallery`
 
 ### 14. Articles window (Safari style) · planned · needs a decision
