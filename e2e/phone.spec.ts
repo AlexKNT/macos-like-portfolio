@@ -15,9 +15,17 @@ const PHONE = { width: 360, height: 740 }
 const SURFACE = 'Home'
 const WORK = 'Work'
 
-/** The tiles of the home surface, which is the list the surface names after itself. */
+/** The container the home surface lives in, which is always on the page and owns the work area. */
+function containerOf(page: Page): Locator {
+  return page.getByRole('region', { name: SURFACE })
+}
+
+/**
+ * The tiles of the home surface. It is the list itself rather than the container: the container is on
+ * the page at every width, and the list is what leaves the page's sight while a window covers it.
+ */
 function tilesOf(page: Page): Locator {
-  return page.getByRole('region', { name: SURFACE }).getByRole('list', { name: SURFACE })
+  return containerOf(page).getByRole('list', { name: SURFACE })
 }
 
 /** The mark a tile is painting, which says what its window is doing. */
@@ -47,7 +55,7 @@ async function boxOf(element: Locator) {
 async function phone(page: Page): Promise<void> {
   await page.setViewportSize(PHONE)
   await page.goto('/')
-  await expect(page.getByRole('region', { name: SURFACE })).toBeVisible()
+  await expect(page.getByRole('list', { name: SURFACE })).toBeVisible()
 }
 
 /** Opens one window from its tile and hands back its frame. */
@@ -108,7 +116,7 @@ function boxFrom(sample: string): string {
 test('fills the phone with one window, and Close returns to the home surface', async ({ page }) => {
   await phone(page)
 
-  const surface = page.getByRole('region', { name: SURFACE })
+  const surface = containerOf(page)
   const frame = await openFromTile(page, 'Projects', WORK)
 
   // The window lands on the work area's own box, so it is never wider or taller than the phone.
@@ -129,7 +137,7 @@ test('fills the phone with one window, and Close returns to the home surface', a
   await frame.getByRole('button', { name: `Close ${WORK}` }).click()
 
   await expect(page.getByRole('region', { name: WORK })).toHaveCount(0)
-  await expect(surface).toBeVisible()
+  await expect(tilesOf(page)).toBeVisible()
   // Close hands the keyboard to the surface rather than leaving it on the page body.
   await expect(surface).toBeFocused()
 })
@@ -142,8 +150,8 @@ test('shows one window at a time, with a parked window kept for its tile', async
   // Minimise parks it and returns home, where its tile keeps the quieter mark.
   await skills.getByRole('button', { name: 'Minimise Skills' }).click()
 
-  await expect(page.getByRole('region', { name: SURFACE })).toBeVisible()
   await expect(page.getByRole('region', { name: 'Skills' })).toBeHidden()
+  await expect(tilesOf(page)).toBeVisible()
   await expect(markOf(page, 'Skills')).toHaveCSS('opacity', '0.4')
 
   // Another window opens, and the parked one is still there when that window closes.
@@ -151,16 +159,14 @@ test('shows one window at a time, with a parked window kept for its tile', async
 
   await gallery.getByRole('button', { name: 'Close Gallery' }).click()
 
-  await expect(page.getByRole('region', { name: SURFACE })).toBeVisible()
+  await expect(tilesOf(page)).toBeVisible()
   await expect(markOf(page, 'Skills')).toHaveCSS('opacity', '0.4')
   await expect(markOf(page, 'Gallery')).toHaveCSS('opacity', '0')
 
   // Its tile brings it back at the work area's own box, through the one open action.
   const back = await openFromTile(page, 'Skills')
 
-  await expect
-    .poll(async () => boxOf(back))
-    .toEqual(await boxOf(page.getByRole('region', { name: SURFACE })))
+  await expect.poll(async () => boxOf(back)).toEqual(await boxOf(containerOf(page)))
 })
 
 test('reaches Resume, offers it Minimise, and offers no Zoom on a phone', async ({ page }) => {
@@ -264,7 +270,7 @@ test('holds one history entry while a window is on screen, and closes it on a ba
   await page.goBack()
 
   await expect(page.getByRole('region', { name: WORK })).toHaveCount(0)
-  await expect(page.getByRole('region', { name: SURFACE })).toBeVisible()
+  await expect(tilesOf(page)).toBeVisible()
 
   // Home owns no entry, so the next press leaves the site as it did before the shell existed.
   await page.goBack()
@@ -294,7 +300,7 @@ test('gives its entry back when a window is closed, rather than on the next pres
 
   await frame.getByRole('button', { name: `Close ${WORK}` }).click()
 
-  await expect(page.getByRole('region', { name: SURFACE })).toBeVisible()
+  await expect(tilesOf(page)).toBeVisible()
 
   // The entry goes with the window, which the browser reports as one step back taken by the shell.
   await expect
@@ -354,7 +360,7 @@ test.describe('reduced motion', () => {
     await tilesOf(page).getByRole('button', { name: 'Gallery', exact: true }).click()
 
     const frame = page.getByRole('region', { name: 'Gallery' })
-    const surface = await boxOf(page.getByRole('region', { name: SURFACE }))
+    const surface = await boxOf(containerOf(page))
 
     await expect(frame).toBeVisible()
     expect(await boxOf(frame)).toEqual(surface)
