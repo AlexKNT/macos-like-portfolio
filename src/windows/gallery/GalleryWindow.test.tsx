@@ -7,6 +7,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { ALBUMS } from '#content/gallery'
 import { WINDOWS } from '#content/windows'
+import { Window } from '#components/Window'
 import { WindowManagerProvider } from '#store/WindowManagerProvider'
 import { GalleryWindow } from '#windows/gallery/GalleryWindow'
 import {
@@ -101,6 +102,20 @@ describe('the Gallery window', () => {
       within(content(LIBRARY.title)).getByRole('heading', { name: LIBRARY.title }),
     ).toBeInTheDocument()
     expect(WINDOWS.gallery.title).not.toBe(LIBRARY.title)
+  })
+
+  // covers: AC-3
+  it('keeps the frame announced as the window while the content area is announced as the album', () => {
+    render(
+      <WindowManagerProvider>
+        <Window title={WINDOWS.gallery.title}>
+          <GalleryWindow windowId="gallery" windowKey="gallery" target={TARGET} />
+        </Window>
+      </WindowManagerProvider>,
+    )
+
+    expect(screen.getByRole('region', { name: WINDOWS.gallery.title })).toBeInTheDocument()
+    expect(screen.getByRole('group', { name: LIBRARY.title })).toBeInTheDocument()
   })
 
   // covers: AC-2

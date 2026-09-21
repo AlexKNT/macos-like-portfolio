@@ -197,7 +197,7 @@ Images with an album sidebar, for photos and visuals that do not belong in a pro
   - [x] The viewer: the panel and its key handler, the focus move and the hand back to the tile, the close control, and the live region announcement on every change of the open photo (AC-5, AC-6)
   - [x] The quiet states: the empty album line, and the missing asset held as the tile's own state and the viewer's own state (AC-8, AC-9)
   - [x] The loading, the layout and the suites: lazy loading, the token pass, `#photos` retired, 360px, the unit suites and `e2e/gallery.spec.ts` (AC-10, AC-11, AC-12, AC-13)
-- [ ] Verify it: `/check verify gallery window`
+- [x] Verify it: `/check verify gallery window`
 - [ ] Test it: `/test gallery window`
 spec [0010](../specs/0010-gallery-window/index.md) · code in `src/windows/gallery`
 
