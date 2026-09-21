@@ -21,7 +21,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 8 | Projects window (Finder style) | Slice 1 | done |
 | 9 | Skills window (Terminal style) | Slice 2 | done |
 | 10 | Resume window | Slice 2 | done |
-| 11 | Contact window | Slice 2 | in-progress |
+| 11 | Contact window | Slice 2 | done |
 | 12 | Mobile app switcher shell | Slice 3 | done |
 | 13 | Gallery window (Photos style) | Slice 4 | planned |
 | 14 | Articles window (Safari style) | Slice 4 | planned |
@@ -74,7 +74,7 @@ Wallpaper, translucency, type scale, spacing, and the window frame (title bar, t
   - [x] The chrome primitives: the two layer ring, the five state utilities, `Window` and `WindowControls` (AC-4, AC-5, AC-6)
   - [x] Motion, fonts, small screens, forced colours, and the design notes in `design.md` (AC-9, AC-10, AC-11, AC-12, AC-13)
 - [x] Verify it: `/check verify design system & window chrome`
-- [ ] Test it: `/test design system & window chrome`
+- [x] Test it: `/test design system & window chrome`
 spec [0002](../specs/0002-design-system-window-chrome/index.md) · code in `src/index.css`, `src/lib/appearance.ts`, `src/lib/motion.ts`, `src/components/Window.tsx`
 
 ## Slice 1: The desktop that works

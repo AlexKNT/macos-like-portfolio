@@ -1,7 +1,7 @@
 # 0008. Reach you from a copyable address, a mail link and the socials
 
 **Date**: 2026-09-21
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 
