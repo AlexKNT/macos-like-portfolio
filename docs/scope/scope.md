@@ -24,7 +24,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 11 | Contact window | Slice 2 | done |
 | 12 | Mobile app switcher shell | Slice 3 | done |
 | 13 | Gallery window (Photos style) | Slice 4 | done |
-| 14 | Articles window (Safari style) | Slice 4 | planned |
+| 14 | Articles window (Safari style) | Slice 4 | in-progress |
 | 15 | Archive window (Trash style) | Slice 4 | planned |
 | 16 | Light and dark appearance | Slice 5 | planned |
 | 17 | Metadata & social cards | Slice 5 | planned |
@@ -201,10 +201,20 @@ Images with an album sidebar, for photos and visuals that do not belong in a pro
 - [x] Test it: `/test gallery window`
 spec [0010](../specs/0010-gallery-window/index.md) · code in `src/windows/gallery`
 
-### 14. Articles window (Safari style) · planned · needs a decision
+### 14. Articles window (Safari style) · in-progress
 A browser looking window that links out to posts you wrote elsewhere, so the writing still gets found.
 **Done when:** the list shows a date and a title, each entry opens the post in a new tab, and the links read well to a screen reader.
-- [ ] Design it (spec): `/architect articles window`
+- [x] Design it (spec): `/architect articles window`
+- [ ] Build it: `/develop articles window`
+  - [x] The thin thread: the registry line, the body on the shared stage, the heading, and the posts in newest first order, proved from the dock button and the phone tile (AC-1, AC-2)
+  - [x] The row's anatomy: the cover's fixed square, the printed date, the title as the link with its new tab, its `rel` and its touch target height, and the window's own words (AC-3, AC-5, AC-6, AC-11)
+  - [x] The date's words: `printArticleDate` with its fixed locale and pinned UTC day, and the suite's boundary case (AC-4)
+  - [x] The quiet and the missing: the empty line through the shared `QuietLine`, and a cover that is not there keeping its row, its box and its alternative text (AC-7, AC-8)
+  - [x] The movement, the narrow pass and the suites: the reveal on every open, the 380 and 360 pixel passes, `#safari` retired, and the unit and end to end suites (AC-9, AC-10)
+  - [ ] Your own posts: the three placeholder posts, their ids and their covers give way to your own writing (deliberately outside the acceptance criteria, so a post you have not written yet does not fail the verification)
+- [ ] Verify it: `/check verify articles window`
+- [ ] Test it: `/test articles window`
+spec [0011](../specs/0011-articles-window/index.md) · code in `src/windows/articles`
 
 ### 15. Archive window (Trash style) · planned · needs a decision
 A playful window that opens leftover files, which is where the metaphor earns a smile.
@@ -235,6 +245,7 @@ Out of scope for the current build pass, kept so the plan stays honest.
 - **Visitor analytics**: see which windows visitors open and which projects they read · needs a decision
 - **A second language**: translate the desktop and add a language switch · needs a decision
 - **Hosted contact form**: messages that arrive without the visitor's mail app · needs a decision
+- **An excerpt on each article**: a short line under each title in the articles window, which needs a new content field and a line per post · from spec 0011
 - **Writing here**: author posts in the site instead of linking out · needs a decision
 - **Cookie notice**: only needed once tracking arrives with analytics · needs a decision
 - **The two file windows on the phone surface**: a text file and an image have no tile, so they arrive only through the Finder · from spec 0009
