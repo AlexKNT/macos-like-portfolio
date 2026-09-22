@@ -75,3 +75,20 @@ No step can assert the sound itself. The stub asserts that the right sound was a
 - The ramp length for a mute during a sound, a few tens of milliseconds.
 - The two icon files' drawing, in the existing set's style.
 - The control's accessible name (`Sound`) and its two icons' filenames.
+
+## Added at the build (2026-09-22)
+
+_Recorded by `/develop` once the feature landed. The steps above are the spec's own and the build ran the whole list; these are the ones the build added or sharpened, each tied to the same acceptance criteria._
+
+- [ ] `npx tsc -b` → `navIconIdSchema` carries `sound`, the labelled member of `navIconSchema` carries an optional `iconMuted`, and `NAV_ICONS`' sound entry sets both `/icons/sound.svg` and `/icons/sound-muted.svg`, so a sound entry that names only one image fails to compile → AC-8
+- [ ] `npm test` → `player.isRunning()` answers false with no engine, false before `open()`, and true once `open()` has resumed a suspended one; that is the read the provider's listener stands down on, so it never stands down on an engine the browser did not actually wake → AC-2, AC-3
+- [ ] `npm test` → the dock button's suite proves the pointer tick and the keyboard silence with the engine stood in for, so the hover path is covered without driving a browser → AC-6
+- [ ] `npm run test:e2e -- e2e/phone.spec.ts` → the phone's tab walk is nine stops: the appearance control, the sound switch, then the seven tiles in reading order → AC-8
+- [ ] read `public/icons/sound.svg` and `public/icons/sound-muted.svg` → a speaker, and the same speaker with one stroke through it, both drawn in the ink the icons beside them use → AC-8, AC-14
+- [ ] read `vite.config.ts` → one new alias (`#sound`), and nothing else changed in it, since `jsconfig.json` and `tsconfig.app.json` already map `#*` onto `src/*` → AC-8
+- [ ] `npm run test:e2e` → the stub resolves each played id from the wave and the two ends of the sweep it is handed, because production code defines no window global and carries no test hook; a row whose wave or sweep moved would stop being recognised, which is the intended signal rather than a silent pass → AC-13
+
+### Known, and not this feature's to fix
+
+- The bar's icons are black line drawings that do not follow the mode: in dark mode the bar's surface measures `rgba(24, 24, 27, 0.65)` and both `/icons/mode.svg` and `/icons/sound.svg` paint `0, 0, 0`. The new control copies the treatment of the control beside it (`AC-14` asks for exactly that), and row 16 owns the mode work.
+
