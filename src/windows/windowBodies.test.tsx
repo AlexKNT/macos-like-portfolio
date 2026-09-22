@@ -14,9 +14,14 @@ import type { OpenTarget, WindowId } from '#content/types'
  * `window` target for its own window id, so a body that throws, or that renders no stage or no
  * named content area, fails the suite the moment its line lands.
  *
+ * An entry that registers a `Scope` is rendered inside it, which is how the desktop renders every
+ * entry: a body that reads its own state through its scope (the Archive does, so its title bar
+ * control and its block describe one window) would otherwise fail here for the only reason this
+ * suite is not about, which is that the harness left the scope out.
+ *
  * The second half is the rule a render cannot see: a body's own modules carry no colour of their
  * own, so every colour it paints resolves to the token layer rather than to a palette value
- * written inside the window. Spec 0006, umbrella AC-1, AC-3.
+ * written inside the window. Spec 0006, umbrella AC-1, AC-3; spec 0012, AC-13.
  */
 
 const WINDOWS_DIR = resolve(process.cwd(), 'src/windows')
@@ -75,11 +80,13 @@ describe('the window registry', () => {
     const failures: string[] = []
 
     for (const windowId of WINDOW_IDS) {
-      const { Body } = WINDOW_BODIES[windowId]
+      const { Body, Scope } = WINDOW_BODIES[windowId]
       const target: OpenTarget = { kind: 'window', windowId }
+      const props = { windowId, windowKey: windowId, target }
+      const body = <Body {...props} />
       const view = render(
         <WindowManagerProvider>
-          <Body windowId={windowId} windowKey={windowId} target={target} />
+          {Scope === undefined ? body : <Scope {...props}>{body}</Scope>}
         </WindowManagerProvider>,
       )
 
@@ -103,6 +110,19 @@ describe('the window registry', () => {
     }
 
     expect(failures, 'bodies that cleared no baseline').toEqual([])
+  })
+
+  // covers: spec 0012 AC-14
+  it('gives every window id a real body of its own, with the stand in body gone from the tree', () => {
+    const stillStanding = WINDOW_IDS.filter(
+      (windowId) => WINDOW_BODIES[windowId].Body.name === 'Placeholder',
+    )
+
+    expect(stillStanding, 'window ids still served by the stand in body').toEqual([])
+
+    // The file itself is gone rather than left dead in the tree, so a later body cannot quietly
+    // fall back to it and a reader cannot find it.
+    expect(readdirSync(WINDOWS_DIR).filter((name) => name.startsWith('Placeholder'))).toEqual([])
   })
 
   // covers: umbrella AC-3

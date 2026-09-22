@@ -1,4 +1,6 @@
-import { Placeholder } from '#windows/Placeholder'
+import { ArchiveEmptyButton } from '#windows/archive/ArchiveEmptyButton'
+import { ArchiveScope } from '#windows/archive/ArchiveScope'
+import { ArchiveWindow } from '#windows/archive/ArchiveWindow'
 import { ArticlesWindow } from '#windows/articles/ArticlesWindow'
 import { ContactWindow } from '#windows/contact/ContactWindow'
 import { GalleryWindow } from '#windows/gallery/GalleryWindow'
@@ -32,14 +34,20 @@ export type WindowBodyProps = {
 export type WindowBodyScopeProps = WindowBodyProps & { readonly children: ReactNode }
 
 /**
- * The parts a window can register: its body, a control for the title bar's leading slot, and
- * its own scope. Only the parts a window needs are named, so a body with no chrome of its own
- * is still one short line, and every window is read the same way. Spec 0005, AC-13.
+ * The parts a window can register: its body, a control for each end of the title bar, and its
+ * own scope. Only the parts a window needs are named, so a body with no chrome of its own is
+ * still one short line, and every window is read the same way. Spec 0005, AC-13; spec 0012, AC-4.
  */
 export type WindowBodyEntry = {
   readonly Body: ComponentType<WindowBodyProps>
   /** A control for the title bar, beside the three lights. The Finder's Back arrow is one. */
   readonly Lead?: ComponentType<WindowBodyProps>
+  /**
+   * A control for the right of the title bar, past the window's name. The Archive's Empty control
+   * is its first user. It reads the same scope the body does, so a control here can offer an
+   * action the body's own state decides. Spec 0012, AC-4.
+   */
+  readonly Trail?: ComponentType<WindowBodyProps>
   /** The window's own state, wrapped around its frame so the title bar can read it too. */
   readonly Scope?: ComponentType<WindowBodyScopeProps>
 }
@@ -57,7 +65,7 @@ export const WINDOW_BODIES: Record<WindowId, WindowBodyEntry> = {
   skills: { Body: SkillsWindow },
   resume: { Body: ResumeWindow },
   contact: { Body: ContactWindow },
-  archive: { Body: Placeholder },
+  archive: { Body: ArchiveWindow, Trail: ArchiveEmptyButton, Scope: ArchiveScope },
   textFile: { Body: TextFileBody },
   imageFile: { Body: ImageFileBody },
 }
