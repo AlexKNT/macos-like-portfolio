@@ -21,6 +21,8 @@ npx playwright install chromium           # once per machine, before the first r
 - `contact.spec.ts`: the window from the dock and from the menu bar link, the address as a mail link beside the copy pair, the four social tiles and their ink, and the window at 360px.
 - `gallery.spec.ts`: the window from the dock and from the phone's own tile, the album sidebar and its one mark, the grid, the viewer a photo opens into with its arrow steps and its Escape, the album change closing the viewer, the keyboard walk, and the window at 360px.
 - `phone.spec.ts`: the phone shell at 360px: the home surface and its seven tiles, one window filling the work area with Close returning home, a parked window's mark and the tile that brings it back, a file opening over the Finder, the back press and its one history entry, the movement from a tile, and the reflow at 320px.
+- `archive.spec.ts`: the bin from the dock and from a phone's tile, the count and the leftovers it holds, a press on one opening above it, the one press that empties it and what is left on screen afterwards, the keyboard on the Empty control and the box it offers a finger, the window that holds again once it has been closed, and the width a phone gives it.
+- `sound.spec.ts`: the silence before the visitor's first gesture, the open and close sounds a window asks for, the dock hover's own tick, the switch silencing the desk and remembering the choice across a reload, and the same switch on a phone where the dock is not on screen.
 
 `playwright.config.ts` at the repo root holds the settings: Chromium only, its own dev server on port 4174 with `--strictPort`, so a run never fights the dev server you have open on 5173. CI gets two retries and the `github` reporter; a local run reuses a server already on that port.
 
@@ -34,10 +36,15 @@ npx playwright install chromium           # once per machine, before the first r
 - Below the compact breakpoint a check opens its window from the home surface's own tile (`getByRole('list', { name: 'Home' })`), because a phone renders no dock, no menu bar links and no desktop items. The surface's container is always on the page, so "home is showing" means its list, not the container it lives in.
 - A window that opens on a phone arrives from its tile, so a check that measures a landed box waits for it (`expect.poll`), rather than reading the frame mid movement.
 - A state the repo's own assets cannot produce is forced over the network with `page.route`: the suite stands a real file in for an asset the content names but the repo does not carry, or answers 404 to prove a missing asset state. Never by renaming files under `public/`, which makes Vite reload the page and starves the specs running beside it.
+- A control the app reports as unavailable through `aria-disabled` cannot be clicked: Playwright reads it as disabled and `locator.click` waits until the check times out. Dispatch that press with `evaluate((element) => element.click())`, and assert the native `disabled` attribute rather than `toBeEnabled`, so the check proves the window's own guard instead of the harness refusing to press.
+- A mode the app resolves before its first paint has to be emulated before `page.goto`, because nothing listens for a change afterwards: calling `page.emulateMedia({ colorScheme: 'dark' })` after the load leaves the window painted light and the check silently measures the wrong theme.
+- A capability the runner cannot hear is stood in for and recorded rather than played: `sound.spec.ts` installs an audio engine of its own with `page.addInitScript`, built from the content's own `SOUNDS` table by a relative import, and reads the ids played back off the log that stub writes.
 
 ## Notes for this machine
 
 On Windows the Playwright CLI can linger after the checks finish. The results print, so read them and kill the terminal rather than waiting for it to exit. The `json` reporter never gets as far as writing its file for the same reason, so read a run with `--reporter=list`, which prints each check as it lands.
+
+A whole suite at the default worker count starves on this box: checks that take a second alone run for 15 to 25 seconds, and the first one can exceed the 20 second timeout with `page.goto: net::ERR_ABORTED`. `--workers=3` is green, and the spec that sorts first alphabetically (`archive.spec.ts` today) is the one that pays Vite's cold start.
 
 ## Governance
 

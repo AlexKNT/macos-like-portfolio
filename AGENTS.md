@@ -44,7 +44,7 @@ Every spec is a directory under `docs/specs/`: an `index.md` (the build spec `/d
 - Naming: `PascalCase` components, `camelCase` functions, `useSomething` hooks, `SCREAMING_SNAKE_CASE` constants, `SomethingProps` prop types.
 - Document every exported function, component, and hook in one short comment: what it does, what it returns.
 - Accessibility baseline on every control: keyboard reachable, visible focus ring, labels on icon buttons, `alt` text on images, WCAG AA contrast.
-- File layout follows the aliases already in `vite.config.ts`: `#components`, `#content`, `#lib`, `#windows`, `#store`, `#hoc`, one job per folder. `jsconfig.json` and `tsconfig.app.json` already map `#*` onto `src/*`, so a new folder needs its `vite.config.ts` entry only.
+- File layout follows the aliases already in `vite.config.ts`: `#components`, `#content`, `#lib`, `#sound`, `#store`, `#windows`, `#hoc`, one job per folder. `jsconfig.json` and `tsconfig.app.json` already map `#*` onto `src/*`, so a new folder needs its `vite.config.ts` entry only.
 - Design system: build all UI to `design.md` (colour, type, spacing, frame anatomy, states); token values live in CSS.
 - Animation takes its timing from the CSS tokens through `readMotionToken` and `readEaseToken` (`#lib/motion`), never a literal duration, so reduced motion needs no second code path.
 - One compact breakpoint, written once as `COMPACT_QUERY` (`(width < 40rem)`) in `#store/useWorkArea`, with `readCompactLayout()` for the value a render needs before its first render. No other module writes the number.
@@ -92,6 +92,7 @@ Declined: Tailwind layouts and animations (josiahsiegel), Advanced TypeScript ty
 - [src/components/AGENTS.md](src/components/AGENTS.md): the shell, the window frame, the movement and the focus handoff
 - [src/content/AGENTS.md](src/content/AGENTS.md): the typed content model, its schemas, its id unions, and the development check
 - [src/lib/AGENTS.md](src/lib/AGENTS.md): the browser edges and the pure helpers behind them
+- [src/sound/AGENTS.md](src/sound/AGENTS.md): the desk's sound, the provider that holds the player and the rule that decides what a change plays
 - [src/store/AGENTS.md](src/store/AGENTS.md): the window manager, its pure reducer, its actions and the React edge that holds them
 - [src/test/AGENTS.md](src/test/AGENTS.md): the shared test helpers and the setup file Vitest loads
 - [src/windows/AGENTS.md](src/windows/AGENTS.md): the window body registry every window registers in

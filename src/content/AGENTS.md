@@ -1,6 +1,6 @@
 # src/content
 
-The typed content model. Everything the desktop will show is authored here: the menu bar, the dock, the Finder tree, the articles, the stack, the gallery, the profile, and the wallpaper each mode paints. Each shape is described once by a zod schema, and its TypeScript type is read back out of that schema. Nothing in this folder renders anything. It is data, plus the check that keeps it honest.
+The typed content model. Everything the desktop will show is authored here: the menu bar, the dock, the Finder tree, the articles, the stack, the gallery, the profile, the four desk sounds, and the wallpaper each mode paints. Each shape is described once by a zod schema, and its TypeScript type is read back out of that schema. Nothing in this folder renders anything. It is data, plus the check that keeps it honest.
 
 Governing spec: [`docs/specs/0001-content-data-model/index.md`](../../docs/specs/0001-content-data-model/index.md)
 
@@ -14,6 +14,7 @@ Governing spec: [`docs/specs/0001-content-data-model/index.md`](../../docs/specs
 - `locations.ts`: `LOCATIONS`, the Finder sidebar, the projects, and their files.
 - `profile.ts`: `PROFILE`, `SOCIALS`.
 - `articles.ts`, `techStack.ts`, `gallery.ts`: the remaining collections.
+- `sounds.ts`: `SOUNDS`, the four desk sounds authored as numbers (a wave, the pitch it sweeps between, its length and its own gain) rather than shipped as audio, so nothing is fetched and no clip has to be sourced. The levels are relative on purpose, and `sounds.test.ts` holds that order so a row cannot be authored louder by accident.
 - `reads.ts`: `findById`, `openTargetFor`, the place helpers (`PROJECT_FOLDERS`, `TREE_FILES`, `findFile`, `findPlace`, `placeOfTarget`, `placeName`, `targetForPlace`) and the resume reader (`findResumeFile`, `resumeFileAmong`), which are how a window reads this content.
 - `validate.ts`: `assertContentIsValid`, run once in development before the desktop renders.
 - `content.test.ts`, `theme.test.ts`: the suites behind `npm test`.
