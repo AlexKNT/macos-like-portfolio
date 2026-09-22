@@ -25,7 +25,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 12 | Mobile app switcher shell | Slice 3 | done |
 | 13 | Gallery window (Photos style) | Slice 4 | done |
 | 14 | Articles window (Safari style) | Slice 4 | in-progress |
-| 15 | Archive window (Trash style) | Slice 4 | planned |
+| 15 | Archive window (Trash style) | Slice 4 | done |
 | 16 | Light and dark appearance | Slice 5 | planned |
 | 17 | Metadata & social cards | Slice 5 | planned |
 | 18 | Sound effects | Slice 5 | planned |
@@ -216,10 +216,19 @@ A browser looking window that links out to posts you wrote elsewhere, so the wri
 - [x] Test it: `/test articles window`
 spec [0011](../specs/0011-articles-window/index.md) · code in `src/windows/articles`
 
-### 15. Archive window (Trash style) · planned · needs a decision
+### 15. Archive window (Trash style) · done
 A playful window that opens leftover files, which is where the metaphor earns a smile.
 **Done when:** the window opens the leftover items, a visitor can empty it without errors, and it looks fine when empty.
-- [ ] Design it (spec): `/architect archive window`
+- [x] Design it (spec): `/architect archive window`
+- [x] Build it: `/develop archive window`
+  - [x] The thin thread: the shared item face and the `Trail` slot, the registry line, and a body on the shared stage reading the Trash place (AC-1, AC-2, AC-3)
+  - [x] The control and the state: the window's own machine and its suite, the scope that provides it, and the title bar control that keeps the keyboard (AC-4, AC-7)
+  - [x] The gesture and the quiet states: one timeline on the motion tokens, the leftovers inert while they leave, the quiet line and its announcement (AC-5, AC-6, AC-9, AC-11)
+  - [x] The hygiene and the narrow pass: the cleanup and the idempotent landing, 360 pixels, and the token check over the window (AC-8, AC-10, AC-12, AC-13)
+  - [x] The stand in retires and the suites: `Placeholder` removed, plus the unit and end to end suites (AC-14)
+- [x] Verify it: `/check verify archive window`
+- [x] Test it: `/test archive window`
+spec [0012](../specs/0012-archive-window/index.md) · code in `src/windows/archive`, `src/windows/ItemTile.tsx`, `src/windows/itemTarget.ts`, `src/windows/WindowBody.tsx`, `e2e/archive.spec.ts`
 
 ## Slice 5: Polish and launch
 The pass that makes the site worth sharing with a recruiter.
@@ -249,6 +258,7 @@ Out of scope for the current build pass, kept so the plan stays honest.
 - **Writing here**: author posts in the site instead of linking out · needs a decision
 - **Cookie notice**: only needed once tracking arrives with analytics · needs a decision
 - **The two file windows on the phone surface**: a text file and an image have no tile, so they arrive only through the Finder · from spec 0009
+- **One bin across the desktop**: the Archive's own emptied state and the Finder's Trash place do not agree after an emptying, which would need state held above both windows · from spec 0012
 
 ## Legend
 
