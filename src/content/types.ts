@@ -33,7 +33,7 @@ export const navLinkIdSchema = z.enum(['projects', 'contact', 'resume'])
 export type NavLinkId = z.infer<typeof navLinkIdSchema>
 
 /** The menu bar status icons. */
-export const navIconIdSchema = z.enum(['wifi', 'search', 'profile', 'appearance'])
+export const navIconIdSchema = z.enum(['wifi', 'search', 'profile', 'appearance', 'sound'])
 /** A menu bar status icon. */
 export type NavIconId = z.infer<typeof navIconIdSchema>
 
@@ -224,10 +224,17 @@ const openLocationActionSchema = z
 /** The appearance control the light and dark row will wire, so it must carry a label. */
 const appearanceActionSchema = z.strictObject({ kind: z.literal('appearance') }).readonly()
 
+/** The sound control, which silences the desk, so it must carry a label. */
+const soundActionSchema = z.strictObject({ kind: z.literal('sound') }).readonly()
+
 /**
  * A menu bar icon. An icon that acts carries a `label` and an action that does
  * something, and an icon that only decorates carries no label, so the accessible
  * name rule is held by the type rather than by a test.
+ *
+ * `iconMuted` is the second image a control that shows its own state paints: the sound
+ * control draws a struck through speaker while the desk is silenced, and its unmuted
+ * image stays on `icon`. An entry that carries neither state omits it. Spec 0013, AC-8.
  */
 export const navIconSchema = z.union([
   z
@@ -241,8 +248,9 @@ export const navIconSchema = z.union([
     .strictObject({
       id: navIconIdSchema,
       icon: z.string().min(1),
+      iconMuted: z.string().min(1).optional(),
       label: z.string().min(1),
-      action: z.union([openLocationActionSchema, appearanceActionSchema]),
+      action: z.union([openLocationActionSchema, appearanceActionSchema, soundActionSchema]),
     })
     .readonly(),
 ])
@@ -274,6 +282,43 @@ export const homeAppSchema = z
   .readonly()
 /** A tile on the phone's home surface. */
 export type HomeApp = z.infer<typeof homeAppSchema>
+
+/* ---------------------------------------------------------------------- sound */
+
+/**
+ * The four interface sounds the desk can play. A closed union, so a fifth event cannot reach
+ * the player without a row in the table and a case in the rule. Spec 0013, AC-1.
+ */
+export const soundIdSchema = z.enum(['open', 'close', 'minimise', 'hover'])
+/** A sound the desk plays. */
+export type SoundId = z.infer<typeof soundIdSchema>
+
+/** The oscillator shapes a sound may be built from. */
+const soundWaveSchema = z.enum(['sine', 'triangle', 'square', 'sawtooth'])
+
+/**
+ * One synthesised sound: the tone to schedule, how long it lasts and its own level. It is a
+ * description rather than an audio file, so nothing ships and nothing is fetched, and
+ * `toHz` equal to `fromHz` is a flat tick rather than a sweep. The optional `noise` is the
+ * share of a short noise burst mixed in, which is what makes a whoosh read. Spec 0013, AC-1.
+ */
+export const soundSchema = z
+  .strictObject({
+    id: soundIdSchema,
+    wave: soundWaveSchema,
+    fromHz: z.number().positive(),
+    toHz: z.number().positive(),
+    // Well under three seconds, which is the length WCAG binds its own rule to (AC-12).
+    durationMs: z.number().positive().max(3000),
+    gain: z.number().min(0).max(1),
+    noise: z.number().min(0).max(1).optional(),
+  })
+  .readonly()
+/** One sound the desk plays. */
+export type Sound = z.infer<typeof soundSchema>
+
+/** The sound registry, keyed by the union so a missing sound fails to typecheck. */
+export const soundsSchema = z.record(soundIdSchema, soundSchema)
 
 /* ----------------------------------------------------------------- open target */
 

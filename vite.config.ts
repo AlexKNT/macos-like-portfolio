@@ -19,6 +19,7 @@ export default defineConfig({
       '#components': resolve(dirname(fileURLToPath(import.meta.url)), 'src/components'),
       '#content': resolve(dirname(fileURLToPath(import.meta.url)), 'src/content'),
       '#lib': resolve(dirname(fileURLToPath(import.meta.url)), 'src/lib'),
+      '#sound': resolve(dirname(fileURLToPath(import.meta.url)), 'src/sound'),
       '#store': resolve(dirname(fileURLToPath(import.meta.url)), 'src/store'),
       '#hoc': resolve(dirname(fileURLToPath(import.meta.url)), 'src/hoc'),
       '#windows': resolve(dirname(fileURLToPath(import.meta.url)), 'src/windows'),

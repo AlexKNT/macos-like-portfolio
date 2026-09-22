@@ -218,13 +218,14 @@ test('reads the tiles in the content order, each with the visible focus ring', a
 
   const reached: string[] = []
 
-  // The bar's appearance control is the first stop, then the seven tiles in reading order.
-  for (let step = 0; step < 8; step += 1) {
+  // The bar's two controls come first, the appearance control and the sound switch, then the
+  // seven tiles in reading order.
+  for (let step = 0; step < 9; step += 1) {
     await page.keyboard.press('Tab')
     reached.push(await page.evaluate(() => document.activeElement?.textContent ?? ''))
   }
 
-  expect(reached.slice(1)).toEqual([
+  expect(reached.slice(2)).toEqual([
     'Projects',
     'Resume',
     'Contact',

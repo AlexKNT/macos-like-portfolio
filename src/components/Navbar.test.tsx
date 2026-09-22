@@ -6,28 +6,28 @@ import { Navbar } from '#components/Navbar'
 import { WindowLayer } from '#components/WindowLayer'
 import { NAV_ICONS, NAV_LINKS } from '#content/shell'
 import { APPEARANCE_STORAGE_KEY } from '#lib/appearance'
-import { WindowManagerProvider } from '#store/WindowManagerProvider'
+import { ShellProviders } from '../test/shell'
 import { resolveOpenTarget } from '#store/windowManager'
 
 /** A fixed moment, so the clock assertion never depends on when the suite runs. */
 const NOW = new Date('2026-09-20T09:41:00.000Z')
 
-/** The bar reads the window manager for its actions, so every render gets the provider it needs. */
+/** The bar reads the window manager and the desk's sound, so every render gets both providers. */
 function renderBar() {
   return render(
-    <WindowManagerProvider>
+    <ShellProviders>
       <Navbar />
-    </WindowManagerProvider>,
+    </ShellProviders>,
   )
 }
 
 /** The bar with the window layer beside it, so a press can be watched opening a window. */
 function renderBarWithWindows() {
   return render(
-    <WindowManagerProvider>
+    <ShellProviders>
       <Navbar />
       <WindowLayer />
-    </WindowManagerProvider>,
+    </ShellProviders>,
   )
 }
 
@@ -112,9 +112,15 @@ describe('Navbar', () => {
     const bar = screen.getByRole('navigation', { name: 'Desktop menu bar' })
 
     for (const icon of NAV_ICONS) {
-      if ('label' in icon) {
-        expect(within(bar).getByRole('button', { name: icon.label }), icon.id).toBeInTheDocument()
+      if (!('label' in icon)) {
+        continue
       }
+
+      // The sound control is the one that reports a state of its own, so it is a switch rather
+      // than a button, and it is found by the name it keeps whichever state it is in.
+      const role = icon.action.kind === 'sound' ? 'switch' : 'button'
+
+      expect(within(bar).getByRole(role, { name: icon.label }), icon.id).toBeInTheDocument()
     }
 
     // A decorative icon renders a bare image with no control around it, so it stays out of the

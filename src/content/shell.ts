@@ -9,8 +9,12 @@ export const NAV_LINKS: readonly NavLink[] = [
 ]
 
 /**
- * The four status icons. The wifi and search icons only decorate the bar, so they carry
- * no label. The other two act, so each carries the name a screen reader announces.
+ * The five status icons. The wifi and search icons only decorate the bar, so they carry
+ * no label. The other three act, so each carries the name a screen reader announces.
+ *
+ * The sound control is the one entry that carries two images, because it is the one control
+ * whose own state is visible: a speaker while the desk plays its sounds and a struck through
+ * speaker while it is silenced. Spec 0013, AC-8.
  */
 export const NAV_ICONS: readonly NavIcon[] = [
   { id: 'wifi', icon: '/icons/wifi.svg', action: { kind: 'decoration' } },
@@ -26,6 +30,13 @@ export const NAV_ICONS: readonly NavIcon[] = [
     icon: '/icons/mode.svg',
     label: 'Switch appearance',
     action: { kind: 'appearance' },
+  },
+  {
+    id: 'sound',
+    icon: '/icons/sound.svg',
+    iconMuted: '/icons/sound-muted.svg',
+    label: 'Sound',
+    action: { kind: 'sound' },
   },
 ]
 

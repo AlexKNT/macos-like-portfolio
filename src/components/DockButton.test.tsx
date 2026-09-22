@@ -1,17 +1,19 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { DockButton } from '#components/DockButton'
 import { DOCK_APPS } from '#content/shell'
 import { WINDOWS } from '#content/windows'
-import { WindowManagerProvider } from '#store/WindowManagerProvider'
+import { restoreAudio, scheduledRow, stubAudio } from '../test/audio'
+import { ShellProviders } from '../test/shell'
 import type { DockApp } from '#content/types'
 
 /**
  * One dock app: the name it announces, the image the window registry holds for it, the tooltip
- * that repeats that name without joining it, and the press that runs the action the dock handed
- * it, from the pointer and from the keyboard. Spec 0003, AC-6, AC-9.
+ * that repeats that name without joining it, the press that runs the action the dock handed
+ * it, from the pointer and from the keyboard, and the hover that asks for the desk's own
+ * sound. Spec 0003, AC-6, AC-9; spec 0013, AC-6.
  */
 
 /** The dock app a check drives, by its place in the content list. */
@@ -25,14 +27,14 @@ function appAt(index: number): DockApp {
   return app
 }
 
-/** Renders one dock button inside the manager it registers its own element with. */
+/** Renders one dock button inside the providers it registers its own element with. */
 function setup(
   app: DockApp,
   state: { readonly isOpen?: boolean; readonly isMinimised?: boolean } = {},
 ) {
   const onActivate = vi.fn()
   const view = render(
-    <WindowManagerProvider>
+    <ShellProviders>
       <ul>
         <DockButton
           app={app}
@@ -41,7 +43,7 @@ function setup(
           onActivate={onActivate}
         />
       </ul>
-    </WindowManagerProvider>,
+    </ShellProviders>,
   )
 
   return { onActivate, unmount: view.unmount }
@@ -51,6 +53,10 @@ function setup(
 function buttonFor(app: DockApp): HTMLElement {
   return screen.getByRole('button', { name: app.name })
 }
+
+afterEach(() => {
+  restoreAudio()
+})
 
 describe('a dock button', () => {
   // covers: AC-6
@@ -105,6 +111,32 @@ describe('a dock button', () => {
     await user.click(buttonFor(app))
 
     expect(onActivate).toHaveBeenCalledTimes(1)
+  })
+
+  // covers: AC-6
+  it('asks for the hover sound when the pointer arrives, and stays silent on the keyboard', async () => {
+    const audio = stubAudio('suspended')
+    const user = userEvent.setup()
+    const app = appAt(0)
+
+    setup(app)
+
+    // The visitor's first real gesture is what lets a browser open its audio, so the tick a
+    // pointer asks for is heard from then on rather than from the load.
+    fireEvent.keyDown(window)
+
+    // React derives its pointer enter handler from the pointer over event, which is what a real
+    // pointer sends on the way in.
+    fireEvent.pointerOver(buttonFor(app))
+
+    expect(audio.oscillators).toHaveLength(1)
+    expect(scheduledRow(audio, 0, 'hover')).toBe(true)
+
+    // Focus is how the keyboard walks the panel, and walking it is silent.
+    await user.tab()
+
+    expect(buttonFor(app)).toHaveFocus()
+    expect(audio.oscillators).toHaveLength(1)
   })
 
   // covers: AC-9

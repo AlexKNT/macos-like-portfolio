@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { Dock } from '#components/Dock'
 import { WindowLayer } from '#components/WindowLayer'
 import { DOCK_APPS } from '#content/shell'
-import { WindowManagerProvider } from '#store/WindowManagerProvider'
+import { ShellProviders } from '../test/shell'
 import { resolveOpenTarget } from '#store/windowManager'
 import type { DockApp } from '#content/types'
 
@@ -30,10 +30,10 @@ function appAt(index: number): DockApp {
 /** Mounts the dock with the layer that shows the windows it opens. */
 function setup(): HTMLElement {
   render(
-    <WindowManagerProvider>
+    <ShellProviders>
       <Dock />
       <WindowLayer />
-    </WindowManagerProvider>,
+    </ShellProviders>,
   )
 
   return screen.getByRole('region', { name: 'Dock' })

@@ -6,6 +6,7 @@ import { ALBUMS } from '#content/gallery'
 import { LOCATIONS } from '#content/locations'
 import { PROFILE, SOCIALS } from '#content/profile'
 import { DOCK_APPS, HOME_APPS, NAV_ICONS, NAV_LINKS } from '#content/shell'
+import { SOUNDS } from '#content/sounds'
 import { TECH_GROUPS } from '#content/techStack'
 import { WALLPAPER } from '#content/theme'
 import {
@@ -19,6 +20,7 @@ import {
   navLinkSchema,
   profileSchema,
   socialSchema,
+  soundsSchema,
   techGroupSchema,
   wallpapersSchema,
   windowsSchema,
@@ -71,6 +73,7 @@ const CONTENT_CHECKS: readonly ContentCheck[] = [
   { collection: 'articles', schema: z.array(articleSchema), value: ARTICLES },
   { collection: 'tech groups', schema: z.array(techGroupSchema), value: TECH_GROUPS },
   { collection: 'albums', schema: z.array(albumSchema), value: ALBUMS },
+  { collection: 'sounds', schema: soundsSchema, value: SOUNDS },
   { collection: 'wallpapers', schema: wallpapersSchema, value: WALLPAPER },
 ]
 

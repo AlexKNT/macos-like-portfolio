@@ -1,4 +1,5 @@
 import { toggleAppearance } from '#lib/appearance'
+import { useSound } from '#sound/useSound'
 import type { NavIcon, OpenTarget } from '#content/types'
 import type { WindowOpener } from '#store/windowManager'
 
@@ -17,8 +18,15 @@ export type MenuBarIconProps = {
  * the appearance icon switches the mode for this session: it reads the mode the document is
  * showing and applies its inverse, leaving the stored preference alone, because the menu that
  * owns the preference joins in a later feature. Spec 0003, AC-4, AC-5.
+ *
+ * The sound icon is the one control here that reports its own state, so it renders as a switch
+ * rather than as a button: the name stays `Sound` and the state goes on `aria-checked`, which
+ * reads true while the desk is unmuted, so assistive tech announces the state instead of a name
+ * that changes under it. Its image swaps with the same state. Spec 0013, AC-8, AC-14.
  */
 export function MenuBarIcon({ icon, onOpen }: MenuBarIconProps) {
+  const { muted, toggleMuted } = useSound()
+
   // An icon that only decorates carries no label, which is the rule the content type holds,
   // so that is what decides whether the bar renders a control here.
   if (!('label' in icon)) {
@@ -26,6 +34,23 @@ export function MenuBarIcon({ icon, onOpen }: MenuBarIconProps) {
   }
 
   const action = icon.action
+
+  if (action.kind === 'sound') {
+    const image = muted && icon.iconMuted !== undefined ? icon.iconMuted : icon.icon
+
+    return (
+      <button
+        type="button"
+        role="switch"
+        aria-label={icon.label}
+        aria-checked={!muted}
+        onClick={toggleMuted}
+        className="rounded-control interactive-hover interactive-active focus-visible:interactive-focus cursor-pointer p-1.5"
+      >
+        <img src={image} alt="" className="size-4" />
+      </button>
+    )
+  }
 
   return (
     <button

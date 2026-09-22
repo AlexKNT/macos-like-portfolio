@@ -7,9 +7,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Dock } from '#components/Dock'
 import { WindowLayer } from '#components/WindowLayer'
 import { WINDOW_LAYOUT } from '#store/windowManager'
-import { WindowManagerProvider } from '#store/WindowManagerProvider'
 import { useWindowManager } from '#store/useWindowManager'
 import { phoneLayout, restoreLayout } from '../test/layout'
+import { ShellProviders } from '../test/shell'
 import type { FileId, WindowId } from '#content/types'
 
 /**
@@ -59,9 +59,9 @@ function Shell({ windowId = 'projects', fileId, also }: ShellProps) {
 /** Renders the shell and returns the frame of the window it opened. */
 function setup(windowId: WindowId = 'projects', fileId?: FileId, also?: WindowId) {
   const view = render(
-    <WindowManagerProvider>
+    <ShellProviders>
       <Shell windowId={windowId} fileId={fileId} also={also} />
-    </WindowManagerProvider>,
+    </ShellProviders>,
   )
 
   // A bare Projects open lands on the work location (spec 0005, AC-2), so the frame is named
@@ -78,9 +78,9 @@ function setup(windowId: WindowId = 'projects', fileId?: FileId, also?: WindowId
 /** Renders the shell with one file window open, and hands back the frame it renders. */
 function setupFile(fileId: FileId): HTMLElement {
   render(
-    <WindowManagerProvider>
+    <ShellProviders>
       <Shell fileId={fileId} />
-    </WindowManagerProvider>,
+    </ShellProviders>,
   )
 
   return screen.getAllByRole('region')[0] as HTMLElement
@@ -335,9 +335,9 @@ function setupPhone(windowId: WindowId, also?: WindowId): void {
   phoneLayout()
 
   render(
-    <WindowManagerProvider>
+    <ShellProviders>
       <PhoneShell windowId={windowId} also={also} />
-    </WindowManagerProvider>,
+    </ShellProviders>,
   )
 }
 

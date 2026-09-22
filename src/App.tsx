@@ -2,18 +2,23 @@ import { Desktop } from '#components/Desktop'
 import { Dock } from '#components/Dock'
 import { Navbar } from '#components/Navbar'
 import { PhoneBar } from '#components/PhoneBar'
+import { SoundProvider } from '#sound/SoundProvider'
 import { WindowManagerProvider } from '#store/WindowManagerProvider'
 import { useShellHistory } from '#store/useShellHistory'
 import { useWindowManager } from '#store/useWindowManager'
 
 /**
- * The app: the window manager, and inside it the shell that reads it. Splitting the two is what
- * lets the shell ask which layout the page is in, since that answer lives in the manager.
+ * The app: the window manager, and inside it the desk's sound and the shell that reads both.
+ * Splitting the three is what lets the shell ask which layout the page is in, since that answer
+ * lives in the manager, and lets the sound effect read the manager's own state, since the sound
+ * is nested inside it. Spec 0013, AC-3, AC-4.
  */
 export function App() {
   return (
     <WindowManagerProvider>
-      <Shell />
+      <SoundProvider>
+        <Shell />
+      </SoundProvider>
     </WindowManagerProvider>
   )
 }

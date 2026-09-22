@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { WINDOWS } from '#content/windows'
+import { useSound } from '#sound/useSound'
 import { useWindowElements } from '#store/useWindowElements'
 import type { DockApp } from '#content/types'
 
@@ -26,9 +27,16 @@ export type DockButtonProps = {
  * The button registers itself under its window id, which is how a window finds the button it
  * minimises toward and hands focus back to, and how the frame stays free of the DOM.
  * Spec 0004, AC-6.
+ *
+ * A pointer arriving asks for the hover sound. It is a pointer event rather than a state change,
+ * which is why it is asked here rather than by the rule beside the manager, and it fires on
+ * enter rather than on focus, so walking the panel with the keyboard stays silent. The dock is
+ * mounted above the compact breakpoint only, so a phone has no dock to hover.
+ * Spec 0013, AC-6.
  */
 export function DockButton({ app, isOpen, isMinimised, onActivate }: DockButtonProps) {
   const { registerDockButton } = useWindowElements()
+  const { play } = useSound()
 
   const attach = useCallback(
     (element: HTMLButtonElement | null) => {
@@ -44,6 +52,7 @@ export function DockButton({ app, isOpen, isMinimised, onActivate }: DockButtonP
         type="button"
         aria-label={app.name}
         onClick={onActivate}
+        onPointerEnter={() => play('hover')}
         className="rounded-panel focus-visible:interactive-focus hover:-translate-y-[var(--dock-hover-lift)] cursor-pointer p-1 transition-transform duration-[var(--duration-fast)] ease-[var(--ease-out)] interactive-hover interactive-active"
       >
         <img
