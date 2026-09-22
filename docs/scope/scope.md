@@ -28,7 +28,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 15 | Archive window (Trash style) | Slice 4 | done |
 | 16 | Light and dark appearance | Slice 5 | planned |
 | 17 | Metadata & social cards | Slice 5 | planned |
-| 18 | Sound effects | Slice 5 | in-progress |
+| 18 | Sound effects | Slice 5 | done |
 
 ## Foundations
 
@@ -243,7 +243,7 @@ Title, description, a card image, and a favicon, so a link looks right the momen
 **Done when:** the title and the description are set, a shared link shows its card image, and the favicon and theme color render.
 - [ ] Build it: `/develop metadata & social cards`
 
-### 18. Sound effects · in-progress
+### 18. Sound effects · done
 Dock and window sounds that give the desktop its feel, with a mute control, because surprise audio annoys people.
 **Done when:** open, close, minimize, and dock hover each make a sound, the mute control silences them and the choice persists, and nothing plays before the visitor interacts with the page.
 - [x] Design it (spec): `/architect sound effects`
@@ -252,8 +252,8 @@ Dock and window sounds that give the desktop its feel, with a mute control, beca
   - [x] The thin thread and the other events: the `#sound` provider, hook and effect, the open sound proved from the dock, then close and minimise on every entry point including the phone, and the dock hover (AC-4, AC-6, AC-7, AC-10)
   - [x] The switch and the muted path: the `sound` content entry and its action, the switch in the menu bar and the phone bar, the two icons, the choice that persists, the silence of anything in flight, and the safe storage read (AC-8, AC-9, AC-10, AC-14)
   - [x] The suites and the records: the unit suite for the table and its relative gains, the rule, the storage, the provider and the factory, and the end to end suite with the audio engine stubbed (AC-13)
-- [ ] Verify it: `/check verify sound effects`
-- [ ] Test it: `/test sound effects`
+- [x] Verify it: `/check verify sound effects`
+- [x] Test it: `/test sound effects`
 spec [0013](../specs/0013-sound-effects/index.md) · code in `src/sound`, `src/lib/sound.ts`, `src/content/sounds.ts`, `src/components/MenuBarIcon.tsx`, `public/icons/sound.svg`, `e2e/sound.spec.ts`
 
 ## Deferred

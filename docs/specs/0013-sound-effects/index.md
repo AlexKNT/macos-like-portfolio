@@ -1,7 +1,7 @@
 # 0013. Adopt synthesised interface sounds with a persistent mute
 
 **Date**: 2026-09-22
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 
