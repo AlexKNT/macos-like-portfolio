@@ -28,7 +28,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 15 | Archive window (Trash style) | Slice 4 | done |
 | 16 | Light and dark appearance | Slice 5 | planned |
 | 17 | Metadata & social cards | Slice 5 | planned |
-| 18 | Sound effects | Slice 5 | planned |
+| 18 | Sound effects | Slice 5 | in-progress |
 
 ## Foundations
 
@@ -236,17 +236,25 @@ The pass that makes the site worth sharing with a recruiter.
 ### 16. Light and dark appearance · planned · needs a decision
 The mode control already sits in the menu bar data. A visitor's choice should stick between visits and follow their system setting by default.
 **Done when:** the control switches every surface, the choice survives a reload, the system setting is the starting point, and contrast holds in both modes.
-- [ ] Design it (spec): `/architect light and dark appearance`
+- [x] Design it (spec): `/architect light and dark appearance`
 
 ### 17. Metadata & social cards · planned · Alpha
 Title, description, a card image, and a favicon, so a link looks right the moment it is shared with a recruiter.
 **Done when:** the title and the description are set, a shared link shows its card image, and the favicon and theme color render.
 - [ ] Build it: `/develop metadata & social cards`
 
-### 18. Sound effects · planned · needs a decision
+### 18. Sound effects · in-progress
 Dock and window sounds that give the desktop its feel, with a mute control, because surprise audio annoys people.
 **Done when:** open, close, minimize, and dock hover each make a sound, the mute control silences them and the choice persists, and nothing plays before the visitor interacts with the page.
-- [ ] Design it (spec): `/architect sound effects`
+- [x] Design it (spec): `/architect sound effects`
+- [x] Build it: `/develop sound effects`
+  - [x] The table, the player and the gesture: the four sound rows with their schema and their check, the `#lib` player factory (open, play, silence and the storage pair), the listener that opens the audio once, and the pure rule with its order of precedence and its four silences (AC-1, AC-2, AC-3, AC-4, AC-5, AC-11, AC-12)
+  - [x] The thin thread and the other events: the `#sound` provider, hook and effect, the open sound proved from the dock, then close and minimise on every entry point including the phone, and the dock hover (AC-4, AC-6, AC-7, AC-10)
+  - [x] The switch and the muted path: the `sound` content entry and its action, the switch in the menu bar and the phone bar, the two icons, the choice that persists, the silence of anything in flight, and the safe storage read (AC-8, AC-9, AC-10, AC-14)
+  - [x] The suites and the records: the unit suite for the table and its relative gains, the rule, the storage, the provider and the factory, and the end to end suite with the audio engine stubbed (AC-13)
+- [ ] Verify it: `/check verify sound effects`
+- [ ] Test it: `/test sound effects`
+spec [0013](../specs/0013-sound-effects/index.md) · code in `src/sound`, `src/lib/sound.ts`, `src/content/sounds.ts`, `src/components/MenuBarIcon.tsx`, `public/icons/sound.svg`, `e2e/sound.spec.ts`
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.
@@ -259,6 +267,7 @@ Out of scope for the current build pass, kept so the plan stays honest.
 - **Cookie notice**: only needed once tracking arrives with analytics · needs a decision
 - **The two file windows on the phone surface**: a text file and an image have no tile, so they arrive only through the Finder · from spec 0009
 - **One bin across the desktop**: the Archive's own emptied state and the Finder's Trash place do not agree after an emptying, which would need state held above both windows · from spec 0012
+- **A gap between dock hover sounds**: if a fast pointer sweep across the dock reads as chatty, the smallest change is a short rate limit on the hover sound, which spec 0013 deliberately left out · from spec 0013
 
 ## Legend
 
