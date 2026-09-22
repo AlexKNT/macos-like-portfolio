@@ -18,6 +18,21 @@ describe('the sound table', () => {
   })
 
   // covers: AC-1
+  it('refuses a row the development check is there to catch, naming the failing path', () => {
+    // Content that does not match its schema is a programmer error rather than an expected
+    // failure, so this is the one place the app throws on purpose. Spec 0001, AC-7.
+    const tooLow = { ...SOUNDS, open: { ...SOUNDS.open, fromHz: 0 } }
+    const tooLong = { ...SOUNDS, close: { ...SOUNDS.close, durationMs: 4000 } }
+
+    expect(() => assertCollectionIsValid('sounds', soundsSchema, tooLow)).toThrow(
+      /Invalid content in sounds: open\.fromHz/,
+    )
+    expect(() => assertCollectionIsValid('sounds', soundsSchema, tooLong)).toThrow(
+      /Invalid content in sounds: close\.durationMs/,
+    )
+  })
+
+  // covers: AC-1
   it('gives every id in the union exactly one row', () => {
     expect(Object.keys(SOUNDS).sort()).toEqual([...soundIdSchema.options].sort())
   })

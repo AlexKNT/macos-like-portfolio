@@ -74,6 +74,35 @@ describe('a window leaving', () => {
   })
 })
 
+describe('the rule over a phone, walked from one window to the next', () => {
+  // covers: AC-7
+  it('answers open alone while one window replaces another, then close when it leaves', () => {
+    const first = withOne(CONTACT, true)
+    const second = opened(first, RESUME)
+    const back = reduceWindowManager(second, { type: 'close', key: 'resume' })
+
+    // The arrival is what is heard, so one press on a phone is one sound even though the window
+    // it covered left in the same transition.
+    expect(soundForChange(first, second)).toBe('open')
+    expect(soundForChange(second, back)).toBe('close')
+  })
+})
+
+describe('the rule itself', () => {
+  // covers: AC-4
+  it('answers the same sound for the same pair, and mutates neither state', () => {
+    const before = withOne(CONTACT)
+    const after = opened(before, RESUME)
+    const wasBefore = JSON.stringify(before)
+    const wasAfter = JSON.stringify(after)
+
+    expect(soundForChange(before, after)).toBe('open')
+    expect(soundForChange(before, after)).toBe('open')
+    expect(JSON.stringify(before)).toBe(wasBefore)
+    expect(JSON.stringify(after)).toBe(wasAfter)
+  })
+})
+
 describe('everything that is not a window arriving, leaving or going down to the dock', () => {
   // covers: AC-5
   it('asks for nothing when the state is handed back unchanged', () => {

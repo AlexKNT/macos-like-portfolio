@@ -19,12 +19,14 @@ afterEach(() => {
 
 describe('the stored choice', () => {
   // covers: AC-10
-  it('reads a missing value, and a value it does not know, as sound on', () => {
+  it('reads a missing value, and every value it does not know, as sound on', () => {
     expect(readMuted()).toBe(false)
 
-    localStorage.setItem(SOUND_STORAGE_KEY, 'quiet')
+    for (const stored of ['on', 'true', '', 'quiet']) {
+      localStorage.setItem(SOUND_STORAGE_KEY, stored)
 
-    expect(readMuted()).toBe(false)
+      expect(readMuted(), stored).toBe(false)
+    }
   })
 
   // covers: AC-10
